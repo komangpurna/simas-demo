@@ -1,4 +1,4 @@
-const WORKER_ORIGIN = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+const WORKER_ORIGIN = "https://simas-demo-api.komangpurna1.workers.dev";
 const ALLOWED_ORIGINS = new Set(["https://simas-demo-5ead3.web.app","https://simas-demo-5ead3.firebaseapp.com"]);
 const METHODS = 'GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS';
 const FORWARD_HEADERS = ['accept', 'content-type', 'authorization', 'x-student-token', 'x-simas-client',

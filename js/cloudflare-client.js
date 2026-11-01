@@ -2703,7 +2703,7 @@ function getApiUrl(endpoint) {
         ? (winConfig.apiBaseUrl || winConfig.workerUrl)
         : ((typeof CLOUDFLARE_CONFIG !== 'undefined' && CLOUDFLARE_CONFIG)
             ? (CLOUDFLARE_CONFIG.apiBaseUrl || CLOUDFLARE_CONFIG.workerUrl)
-            : 'https://simas-smagesa-api.komangpurna1.workers.dev');
+            : "https://simas-demo-api.komangpurna1.workers.dev");
     return `${base.replace(/\/+$/, '')}/${endpoint.replace(/^\/+/, '')}`;
 }
 

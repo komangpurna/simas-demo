@@ -7118,7 +7118,7 @@ window.getTeachersCache = async function (forceRefresh = false) {
         if (typeof cfClient !== 'undefined' && cfClient.getTeachers) {
             teachersData = await cfClient.getTeachers({ status: 'all' });
         } else {
-            const resp = await fetch('https://simas-smagesa-api.komangpurna1.workers.dev/api/teachers');
+            const resp = await fetch("https://simas-demo-api.komangpurna1.workers.dev/api/teachers");
             const json = await resp.json();
             teachersData = json.data || [];
         }

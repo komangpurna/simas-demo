@@ -150,6 +150,16 @@ async function deployWorkerViaApi() {
             deploySuccess = true;
             console.log("✅ Worker berhasil dideploy ke Cloudflare via API!");
             console.log("Worker details:", json.result?.id, json.result?.etag);
+            try {
+                await fetch(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/workers/scripts/${SCRIPT_NAME}/subdomain`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ enabled: true })
+                });
+            } catch (_) {}
         } else {
             console.warn("Direct API upload response:", json?.errors || json);
         }

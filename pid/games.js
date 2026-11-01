@@ -134,7 +134,7 @@ function setupGameDetailModalEvents() {
 // ==================== LOAD GAMES ====================
 async function loadGames() {
     try {
-        const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+        const cfWorkerUrl = "https://simas-demo-api.komangpurna1.workers.dev";
 
         // 1. Cek timestamp update via Cloudflare API
         let serverTs = 0;
@@ -892,7 +892,7 @@ async function inspectGameUrl(targetUrl) {
     }
 
     try {
-        const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+        const cfWorkerUrl = "https://simas-demo-api.komangpurna1.workers.dev";
         const apiUrl = `${cfWorkerUrl}/api/pid-games/inspect-url?url=${encodeURIComponent(cleanTarget)}`;
         const resp = await fetch(apiUrl);
         if (resp.ok) {
@@ -1028,7 +1028,7 @@ async function generateCardVisualAI({ url, inspectData, title, subject, category
         throw new Error("Model AI Gemini belum dikonfigurasi di menu Pengaturan Aplikasi.");
     }
 
-    const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+    const cfWorkerUrl = "https://simas-demo-api.komangpurna1.workers.dev";
 
     let keysToTry = [];
     if (Array.isArray(apiKey)) {
@@ -1704,7 +1704,7 @@ async function getStudentsDataForHandshake() {
     }
 
     let studentList = [];
-    const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+    const cfWorkerUrl = "https://simas-demo-api.komangpurna1.workers.dev";
 
     // 1. Coba dari window.getStudentsCache() jika ada
     if (typeof window.getStudentsCache === 'function') {
@@ -1960,7 +1960,7 @@ async function launchPidGame(gameOrId, customHtml = null) {
     }
 
     try {
-        const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+        const cfWorkerUrl = "https://simas-demo-api.komangpurna1.workers.dev";
         const res = await fetch(`${cfWorkerUrl}/api/pid-games/${encodeURIComponent(gameId)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();

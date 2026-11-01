@@ -150,7 +150,7 @@ async function resolveStaffBorrowerId(
   if (!access.linkedTeacherId) return "";
 
   try {
-    const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-smagesa-api.komangpurna1.workers.dev";
+    const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-demo-api.komangpurna1.workers.dev";
     const syncSecret = Deno.env.get("JURNAL_API_KEY") || "";
     const teacherUrl = `${cfWorkerUrl.replace(/\/+$/, "")}/api/teachers/${encodeURIComponent(access.linkedTeacherId)}`;
     const headers: Record<string, string> = {
@@ -375,7 +375,7 @@ async function fetchFirestoreCollection(collectionName: string, idToken: string,
 }
 
 async function fetchStudentIdentity(nis: string, idToken: string): Promise<{ nis: string; name: string; className: string } | null> {
-  const url = `https://simas-smagesa-api.komangpurna1.workers.dev/api/students/${encodeURIComponent(nis)}`;
+  const url = `https://simas-demo-api.komangpurna1.workers.dev/api/students/${encodeURIComponent(nis)}`;
   const response = await fetch(url, { headers: { "Authorization": `Bearer ${idToken}` } });
   if (response.status === 404) return null;
   if (!response.ok) {
@@ -2298,7 +2298,7 @@ serve(async (req) => {
       // F. INTEGRASI JURNAL MENGAJAR (EKSTERNAL)
       // ============================================
       case "jurnal-sync-siswa": {
-        const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-smagesa-api.komangpurna1.workers.dev";
+        const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-demo-api.komangpurna1.workers.dev";
         const syncSecret = Deno.env.get("JURNAL_API_KEY") || clientSecret || "";
         let students: any[] = [];
         let fetchedFromCloudflare = false;
@@ -2411,7 +2411,7 @@ serve(async (req) => {
         let users = [];
         let teachers = [];
 
-        const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-smagesa-api.komangpurna1.workers.dev";
+        const cfWorkerUrl = Deno.env.get("CLOUDFLARE_WORKER_URL") || "https://simas-demo-api.komangpurna1.workers.dev";
         const syncSecret = Deno.env.get("JURNAL_API_KEY") || clientSecret || "";
 
         // Helper fetch GTK dari Cloudflare D1

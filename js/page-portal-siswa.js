@@ -579,7 +579,7 @@ async function loadStudentData(nis) {
             syncStudentHeaderAvatar(cachedStudentPhoto, currentStudent.name);
         } else {
             // Fetch status foto aktif siswa dari Cloudflare R2/D1 (0 Firestore Read) secara non-blocking
-            const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || 'https://simas-smagesa-api.komangpurna1.workers.dev';
+            const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || "https://simas-demo-api.komangpurna1.workers.dev";
             const studentToken = sessionStorage.getItem('student_token') || '';
             const photoHeaders = { 'Accept': 'application/json' };
             if (studentToken) photoHeaders['X-Student-Token'] = studentToken;
@@ -6539,7 +6539,7 @@ async function loadStudentCardData() {
         return;
     }
 
-    const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || 'https://simas-smagesa-api.komangpurna1.workers.dev';
+    const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || "https://simas-demo-api.komangpurna1.workers.dev";
     
     // Tampilkan data teks siswa ke kartu depan & hub
     const studentName = currentStudent?.name || currentStudent?.nama || sessionStorage.getItem('student_name') || '-';
@@ -6658,7 +6658,7 @@ function updateStudentCardPhotoUI(photoData) {
     const alertRejected = document.getElementById('student-card-alert-rejected');
     const rejectReason = document.getElementById('student-card-reject-reason');
     const photoImg = document.getElementById('kts-front-photo');
-    const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || 'https://simas-smagesa-api.komangpurna1.workers.dev';
+    const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || "https://simas-demo-api.komangpurna1.workers.dev";
 
     // 1. Update Alert Banners
     if (alertPending) alertPending.classList.add('hidden');
@@ -6971,7 +6971,7 @@ async function submitCroppedPhoto() {
 
     try {
         const base64Data = canvas.toDataURL('image/webp', 0.8);
-        const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || 'https://simas-smagesa-api.komangpurna1.workers.dev';
+        const workerUrl = CLOUDFLARE_CONFIG?.WORKER_URL || "https://simas-demo-api.komangpurna1.workers.dev";
 
         const idToken = auth?.currentUser ? await auth.currentUser.getIdToken() : '';
         const studentToken = sessionStorage.getItem('student_token') || '';

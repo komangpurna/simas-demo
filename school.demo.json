@@ -31,8 +31,8 @@
     "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3dnR0aG9la25pemdsaWNyaG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjAzOTgsImV4cCI6MjEwMjM5NjM5OH0.opR-NvBZYWawcRdUeqX2M-jyJBRhcL2ggeTBVQbQTvo"
   },
   "cloudflare": {
-    "workerUrl": "https://simas-smagesa-api.komangpurna1.workers.dev",
-    "workerName": "simas-smagesa-api",
+    "workerUrl": "https://simas-demo-api.komangpurna1.workers.dev",
+    "workerName": "simas-demo-api",
     "databaseName": "simas-demo-db",
     "databaseId": "5ab663e4-b504-4c82-adeb-52f8471c5063",
     "studentPhotosBucket": "simas-demo-student-photos",

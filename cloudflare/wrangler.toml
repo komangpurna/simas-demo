@@ -1,4 +1,4 @@
-name = "simas-smagesa-api"
+name = "simas-demo-api"
 main = "worker.js"
 compatibility_date = "2024-08-01"
 
@@ -22,7 +22,7 @@ bucket_name = "simas-demo-gtk-photos"
 [vars]
 ENVIRONMENT = "production"
 FIREBASE_PROJECT_ID = "simas-demo-5ead3"
-PUBLIC_WORKER_URL = "https://simas-smagesa-api.komangpurna1.workers.dev"
+PUBLIC_WORKER_URL = "https://simas-demo-api.komangpurna1.workers.dev"
 APP_BASE_URL = "https://simas-demo-5ead3.web.app"
 SUPABASE_URL = "https://wwvtthoeknizglicrhor.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3dnR0aG9la25pemdsaWNyaG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjAzOTgsImV4cCI6MjEwMjM5NjM5OH0.opR-NvBZYWawcRdUeqX2M-jyJBRhcL2ggeTBVQbQTvo"

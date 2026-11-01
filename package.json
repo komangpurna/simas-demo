@@ -1,6 +1,6 @@
 {
   "name": "smagesa-simas",
-  "version": "26.11.02.1",
+  "version": "26.11.02.2",
   "description": "SIMAS SMAGESA - Client-side Testing Environment",
   "scripts": {
     "school:prepare": "node scripts/prepare-school.mjs",

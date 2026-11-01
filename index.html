@@ -2657,7 +2657,7 @@ _Pengajuan data GTK telah tersimpan di sistem SIMAS dan menunggu persetujuan Kur
 
                 if (!videoConfig || !loginConfig) {
                     try {
-                        const cfUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev/api/settings?keys=login_videos,login_config';
+                        const cfUrl = `${(cfClient?.baseUrl || 'https://simas-smagesa-api.komangpurna1.workers.dev').replace(/\/+$/, '')}/api/settings?keys=login_videos,login_config`;
                         const res = await fetch(cfUrl, { headers: { 'Accept': 'application/json' } });
                         if (res.ok) {
                             const resJson = await res.json();

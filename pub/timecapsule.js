@@ -3,7 +3,7 @@ import { installWorkerFallback } from '../js/worker-fallback.mjs';
 
 // This public page has its own Firebase app and does not import config.js.
 installWorkerFallback({
-    primaryUrl: 'https://simas-smagesa-api.komangpurna1.workers.dev',
+    primaryUrl: "https://simas-demo-api.komangpurna1.workers.dev",
     gatewayUrl: "https://wwvtthoeknizglicrhor.supabase.co/functions/v1/worker-gateway"
 });
 
@@ -27,7 +27,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig, 'timecapsule');
 const db = getFirestore(app);
 const auth = getAuth(app);
-const CLOUDFLARE_WORKER_URL = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+const CLOUDFLARE_WORKER_URL = "https://simas-demo-api.komangpurna1.workers.dev";
 const EDIT_TOKEN_PREFIX = 'simas_timecapsule_edit_token';
 
 async function callTimeCapsuleWorker(path, payload) {

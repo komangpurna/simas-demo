@@ -118,7 +118,7 @@ function resolveYearbookPhoto(url) {
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
     const workerUrl = (typeof window !== 'undefined' && window.CLOUDFLARE_CONFIG?.WORKER_URL)
         ? window.CLOUDFLARE_CONFIG.WORKER_URL
-        : 'https://simas-smagesa-api.komangpurna1.workers.dev';
+        : "https://simas-demo-api.komangpurna1.workers.dev";
     return `${workerUrl.replace(/\/+$/, '')}/${url.replace(/^\/+/, '')}`;
 }
 

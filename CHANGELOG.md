@@ -8,6 +8,12 @@ Format berdasarkan versi aplikasi global (`YY.MM.DD.REV`):
 - **DD**: Hari/Tanggal (misal: 08)
 - **REV**: Nomor revisi pada hari tersebut (di-reset mulai dari 1 setiap berganti tanggal baru)
 
+## [1.2.628] / [26.11.02.2] - 2026-11-02
+
+- **⚡ Optimalisasi Trigger CI/CD Workflow Tes (`.github/workflows/tests.yml`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
+  - **Eliminasi Eksekusi Ganda Workflow Pengujian:** Menghapus trigger event `pull_request` pada `.github/workflows/tests.yml`, memastikan suite pengujian unit & Cypress hanya dieksekusi secara terfokus saat perubahan resmi masuk ke branch `main`.
+  - **Efisiensi Build Minutes:** Mencegah pemborosan alokasi kuota GitHub Actions runner yang sebelumnya menjalankan pengujian dua kali (pada saat pembukaan PR dan saat merge commit).
+
 ## [1.2.627] / [26.11.02.1] - 2026-11-02
 
 - **🛡️ Penyelarasan Siklus Versi Harian & Stabilisasi Penuh CI/CD SSOT (`package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`, `js/config.js`):**

@@ -6,7 +6,7 @@
  */
 import { auth, CLOUDFLARE_CONFIG } from "./config.js";
 
-const DEFAULT_WORKER_URL = "https://simas-smagesa-api.komangpurna1.workers.dev";
+const DEFAULT_WORKER_URL = "https://simas-demo-api.komangpurna1.workers.dev";
 
 // Batas tunggu respons awal (header) untuk request baca. Tanpa ini, koneksi seluler yang
 // menggantung membuat form jurnal macet di "Memuat Lokasi..." tanpa pernah masuk fallback.

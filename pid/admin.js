@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAdminAiAndCombobox();
 });
 
-const CF_API_URL = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+const CF_API_URL = "https://simas-demo-api.komangpurna1.workers.dev";
 
 // Header JSON + token Firebase untuk operasi tulis (Worker mewajibkan login staf)
 async function getAuthJsonHeaders() {

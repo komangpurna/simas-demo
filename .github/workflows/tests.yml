@@ -15,20 +15,6 @@ on:
       - 'backup/**'
       - 'cloudflare/schema.sql'
       - 'cloudflare/seed_*.sql'
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.vscode/**'
-      - '.agents/**'
-      - 'users.csv'
-      - 'screenshot.png'
-      - 'sql/**'
-      - 'backup/**'
-      - 'cloudflare/schema.sql'
-      - 'cloudflare/seed_*.sql'
   workflow_dispatch:
     inputs:
       spec_path:

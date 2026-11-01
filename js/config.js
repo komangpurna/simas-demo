@@ -48,7 +48,7 @@ export const SUPABASE_HEADERS = {
   'apikey': SUPABASE_CONFIG.anonKey,
   'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
 };
-const workerPrimaryUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+const workerPrimaryUrl = "https://simas-demo-api.komangpurna1.workers.dev";
 const workerGatewayUrl = `${SUPABASE_CONFIG.url}/functions/v1/worker-gateway`;
 const workerTransport = installWorkerFallback({ primaryUrl: workerPrimaryUrl, gatewayUrl: workerGatewayUrl });
 export const CLOUDFLARE_CONFIG = {
@@ -96,7 +96,7 @@ export function resolvePhotoUrl(url) {
     ? (CLOUDFLARE_CONFIG.workerUrl || CLOUDFLARE_CONFIG.WORKER_URL).replace(/\/+$/, '')
     : (typeof window !== 'undefined' && (window.CLOUDFLARE_CONFIG?.workerUrl || window.CLOUDFLARE_CONFIG?.WORKER_URL))
       ? (window.CLOUDFLARE_CONFIG.workerUrl || window.CLOUDFLARE_CONFIG.WORKER_URL).replace(/\/+$/, '')
-      : 'https://simas-smagesa-api.komangpurna1.workers.dev';
+      : "https://simas-demo-api.komangpurna1.workers.dev";
 
   if (trimmed.startsWith('/api/')) {
     return `${workerBase}${trimmed}`;
@@ -873,7 +873,7 @@ if (typeof window !== 'undefined') {
   window.calculateStudentTunggakan = calculateStudentTunggakan;
 }
 
-export const APP_VERSION = "26.11.02.1";
+export const APP_VERSION = "26.11.02.2";
 
 // --- GOOGLE ANALYTICS (GA4) INJECTION ---
 (function () {
