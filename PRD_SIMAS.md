@@ -3,8 +3,8 @@
 | Metadata | Detail |
 |---|---|
 | **Nama Produk** | **SIMAS - SHAKTI** (Sistem Manajemen Informasi SMAGESA SHAKTI - SMA Negeri 1 Abang) |
-| **Versi Aplikasi** | `v1.2.628` / `[26.11.02.2]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
-| **Status Dokumen** | **v1.2.628** - **Optimalisasi Trigger CI/CD Workflow Tes (`.github/workflows/tests.yml`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Menghapus trigger ganda `pull_request` pada GitHub Actions intelligent tests agar workflow pengujian unit & Cypress hanya dieksekusi satu kali secara presisi saat commit/merge masuk ke branch `main`, mengeliminasi eksekusi ganda dan menghemat alokasi build minutes CI/CD. |
+| **Versi Aplikasi** | `v1.2.629` / `[26.11.02.3]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
+| **Status Dokumen** | **v1.2.629** - **Infrastruktur Situs Demo Mandiri & Pipeline Auto-Sync Multi-Repo (`scripts/sync-demo-repo.mjs`, `.github/workflows/sync-demo.yml`, `school.demo.json`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Merilis ekosistem situs demo publik terisolasi penuh (SMA Negeri Nusantara - SMANTARA CERDAS) pada repositori mandiri `komangpurna/simas-demo` yang terhubung ke Firebase Project `simas-demo-5ead3`, Cloudflare Worker & D1 Database `simas-demo-api` / `simas-demo-db`, Cloudflare R2 bucket terpisah, dan Supabase demo terisolasi (`wwvtthoeknizglicrhor`), serta membangun pipeline auto-sync otomatis via GitHub Actions dan skrip npm `sync:demo` untuk menjamin keselarasan 100% kode tanpa merusak basis data produksi SMAGESA. |
 
 
 

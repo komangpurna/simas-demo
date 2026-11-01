@@ -8,6 +8,13 @@ Format berdasarkan versi aplikasi global (`YY.MM.DD.REV`):
 - **DD**: Hari/Tanggal (misal: 08)
 - **REV**: Nomor revisi pada hari tersebut (di-reset mulai dari 1 setiap berganti tanggal baru)
 
+## [1.2.629] / [26.11.02.3] - 2026-11-02
+
+- **🚀 Infrastruktur Situs Demo Mandiri & Pipeline Auto-Sync Multi-Repo (`scripts/sync-demo-repo.mjs`, `.github/workflows/sync-demo.yml`, `school.demo.json`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
+  - **Repositori Demo Publik Terisolasi:** Membangun repositori mandiri `komangpurna/simas-demo` dengan konfigurasi identitas sekolah baru (SMA Negeri Nusantara - SMANTARA CERDAS) yang sepenuhnya terpisah dari database produksi SMAGESA.
+  - **Konektivitas Cloud Demo Mandiri:** Mengaktifkan Firebase Project `simas-demo-5ead3` (Firestore & Hosting live di `https://simas-demo-5ead3.web.app`), Cloudflare Worker `simas-demo-api` dengan D1 Database `simas-demo-db`, 2 bucket R2 (`simas-demo-student-photos`, `simas-demo-gtk-photos`), dan Supabase PostgreSQL terisolasi (`wwvtthoeknizglicrhor`).
+  - **Otomatisasi Sinkronisasi Multi-Repo (Zero Effort):** Menyediakan skrip lokal `npm run sync:demo` dan GitHub Actions workflow `.github/workflows/sync-demo.yml` untuk menyinkronkan codebase secara otomatis setiap kali ada pembaruan di repositori utama.
+
 ## [1.2.628] / [26.11.02.2] - 2026-11-02
 
 - **⚡ Optimalisasi Trigger CI/CD Workflow Tes (`.github/workflows/tests.yml`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
