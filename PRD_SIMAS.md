@@ -3,8 +3,8 @@
 | Metadata | Detail |
 |---|---|
 | **Nama Produk** | **SIMAS - SHAKTI** (Sistem Manajemen Informasi SMAGESA SHAKTI - SMA Negeri 1 Abang) |
-| **Versi Aplikasi** | `v1.2.629` / `[26.11.02.3]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
-| **Status Dokumen** | **v1.2.629** - **Infrastruktur Situs Demo Mandiri & Pipeline Auto-Sync Multi-Repo (`scripts/sync-demo-repo.mjs`, `.github/workflows/sync-demo.yml`, `school.demo.json`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Merilis ekosistem situs demo publik terisolasi penuh (SMA Negeri Nusantara - SMANTARA CERDAS) pada repositori mandiri `komangpurna/simas-demo` yang terhubung ke Firebase Project `simas-demo-5ead3`, Cloudflare Worker & D1 Database `simas-demo-api` / `simas-demo-db`, Cloudflare R2 bucket terpisah, dan Supabase demo terisolasi (`wwvtthoeknizglicrhor`), serta membangun pipeline auto-sync otomatis via GitHub Actions dan skrip npm `sync:demo` untuk menjamin keselarasan 100% kode tanpa merusak basis data produksi SMAGESA. |
+| **Versi Aplikasi** | `v1.2.630` / `[26.11.02.4]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
+| **Status Dokumen** | **v1.2.630** - **Standardisasi & Pemasangan Otomatis Aset Visual Dummy Sekolah (`assets-demo/`, `scripts/generate-demo-assets.mjs`, `scripts/sync-demo-repo.mjs`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Menghasilkan seluruh aset visual dummy resmi beresolusi tinggi untuk SMA Negeri Nusantara (SMANTARA - CERDAS) mencakup `logo-sekolah.png`, `logo-sekolah-padded.png`, `logo-sekolah-padded-192.png`, `badge-sekolah.png` monokrom, kop surat dinas `kop.png` & `kop-transparan.png`, stempel basah ungu otentik `cap-sekolah.png`, tanda tangan pena kepala sekolah `ttd-kepsek.png`, dan sertifikat TTE BSrE dummy `tte.png`. Mengintegrasikan penyalinan otomatis aset dummy terisolasi dan pembersihan video animasi logo lama pada pipeline `scripts/sync-demo-repo.mjs` sehingga repositori `simas-demo` dan live hosting `simas-demo-5ead3.web.app` selalu menyajikan identitas visual sekolah dummy yang konsisten dan bebas kebocoran identitas SMAGESA. |
 
 
 

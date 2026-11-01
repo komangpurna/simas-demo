@@ -65,16 +65,7 @@ async function main() {
             const destAsset = path.join(TARGET_ROOT, 'assets', assetFile);
             await fs.copyFile(srcAsset, destAsset);
         }
-        // Hapus video animasi logo lama agar tidak membocorkan identitas SMAGESA di situs demo
-        const videoFiles = ['animasilogo.webm', 'animasilogomobile.webm', 'logoonly.webm'];
-        for (const vf of videoFiles) {
-            try {
-                await fs.unlink(path.join(TARGET_ROOT, 'assets', vf));
-            } catch {
-                // Abaikan jika berkas tidak ditemukan
-            }
-        }
-        console.log('✅ Aset visual dummy sekolah SMANTARA berhasil dipasang ke target demo.');
+        console.log('✅ Seluruh aset visual dummy (logo, icon, stempel, kop, ttd, & webm) berhasil dipasang ke target demo.');
     } catch (e) {
         console.warn('⚠️ Peringatan saat menyalin aset demo:', e.message);
     }

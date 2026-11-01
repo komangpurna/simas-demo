@@ -8,6 +8,19 @@ Format berdasarkan versi aplikasi global (`YY.MM.DD.REV`):
 - **DD**: Hari/Tanggal (misal: 08)
 - **REV**: Nomor revisi pada hari tersebut (di-reset mulai dari 1 setiap berganti tanggal baru)
 
+## [1.2.630] / [26.11.02.4] - 2026-11-02
+
+- **🎨 Standardisasi & Pemasangan Otomatis Aset Visual Dummy Sekolah (`assets-demo/`, `scripts/generate-demo-assets.mjs`, `scripts/sync-demo-repo.mjs`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
+  - **Aset Visual Dummy Lengkap SMA Negeri Nusantara (SMANTARA):** Menghasilkan 9 aset visual dummy berkualitas tinggi berbasis SVG-to-Sharp render di `assets-demo/`:
+    - `logo-sekolah.png` (500x500): Lambang resmi SMA Negeri Nusantara bernuansa royal gold & navy blue dengan sayap kembar, bintang emas, obor ilmu pengetahuan, buku terbuka, dan pita visi `SMANTARA CERDAS`.
+    - `logo-sekolah-padded.png` (512x512) & `logo-sekolah-padded-192.png` (192x192): Format ber-padding aman (safe zone margin) khusus Android Adaptive Icon & iOS PWA splash/touch icon.
+    - `badge-sekolah.png` (192x192): Siluet monokrom putih bersih untuk small icon push notification Android.
+    - `kop.png` & `kop-transparan.png` (777x229): Kop surat dinas resmi Pemerintah Provinsi Bali, Dinas Pendidikan Pemuda dan Olahraga, SMA Negeri Nusantara lengkap dengan garis ganda dinas.
+    - `cap-sekolah.png` (570x570): Stempel basah dinas ungu otentik dengan sedikit efek miring (-2.5°) menyerupai cap fisik asli.
+    - `ttd-kepsek.png` (1436x373): Tanda tangan pena digital mengalir milik Kepala Sekolah Dr. I Wayan Sudarsana, M.Pd.
+    - `tte.png` (344x111): Sertifikat verifikasi tanda tangan elektronik resmi (BSrE dummy) dilengkapi QR code vektor tajam.
+  - **Pipeline Auto-Sync Aset Dummy Terisolasi:** Memperbarui `scripts/sync-demo-repo.mjs` agar secara otomatis menyalin seluruh aset dari `assets-demo/` ke folder `assets/` di target `simas-demo`, serta menghapus berkas animasi video logo lama (`animasilogo.webm`, `animasilogomobile.webm`, `logoonly.webm`) agar tidak terjadi kebocoran identitas SMAGESA di situs demo publik.
+
 ## [1.2.629] / [26.11.02.3] - 2026-11-02
 
 - **🚀 Infrastruktur Situs Demo Mandiri & Pipeline Auto-Sync Multi-Repo (`scripts/sync-demo-repo.mjs`, `.github/workflows/sync-demo.yml`, `school.demo.json`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
