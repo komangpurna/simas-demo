@@ -1,0 +1,64 @@
+name: Sync to Demo Repository
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.agents/**'
+      - 'backup/**'
+      - 'school.demo.json'
+  workflow_dispatch:
+
+concurrency:
+  group: sync-demo-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  sync-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Source (smagesa-simas)
+        uses: actions/checkout@v4.2.2
+        with:
+          path: smagesa-simas
+
+      - name: Checkout Target (simas-demo)
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: komangpurna/simas-demo
+          token: ${{ secrets.DEMO_SYNC_PAT || github.token }}
+          path: simas-demo
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: smagesa-simas/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: smagesa-simas
+        run: npm ci --no-audit --prefer-offline
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+
+      - name: Configure Git Author
+        working-directory: simas-demo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Execute Codebase Sync & School Demo Config
+        working-directory: smagesa-simas
+        run: |
+          node scripts/sync-demo-repo.mjs --target ../simas-demo --commit
+
+      - name: Push Changes to simas-demo
+        working-directory: simas-demo
+        run: |
+          git push origin main || echo "No changes to push or branch up-to-date"
