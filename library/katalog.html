@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Katalog & Eksemplar Buku - Perpustakaan SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Libre+Barcode+39&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        @media print {
+            @page {
+                margin: 0.6cm;
+                size: auto;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #app-layout,
+            main,
+            #modal-book-form,
+            #modal-eksemplar,
+            #modal-bulk-print,
+            .no-print {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #print-area {
+                display: block !important;
+                visibility: visible !important;
+                position: static !important;
+                width: 100% !important;
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                z-index: 99999 !important;
+            }
+            #print-area * {
+                visibility: visible !important;
+            }
+            .spine-label,
+            .barcode-card,
+            .two-in-one-label {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+        }
+        .spine-label {
+            width: 3.8cm;
+            height: 5.5cm;
+            border: 1px dashed #94a3b8;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: black;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+        .barcode-card {
+            width: 6.5cm;
+            height: 3.5cm;
+            border: 1px dashed #94a3b8;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: black;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+        .two-in-one-label {
+            width: 6.5cm;
+            height: 4.2cm;
+            border: 1px dashed #94a3b8;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: black;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-16 lg:pb-12">
+        <!-- ============================================== -->
+        <!-- 1. HEADER HALAMAN STANDAR (Dua Baris Terstruktur) -->
+        <!-- ============================================== -->
+        <header class="premium-header bg-slate-900 border border-slate-800 text-white rounded-2xl p-3 sm:p-4 mb-4 shadow-sm relative overflow-hidden flex flex-col gap-3 mt-1 sm:mt-0">
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 min-w-0">
+                <!-- Sisi Kiri: Breadcrumb, Judul Modul, Identitas & Tanggal -->
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 text-[11px] text-blue-400 font-bold uppercase tracking-wider mb-1">
+                        <a href="index.html" class="hover:underline flex items-center gap-1.5">
+                            <i class="fa-solid fa-book-bookmark text-blue-400"></i> Perpustakaan
+                        </a>
+                        <i class="fa-solid fa-chevron-right text-[8px] text-slate-500"></i>
+                        <span class="text-slate-300">Manajemen Bibliografi</span>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-book-open-reader text-blue-400 shrink-0"></i>
+                        <span>Katalog & Eksemplar Buku</span>
+                    </h1>
+                    <div class="flex items-center gap-2 text-slate-300 text-xs mt-1 flex-wrap">
+                        <span class="font-medium text-blue-300 flex items-center gap-1.5 truncate">
+                            <i class="fa-solid fa-circle-user text-xs opacity-75 shrink-0"></i>
+                            <span id="header-user-name">Memuat profil...</span>
+                        </span>
+                        <span class="opacity-40 select-none">&bull;</span>
+                        <span id="header-date-display" class="text-slate-300 font-normal whitespace-nowrap">-</span>
+                        <span class="opacity-40 select-none hidden sm:inline">&bull;</span>
+                        <span class="text-slate-400 text-xs hidden sm:inline">Standar DDC & Perpusnas RI</span>
+                    </div>
+                </div>
+
+                <!-- Sisi Kanan: Kelompok Tombol Aksi Rapi & Sederhana -->
+                <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap justify-start lg:justify-end shrink-0">
+                    <button type="button" id="btn-open-bulk-print" class="px-3 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Cetak Label & Barcode Massal Lintas Judul Buku">
+                        <i class="fa-solid fa-tags text-indigo-400"></i>
+                        <span>Cetak Massal</span>
+                    </button>
+                    <div class="flex items-center rounded-xl bg-white/10 p-0.5 border border-white/15 shrink-0">
+                        <button type="button" id="btn-export-katalog" class="px-2.5 py-1.5 hover:bg-white/15 text-white rounded-lg text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0" title="Export Seluruh Katalog ke Excel">
+                            <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                            <span class="hidden sm:inline">Ekspor</span>
+                        </button>
+                        <div class="w-px h-4 bg-white/20 select-none"></div>
+                        <button type="button" id="btn-import-excel" class="px-2.5 py-1.5 hover:bg-white/15 text-white rounded-lg text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0" title="Import Data Katalog dari Excel">
+                            <i class="fa-solid fa-file-import text-blue-400"></i>
+                            <span class="hidden sm:inline">Impor</span>
+                        </button>
+                    </div>
+                    <button type="button" id="btn-open-add-book" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-blue-600/30 transition hover:scale-102 active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Tambah Judul Buku</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ============================================== -->
+        <!-- 2. GRID KARTU STATISTIK / KPI METRICS         -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+            <!-- Metric 1: Total Judul -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Total Judul</p>
+                    <h3 id="kpi-total-judul" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 2: Total Eksemplar Fisik -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-copy"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Total Eksemplar</p>
+                    <h3 id="kpi-total-eksemplar" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 3: Eksemplar Tersedia -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Eksemplar Tersedia</p>
+                    <h3 id="kpi-total-tersedia" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 4: Judul Habis / Kosong -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Stok Habis</p>
+                    <h3 id="kpi-total-habis" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 3. FILTER & SEARCH TOOLBAR                     -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs mb-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <!-- Search Input -->
+            <div class="relative flex-1">
+                <input type="text" id="search-katalog" placeholder="Cari judul, pengarang, penerbit, ISBN, atau call number..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition font-medium placeholder:text-slate-400">
+            </div>
+
+            <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                <!-- Filter DDC -->
+                <div class="w-full sm:w-48 relative">
+                    <select id="filter-ddc" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                        <option value="">Semua Kelas DDC</option>
+                    </select>
+                </div>
+
+                <!-- Filter Tipe Koleksi -->
+                <div class="w-full sm:w-44 relative">
+                    <select id="filter-koleksi" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                        <option value="">Semua Tipe Koleksi</option>
+                        <option value="Sirkulasi">Sirkulasi</option>
+                        <option value="Referensi">Referensi</option>
+                        <option value="Koleksi Khusus">Koleksi Khusus</option>
+                    </select>
+                </div>
+
+                <button type="button" id="btn-reset-filter" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0" title="Reset filter dan pencarian">
+                    <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 4. TABEL DAFTAR BUKU BIBLIOGRAFI               -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden mb-8">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-400 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider">
+                            <th scope="col" class="py-3 px-4 min-w-[280px]">Buku & Pengarang</th>
+                            <th scope="col" class="py-3 px-3.5 min-w-[170px]">Klasifikasi DDC</th>
+                            <th scope="col" class="py-3 px-3.5 min-w-[130px]">Call Number Dasar</th>
+                            <th scope="col" class="py-3 px-3.5 min-w-[220px] max-w-[260px]">Penerbit & Lokasi</th>
+                            <th scope="col" class="py-3 px-3.5 text-center min-w-[120px]">Stok Eksemplar</th>
+                            <th scope="col" class="py-3 px-4 text-center min-w-[140px] sticky right-0 bg-slate-50/95 dark:bg-slate-800/95 backdrop-blur-xs shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.05)] border-l border-slate-200/80 dark:border-slate-800 z-10">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="katalog-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                        <tr>
+                            <td colspan="6" class="p-12 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500"></i>
+                                    <span class="text-xs font-medium">Memuat katalog bibliografi perpustakaan...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-3.5 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span id="katalog-count-info">Menampilkan 0 judul buku</span>
+                <span class="text-[11px] text-slate-400 hidden sm:inline"><i class="fa-solid fa-circle-info text-blue-500/70 mr-1"></i>Klik tombol Eksemplar untuk melihat nomor induk fisik dan cetak barcode</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL 1: FORM TAMBAH / EDIT BIBLIOGRAFI BUKU (Top-Level Sibling Mandiri) -->
+        <div id="modal-book-form" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 fade-in">
+                <!-- Header Modal -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                        <div>
+                            <h3 id="modal-book-title" class="font-bold text-base text-slate-800 dark:text-white">Tambah Data Bibliografi Buku</h3>
+                            <p class="text-[11px] text-slate-400">Standar Klasifikasi DDC & Standar Nasional Perpustakaan</p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('modal-book-form').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Form Body -->
+                <form id="form-book" class="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+                    <input type="hidden" id="form-book-id">
+
+                    <!-- 1. ISBN BARCODE SCANNER INPUT (PRIORITAS PERTAMA AUTO-FILL) -->
+                    <div class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-slate-800/90 dark:to-slate-800/60 border-2 border-blue-200 dark:border-blue-800/60 transition-all focus-within:border-blue-500 shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="font-black text-xs text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-barcode text-blue-600 dark:text-blue-400 text-sm"></i>
+                                <span>Nomor ISBN / Barcode Buku</span>
+                                <span class="px-1.5 py-0.5 rounded bg-blue-200/70 dark:bg-blue-900/80 text-[10px] text-blue-800 dark:text-blue-300 font-semibold">Prioritas Auto-Fill</span>
+                            </label>
+                            <button type="button" id="btn-lookup-online" onclick="window.triggerOnlineBookLookup(true)" class="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-700 transition shadow-sm active:scale-95">
+                                <i class="fa-solid fa-cloud-arrow-down text-blue-500"></i>
+                                <span>Cari Metadata Online</span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="input-isbn" placeholder="Tembak scanner barcode atau ketik ISBN (Contoh: 978602...)"
+                                class="w-full pl-3.5 pr-10 py-2.5 rounded-xl border border-blue-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-mono font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                            <div id="lookup-loading-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-blue-500 text-sm">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                            <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>Arahkan barcode scanner ke sampul belakang buku atau ketik ISBN. Sistem otomatis menarik judul, pengarang, penerbit, DDC, dan cover.
+                        </p>
+                    </div>
+
+                    <!-- 2. JUDUL LENGKAP BUKU -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="font-bold text-slate-700 dark:text-slate-300">Judul Lengkap Buku <span class="text-rose-500">*</span></label>
+                            <span class="text-[10px] text-slate-400">Tekan Enter pada judul untuk cari online jika buku tanpa ISBN</span>
+                        </div>
+                        <input type="text" id="input-judul" required placeholder="Contoh: Laskar Pelangi / Bersikap Bodo Amat / Atomic Habits"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- AUTO-FILL NOTIFICATION BANNER -->
+                    <div id="lookup-result-banner" class="hidden p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-3 text-xs text-emerald-800 dark:text-emerald-300">
+                        <div class="flex items-center gap-2.5">
+                            <div id="lookup-cover-container" class="hidden w-10 h-14 rounded-lg overflow-hidden border border-emerald-300 dark:border-emerald-700 shrink-0 shadow-sm">
+                                <img id="lookup-cover-img" src="" alt="Cover" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <p class="font-bold flex items-center gap-1.5" id="lookup-banner-title">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Data Berhasil Dimuat dari Google Books
+                                </p>
+                                <p class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5" id="lookup-banner-detail">
+                                    Pengarang, penerbit, tahun, dan DDC telah diisi otomatis.
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="document.getElementById('lookup-result-banner').classList.add('hidden')" class="text-emerald-500 hover:text-emerald-700 text-sm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300 block">Nama Pengarang Utama <span class="text-rose-500">*</span></label>
+                                <button type="button" id="btn-format-author" onclick="window.applyStandardAuthorFormat()" class="hidden text-[11px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1 transition">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> <span>Standarisasi Inversi</span>
+                                </button>
+                            </div>
+                            <input type="text" id="input-pengarang" required placeholder="Contoh: Andrea Hirata atau I Komang Purna"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- LIVE AUTHOR STANDARDIZATION HELPER -->
+                            <div id="author-standard-helper" class="hidden mt-1.5 p-2 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/50 text-[11px] flex items-center justify-between transition-all">
+                                <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 overflow-hidden pr-2">
+                                    <span class="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1 shrink-0">
+                                        <i class="fa-solid fa-book-bookmark text-blue-600"></i> Standar Perpus:
+                                    </span>
+                                    <span id="author-standard-preview" class="font-semibold text-slate-800 dark:text-white truncate"></span>
+                                    <span id="author-code-badge" class="px-1.5 py-0.5 rounded bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-mono font-black text-[10px] shrink-0"></span>
+                                </div>
+                                <button type="button" onclick="window.applyStandardAuthorFormat()" class="px-2 py-0.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] shrink-0 transition shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-check"></i> Terapkan
+                                </button>
+                            </div>
+                            <p id="author-help-note" class="text-[10px] text-slate-400 mt-1">Ketik nama lengkap secara alami (bisa disertai "dkk." / "et al."). Sistem otomatis menyesuaikan tajuk perpustakaan (inversi) & Tanda Call Number dari pengarang utama.</p>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Pengarang Tambahan / Penerjemah</label>
+                            <input type="text" id="input-pengarang-tambahan" placeholder="Opsional"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="md:col-span-2">
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Klasifikasi DDC <span class="text-rose-500">*</span></label>
+                            <select id="input-ddc" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Call Number Dasar</label>
+                            <input type="text" id="input-call-number" required readonly
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900/80 text-blue-600 dark:text-blue-400 font-mono font-bold">
+                        </div>
+                    </div>
+
+                    <!-- SMART DDC RECOMMENDATION CONTAINER -->
+                    <div id="ddc-recommendation-box" class="hidden p-3 rounded-2xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-slate-800/90 dark:to-slate-800/60 border border-blue-200/80 dark:border-blue-900/50 transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-pulse"></i> Rekomendasi Pintar AI (NLP):
+                            </span>
+                            <span id="ddc-nlp-status" class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Klik chip untuk memilih</span>
+                        </div>
+                        <div id="ddc-chips-container" class="flex flex-wrap gap-1.5">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Penerbit <span class="text-rose-500">*</span></label>
+                            <input type="text" id="input-penerbit" required placeholder="Contoh: Bentang Pustaka"
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Kota Terbit <span class="text-rose-500">*</span></label>
+                            <input type="text" id="input-kota-terbit" required placeholder="Contoh: Yogyakarta"
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Tahun Terbit <span class="text-rose-500">*</span></label>
+                            <input type="number" inputmode="numeric" id="input-tahun-terbit" required min="1000" max="2200" placeholder="2024"
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1 flex items-center gap-1.5">
+                                <i class="fa-solid fa-tag text-emerald-500 text-xs"></i>
+                                <span>Harga Buku / Nilai Aset (Rp)</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">Rp</span>
+                                <input type="text" id="input-harga" placeholder="Contoh: 75.000"
+                                    class="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-mono font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1">Dokumentasi nilai perolehan buku & acuan ganti rugi.</p>
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Lokasi Rak Buku</label>
+                            <input type="text" id="input-lokasi-rak" placeholder="Contoh: Rak 03-A"
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Tipe Koleksi</label>
+                            <select id="input-tipe-koleksi" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Sirkulasi">Sirkulasi (Boleh Dipinjam)</option>
+                                <option value="Referensi">Referensi (Hanya Baca)</option>
+                                <option value="Koleksi Khusus">Koleksi Khusus / Tandon</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700">
+                        <button type="button" onclick="document.getElementById('modal-book-form').classList.add('hidden')"
+                            class="px-4 py-2 rounded-xl text-slate-500 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition">Batal</button>
+                        <button type="submit" id="btn-save-book"
+                            class="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-md shadow-blue-600/30 flex items-center gap-2">
+                            <i class="fa-solid fa-save"></i> Simpan Bibliografi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL 2: MANAJEMEN EKSEMPLAR FISIK & CETAK LABEL -->
+        <div id="modal-eksemplar" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 fade-in">
+                <!-- Header Modal Eksemplar -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                    <div>
+                        <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-0.5">
+                            Manajemen Fisik Buku
+                        </div>
+                        <h3 id="modal-eksemplar-book-title" class="font-extrabold text-base text-slate-900 dark:text-white truncate max-w-xl">Judul Buku</h3>
+                        <p id="modal-eksemplar-call" class="text-xs font-mono text-slate-400">CALL: -</p>
+                    </div>
+                    <button onclick="document.getElementById('modal-eksemplar').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                    <!-- Form Tambah Eksemplar Cepat -->
+                    <div class="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40">
+                        <h4 class="font-bold text-xs text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i> Tambah Eksemplar Baru
+                        </h4>
+                        <form id="form-add-eksemplar" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 text-xs">
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Jumlah (Qty)</label>
+                                <input type="number" inputmode="numeric" id="input-eks-qty" min="1" max="200" value="1" required
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-center">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1" id="label-eks-nomor-induk">Nomor Induk</label>
+                                <input type="text" id="input-eks-nomor-induk" required placeholder="00001"
+                                    class="w-full px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-mono font-bold">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="font-semibold text-slate-600 dark:text-slate-300" id="label-eks-barcode">Barcode</label>
+                                    <label class="inline-flex items-center gap-0.5 text-[10px] text-blue-600 dark:text-blue-400 font-semibold cursor-pointer" title="Otomatis samakan barcode dengan Nomor Induk Buku">
+                                        <input type="checkbox" id="check-barcode-same-as-nib" checked class="w-3 h-3 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                        <span>=NIB</span>
+                                    </label>
+                                </div>
+                                <input type="text" id="input-eks-barcode" required readonly
+                                    class="w-full px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-mono font-bold">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Sumber</label>
+                                <select id="input-eks-sumber" class="w-full px-2 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-[11px]">
+                                    <option value="BOS Reguler">BOS Reguler</option>
+                                    <option value="BOS Kinerja">BOS Kinerja</option>
+                                    <option value="Hibah / Sumbangan">Hibah / Sumbangan</option>
+                                    <option value="Komite Sekolah">Komite Sekolah</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Harga Satuan (Rp)</label>
+                                <input type="text" id="input-eks-harga" placeholder="0"
+                                    class="w-full px-2.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-mono font-bold text-right">
+                            </div>
+                            <div class="sm:col-span-2 flex items-end">
+                                <button type="submit" id="btn-submit-eksemplar" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-md shadow-blue-600/30 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                    <i class="fa-solid fa-plus"></i> <span id="btn-submit-eksemplar-text">Tambah Copy</span>
+                                </button>
+                            </div>
+                        </form>
+                        <div id="eks-qty-helper" class="mt-2.5 px-3.5 py-2 rounded-xl bg-blue-100/70 dark:bg-blue-900/30 border border-blue-200/70 dark:border-blue-800/40 text-blue-900 dark:text-blue-200 text-xs flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-info text-blue-500 shrink-0"></i>
+                                <span>Menambahkan <strong id="eks-qty-preview-count">1</strong> eksemplar (<span id="eks-qty-preview-range" class="font-mono font-semibold">Copy c.1</span>) &bull; NIB: <strong id="eks-nib-preview-range" class="font-mono font-bold text-indigo-700 dark:text-indigo-300">00001</strong></span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">NIB berurutan otomatis sesuai jumlah buku</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Eksemplar Terdaftar -->
+                    <div>
+                        <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                    Daftar Eksemplar Fisik (<span id="count-modal-eksemplar">0</span> Eksemplar)
+                                </h4>
+                                <span id="selected-eks-badge" class="hidden text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                                    <span id="selected-eks-count">0</span> Terpilih
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="window.printAllTwoInOneLabels()" id="btn-print-2in1-modal" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5" title="Cetak Stiker Gabungan (Call Number + Barcode)">
+                                    <i class="fa-solid fa-tags"></i> <span id="text-print-2in1">Cetak Stiker 2-in-1</span>
+                                </button>
+                                <button onclick="window.printAllSpineLabels()" id="btn-print-spine-modal" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-print"></i> <span id="text-print-spine">Stiker Punggung</span>
+                                </button>
+                                <button onclick="window.printAllBarcodes()" id="btn-print-barcode-modal" class="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-barcode"></i> <span id="text-print-barcode">Barcode Saja</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 dark:bg-slate-900/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <tr>
+                                        <th class="px-3 py-2.5 text-center w-10">
+                                             <input type="checkbox" id="check-all-eksemplar" title="Pilih Semua Eksemplar" class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                        </th>
+                                        <th class="px-3 py-2.5">Copy</th>
+                                        <th class="px-3 py-2.5">Nomor Induk</th>
+                                        <th class="px-3 py-2.5">Barcode</th>
+                                        <th class="px-3 py-2.5">Call Number Lengkap</th>
+                                        <th class="px-3 py-2.5 text-right">Harga</th>
+                                        <th class="px-3 py-2.5">Status / Kondisi</th>
+                                        <th class="px-3 py-2.5 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-eksemplar-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 3: CETAK LABEL MASSAL LINTAS JUDUL BUKU -->
+        <div id="modal-bulk-print" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 fade-in">
+                <!-- Header Modal -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold">
+                            <i class="fa-solid fa-tags"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base text-slate-800 dark:text-white">Cetak Label & Barcode Massal</h3>
+                            <p class="text-[11px] text-slate-400">Pilih format label dan kumpulan judul buku untuk mencetak seluruh stiker sekaligus</p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('modal-bulk-print').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Body Modal -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
+                    <!-- Step 1: Format Label -->
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-2">1. Pilih Format Stiker / Label</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="p-3.5 rounded-2xl border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 cursor-pointer flex flex-col justify-between transition hover:border-blue-600" id="label-opt-2in1">
+                                <div class="flex items-start justify-between">
+                                    <div class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                        <i class="fa-solid fa-tags text-blue-600"></i> Stiker 2-in-1
+                                    </div>
+                                    <input type="radio" name="bulk-print-format" value="2in1" checked class="text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                </div>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Gabungan Call Number + Barcode Standar (Grid 3 kolom).</p>
+                                <span class="text-[9px] font-bold text-blue-600 uppercase tracking-wider mt-2">Rekomendasi</span>
+                            </label>
+                            <label class="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer flex flex-col justify-between transition hover:border-blue-400" id="label-opt-spine">
+                                <div class="flex items-start justify-between">
+                                    <div class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                        <i class="fa-solid fa-print text-indigo-600"></i> Punggung Saja
+                                    </div>
+                                    <input type="radio" name="bulk-print-format" value="spine" class="text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                </div>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Stiker Punggung Buku Perpusnas (Grid 4 kolom).</p>
+                                <span class="text-[9px] font-semibold text-slate-400 mt-2">Label Punggung</span>
+                            </label>
+                            <label class="p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer flex flex-col justify-between transition hover:border-blue-400" id="label-opt-barcode">
+                                <div class="flex items-start justify-between">
+                                    <div class="font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                        <i class="fa-solid fa-barcode text-slate-600 dark:text-slate-300"></i> Barcode Saja
+                                    </div>
+                                    <input type="radio" name="bulk-print-format" value="barcode" class="text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                </div>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Barcode Card dengan Nomor Induk (Grid 3 kolom).</p>
+                                <span class="text-[9px] font-semibold text-slate-400 mt-2">Kartu Barcode</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Cakupan Judul Buku -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="font-bold text-slate-700 dark:text-slate-300">2. Pilih Judul Buku untuk Dicetak</label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="btn-select-all-bulk-books" class="text-[11px] font-semibold text-blue-600 hover:underline">Pilih Semua</button>
+                                <span class="text-slate-300 dark:text-slate-600">&bull;</span>
+                                <button type="button" id="btn-deselect-all-bulk-books" class="text-[11px] font-semibold text-slate-500 hover:underline">Batalkan Pilihan</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <input type="text" id="search-bulk-books" placeholder="Filter judul, DDC, atau pengarang..."
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <div class="max-h-56 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700 bg-slate-50/50 dark:bg-slate-900/30 p-1" id="bulk-books-list-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Ringkasan Estimasi -->
+                    <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                <i class="fa-solid fa-calculator"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-indigo-900 dark:text-indigo-200">
+                                    <span id="bulk-summary-books-count">0</span> Judul Buku Terpilih
+                                </p>
+                                <p class="text-[11px] text-indigo-600 dark:text-indigo-400">
+                                    Total <strong id="bulk-summary-copies-count">0</strong> lembar stiker eksemplar fisik akan dicetak
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Modal -->
+                <div class="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
+                    <button type="button" onclick="document.getElementById('modal-bulk-print').classList.add('hidden')"
+                        class="px-4 py-2 rounded-xl text-slate-500 font-semibold hover:bg-slate-200/60 dark:hover:bg-slate-700 transition">Batal</button>
+                    <button type="button" id="btn-execute-bulk-print"
+                        class="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shadow-md shadow-indigo-600/30 flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> <span>Mulai Cetak Massal</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <!-- PRINT CONTAINER UNTUK CETAK STIKER & BARCODE -->
+    <div id="print-area" class="hidden">
+        <div id="print-content" class="p-4 grid grid-cols-3 gap-4"></div>
+    </div>
+
+    <script src="author-standardizer.js?v=26.11.02.1"></script>
+    <script src="ddc-recommender.js?v=26.11.02.1"></script>
+    <script type="module" src="katalog.js?v=26.11.02.1"></script>
+</body>
+
+</html>

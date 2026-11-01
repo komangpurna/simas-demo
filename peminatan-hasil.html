@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Dashboard Peminatan - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/page-peminatan-hasil.css">
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <!-- SheetJS for XLSX export (xlsx-js-style for styling support) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <!-- html2canvas + jsPDF for PDF print -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modal-detail-siswa, #modal-detail-siswa * { visibility: visible; }
+            #modal-detail-siswa {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                box-shadow: none !important;
+            }
+            /* Hide buttons and footer during print */
+            #modal-detail-siswa button, 
+            #modal-detail-siswa .border-t,
+            #raw-responses-container button,
+            #modal-detail-siswa .fa-times { display: none !important; }
+            /* Force expand the table if hidden */
+            #raw-responses-container { display: block !important; }
+            
+            /* Specific print optimization */
+            .rounded-3xl, .rounded-2xl { border-radius: 0 !important; }
+            .shadow-lg, .shadow-xl { box-shadow: none !important; }
+        }
+    </style>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors font-outfit">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-20">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Dashboard Peminatan</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Kelola bank soal dan pantau hasil kuesioner penjurusan siswa.</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-800 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <a href="peminatan.html" target="_blank" class="px-4 py-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-all border-r border-slate-200 dark:border-slate-700">
+                    <i class="fa-solid fa-eye mr-1.5"></i> Lihat Kuesioner
+                </a>
+                <div class="flex">
+                    <button onclick="switchMainTab('results')" id="tab-results" class="px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white shadow-md transition-all">
+                        <i class="fa-solid fa-chart-line mr-2"></i> Hasil Siswa
+                    </button>
+                    <button onclick="switchMainTab('questions')" id="tab-questions" class="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                        <i class="fa-solid fa-list-check mr-2"></i> Kelola Soal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 1: HASIL SISWA -->
+        <div id="view-results" class="space-y-6">
+            <!-- Filter Bar -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <div class="relative">
+                        <select id="filter-ta" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer min-w-[150px]">
+                            <option value="" disabled selected>Pilih Tahun</option>
+                            <!-- Options filled via JS -->
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <select id="filter-kelas" class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none cursor-pointer min-w-[150px]">
+                            <option value="" disabled selected>Pilih Kelas</option>
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="search-siswa" placeholder="Cari Nama / NIS..." class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full md:w-64 text-slate-700 dark:text-white">
+                    </div>
+                    <!-- Toggle: Sudah / Belum Mengisi -->
+                    <div class="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <button onclick="window.setViewMode('sudah')" id="btn-view-sudah" class="px-4 py-2 text-[10px] font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 shadow-sm transition-all">Sudah Mengisi</button>
+                        <button onclick="window.setViewMode('belum')" id="btn-view-belum" class="px-4 py-2 text-[10px] font-bold rounded-lg text-slate-500 hover:text-indigo-600 transition-all">Belum Mengisi</button>
+                    </div>
+                </div>
+                <button onclick="window.exportToExcel()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Ekspor Excel
+                </button>
+            </div>
+
+            <!-- Statistics Summary Cards -->
+            <div id="stats-summary" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Card: Total Pengisi -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-500"></div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Pengisi</p>
+                            <p id="stat-total" class="text-3xl font-black text-slate-800 dark:text-white">0</p>
+                            <p id="stat-total-label" class="text-[10px] text-slate-400 mt-1">siswa telah mengisi</p>
+                        </div>
+                        <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex items-center justify-center text-indigo-500">
+                            <i class="fa-solid fa-users text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Distribusi Rekomendasi (Mini Pie) -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Distribusi Rekomendasi</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-20 flex-shrink-0">
+                            <canvas id="chart-distribusi-mini"></canvas>
+                        </div>
+                        <div id="stat-distribusi-labels" class="flex-1 space-y-1.5 text-xs">
+                            <!-- Filled via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Rata-rata Skor -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Rata-rata Skor Jurusan</p>
+                    <div id="stat-avg-scores" class="space-y-2.5">
+                        <!-- Filled via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Distribusi Per Kelas -->
+            <div id="chart-distribusi-kelas-wrapper" class="hidden bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-4">Distribusi Rekomendasi Per Kelas</p>
+                <div class="relative" style="height: 220px">
+                    <canvas id="chart-distribusi-kelas"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabel Belum Mengisi -->
+            <div id="view-belum-mengisi" class="hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="p-4 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center text-amber-600">
+                            <i class="fa-solid fa-user-clock text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Siswa Belum Mengisi Kuesioner</p>
+                            <p id="belum-count-label" class="text-[10px] text-slate-400">0 siswa</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b dark:border-slate-700">
+                            <tr>
+                                <th class="px-6 py-3">No</th>
+                                <th class="px-6 py-3">Nama Siswa</th>
+                                <th class="px-6 py-3">NIS</th>
+                                <th class="px-6 py-3">NISN</th>
+                                <th class="px-6 py-3">Tgl Lahir</th>
+                                <th class="px-6 py-3">Kelas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="belum-mengisi-body" class="divide-y dark:divide-slate-700">
+                            <!-- Filled via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="belum-empty" class="hidden py-12 text-center">
+                    <i class="fa-solid fa-circle-check text-3xl text-emerald-400 mb-3"></i>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">Semua siswa sudah mengisi kuesioner! 🎉</p>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div id="table-sudah-container" class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b dark:border-slate-700">
+                            <tr>
+                                <th class="px-6 py-4">Siswa</th>
+                                <th class="px-6 py-4">Rekomendasi</th>
+                                <th class="px-6 py-4">IPA</th>
+                                <th class="px-6 py-4">IPS</th>
+                                <th class="px-6 py-4">Bahasa</th>
+                                <th class="px-6 py-4">Waktu Submit</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-body" class="divide-y dark:divide-slate-700">
+                            <!-- Data filled via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="results-empty" class="hidden py-20 text-center">
+                    <div class="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                        <i class="fa-solid fa-inbox text-3xl"></i>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">Belum ada siswa yang mengirim kuesioner.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: KELOLA SOAL (MIGRATED FROM BK) -->
+        <div id="view-questions" class="hidden space-y-6">
+             <div class="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
+                <button onclick="switchQuestionTab('list')" id="tab-q-list" class="px-5 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all">Daftar Soal</button>
+                <button onclick="switchQuestionTab('import')" id="tab-q-import" class="px-5 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-all">Import dari Excel</button>
+                <button onclick="switchQuestionTab('settings')" id="tab-q-settings" class="px-5 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-all">Pengaturan</button>
+            </div>
+
+            <!-- Tab Daftar Soal -->
+            <div id="view-q-list" class="space-y-4">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/30">
+                        <div class="flex items-center gap-6">
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Total: <span id="pem-total-soal" class="font-bold">0</span> butir soal</p>
+                        </div>
+                        <button onclick="window.savePeminatanChanges()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95">
+                            <i class="fa-solid fa-save mr-1.5"></i> Simpan Perubahan Soal
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold uppercase border-b dark:border-slate-700">
+                                <tr>
+                                    <th class="px-4 py-3 w-20">Kode</th>
+                                    <th class="px-4 py-3">Pernyataan Soal</th>
+                                    <th class="px-4 py-3 w-24">Aspek</th>
+                                    <th class="px-4 py-3 w-24">Jurusan</th>
+                                    <th class="px-4 py-3 w-24">Sifat</th>
+                                    <th class="px-4 py-3 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pem-soal-body" class="divide-y dark:divide-slate-700">
+                                <!-- Data filled via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Pengaturan (Baru) -->
+            <div id="view-q-settings" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Card: Status & Layout -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border dark:border-slate-700">
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-indigo-500"></i> Akses & Tampilan
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <!-- Status Akses -->
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border dark:border-slate-700">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Status Akses Siswa</p>
+                                    <p class="text-[10px] text-slate-500">Aktifkan untuk membuka kuesioner bagi siswa</p>
+                                </div>
+                                <button onclick="window.toggleQuestionnaireStatus()" id="btn-status-toggle" class="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold transition-all shadow-sm border bg-white dark:bg-slate-800">
+                                    <i id="status-icon" class="fa-solid fa-circle"></i>
+                                    <span id="status-text">Memuat...</span>
+                                </button>
+                            </div>
+
+                            <!-- Layout Mode -->
+                            <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border dark:border-slate-700">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Mode Layout</p>
+                                    <p class="text-[10px] text-slate-500">Pilih tampilan kuesioner di layar siswa</p>
+                                </div>
+                                <div class="flex p-1 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700">
+                                    <button onclick="window.setLayoutMode('classic')" id="btn-layout-classic" class="px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all">Classic</button>
+                                    <button onclick="window.setLayoutMode('focus')" id="btn-layout-focus" class="px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all">Focus</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Bobot Skor -->
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border dark:border-slate-700">
+                        <h3 class="text-sm font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-weight-hanging text-indigo-500"></i> Pembobotan Skor Aspek
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Kemampuan (Ability)</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="weight-kemampuan" oninput="window.updateWeightTotal()" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white" value="45" min="0" max="100">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Minat (Interest)</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="weight-minat" oninput="window.updateWeightTotal()" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white" value="30" min="0" max="100">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Prestasi</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="weight-prestasi" oninput="window.updateWeightTotal()" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white" value="10" min="0" max="100">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cita-cita / Karir</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="weight-cita-cita" oninput="window.updateWeightTotal()" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white" value="5" min="0" max="100">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5 col-span-2">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gaya Belajar</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="weight-gaya-belajar" oninput="window.updateWeightTotal()" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white" value="10" min="0" max="100">
+                                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info Lingkungan -->
+                            <div class="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/50">
+                                <div class="flex items-start gap-2">
+                                    <i class="fa-solid fa-info-circle text-amber-500 mt-0.5 text-xs"></i>
+                                    <p class="text-[10px] text-amber-700 dark:text-amber-300 leading-relaxed">
+                                        <span class="font-bold">Aspek Lingkungan</span> tidak masuk pembobotan karena bersifat data pendukung (kontekstual). Skor Lingkungan tetap ditampilkan di radar chart detail siswa sebagai informasi tambahan.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t dark:border-slate-700">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-bold text-slate-500">Total Bobot:</span>
+                                    <span id="weight-total-display" class="text-xs font-black text-indigo-600">100%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-900 h-2 rounded-full overflow-hidden">
+                                    <div id="weight-total-bar" class="bg-indigo-500 h-full w-full transition-all duration-500"></div>
+                                </div>
+                                <p id="weight-error-msg" class="text-[10px] text-red-500 font-bold mt-2 hidden italic"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Total bobot harus tepat 100% agar perhitungan valid.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button onclick="window.savePeminatanSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-emerald-200 dark:shadow-none transition-all active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> Simpan Seluruh Pengaturan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+            <!-- Tab Import Excel -->
+            <div id="view-q-import" class="hidden space-y-4 animate-fade-in">
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/50">
+                    <h3 class="text-sm font-bold text-indigo-800 dark:text-indigo-400 mb-2 flex items-center gap-2"><i class="fa-solid fa-info-circle"></i> Petunjuk Import Massal</h3>
+                    <ul class="text-xs text-indigo-700 dark:text-indigo-300 space-y-1.5 list-disc ml-5">
+                        <li>Siapkan data di Excel dengan urutan kolom: <span class="font-black">Kode | Pernyataan | Aspek | Target Jurusan | Sifat</span>.</li>
+                        <li><b>Kode</b>: Contoh A-01, M-02, dll.</li>
+                        <li><b>Aspek</b>: Kemampuan, Minat, Gaya Belajar, atau Lingkungan.</li>
+                        <li><b>Sifat</b>: Wajib berisi kata <span class="text-emerald-600 dark:text-emerald-400">Positif</span> atau <span class="text-red-600 dark:text-red-400">Negatif</span>.</li>
+                        <li>Copy baris data (tanpa header) dan paste ke kotak di bawah.</li>
+                    </ul>
+                </div>
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Area Paste Data Excel</label>
+                    <textarea id="pem-import-area" rows="12" class="w-full p-4 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 text-xs font-mono focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all" placeholder="Contoh format:
+A-01[Tab]Saya menyukai tantangan baru[Tab]Minat[Tab]IPA[Tab]Positif
+..."></textarea>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="window.processPeminatanImport()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3.5 rounded-2xl font-bold shadow-xl shadow-indigo-200 dark:shadow-none transition-all active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Proses & Tinjau Data Soal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DETAIL HASIL (Chart Visualization) -->
+    <div id="modal-detail-siswa" class="hidden fixed inset-0 z-[100] bg-slate-900/60 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all animate-zoom-in">
+            <!-- Modal Header -->
+            <div class="p-5 border-b dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/80">
+                <div class="flex items-center gap-4 flex-1">
+                    <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-indigo-200 dark:shadow-none">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 flex-1">
+                        <div>
+                            <h3 id="detail-nama" class="font-black text-slate-800 dark:text-white text-lg leading-tight">...</h3>
+                            <p id="detail-nis-kelas" class="text-xs text-slate-500 dark:text-slate-400">NIS: ... | Kelas: ...</p>
+                        </div>
+                        <!-- REKOMENDASI BADGE (Moved here) -->
+                        <div id="detail-rec-badge" class="hidden px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest border shadow-sm">
+                            <span id="detail-rekomendasi">...</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-detail-siswa').classList.add('hidden')" class="w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 transition-colors">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+
+            <div class="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-8">
+                <!-- Top Section: Chart & Quick Scores -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                    <!-- Radar Chart -->
+                    <div class="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 flex flex-col h-full">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 text-center">Analisis Profil Psikogram (Aspek)</p>
+                        <div class="flex-1 relative min-h-[300px]">
+                            <canvas id="chart-radar-aspek"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Major Scores -->
+                    <div class="flex flex-col h-full">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Kecenderungan Minat & Kemampuan</p>
+                        <div id="major-comparison-list" class="flex-1 space-y-3">
+                            <!-- Filled via JS -->
+                        </div>
+                        
+                        <!-- Recommendation box moved to header -->
+                    </div>
+                </div>
+
+                <!-- Response Table Section (Optional/Detail) -->
+                <div class="space-y-4 print:hidden">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white">Breakdown Jawaban Siswa</h4>
+                        <button onclick="toggleRawResponses()" class="text-[10px] font-bold text-indigo-600 hover:underline">Lihat Semua Jawaban</button>
+                    </div>
+                    <div id="raw-responses-container" class="hidden overflow-hidden rounded-2xl border dark:border-slate-800">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold uppercase border-b dark:border-slate-800">
+                                <tr>
+                                    <th class="px-4 py-2">Pernyataan Soal</th>
+                                    <th class="px-4 py-2 text-center">Sifat</th>
+                                    <th class="px-4 py-2 text-center">Jawab</th>
+                                    <th class="px-4 py-2 text-right">Skor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detail-responses-body" class="divide-y dark:divide-slate-800">
+                                <!-- Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-5 border-t dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/80 flex justify-between items-center">
+                <button onclick="window.resetAttempt()" class="text-[10px] font-bold text-red-500 dark:text-rose-400 hover:text-red-700 dark:hover:text-rose-300 transition-all flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-rose-500/10">
+                    <i class="fa-solid fa-trash-can text-xs"></i> Hapus & Reset Jawaban Siswa
+                </button>
+                <div class="flex gap-3">
+                    <button onclick="document.getElementById('modal-detail-siswa').classList.add('hidden')" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">Tutup</button>
+                    <button onclick="window.printResult()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> Cetak Hasil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRM PREMIUM (Menggantikan confirm() browser) -->
+    <div id="modal-generic-confirm" class="hidden fixed inset-0 z-[200] bg-slate-900/60 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 text-center transform transition-all animate-zoom-in">
+            <div id="confirm-icon-bg" class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 dark:text-amber-400">
+                <i id="confirm-icon" class="fa-solid fa-triangle-exclamation text-3xl"></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-black text-slate-800 dark:text-white mb-2">Konfirmasi</h3>
+            <p id="confirm-msg" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-8"></p>
+            <div class="flex gap-3 justify-center">
+                <button id="btn-confirm-cancel" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all active:scale-95">
+                    Batal
+                </button>
+                <button id="btn-confirm-ok" class="px-6 py-2.5 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 dark:shadow-none transition-all active:scale-95">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-peminatan-hasil.js"></script>
+    <script>
+        function switchMainTab(tab) {
+            const tabs = ['results', 'questions'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (t === tab) {
+                    btn.className = "px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white shadow-md transition-all";
+                    view.classList.remove('hidden');
+                } else {
+                    btn.className = "px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all";
+                    view.classList.add('hidden');
+                }
+            });
+        }
+
+        function switchQuestionTab(tab) {
+            const tabs = ['list', 'import', 'settings'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-q-${t}`);
+                const view = document.getElementById(`view-q-${t}`);
+                if (t === tab) {
+                    btn.className = "px-5 py-2 text-xs font-bold rounded-lg bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all";
+                    view.classList.remove('hidden');
+                } else {
+                    btn.className = "px-5 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 transition-all";
+                    view.classList.add('hidden');
+                }
+            });
+        }
+
+        function toggleRawResponses() {
+            const container = document.getElementById('raw-responses-container');
+            container.classList.toggle('hidden');
+        }
+    </script>
+</body>
+
+</html>

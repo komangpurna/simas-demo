@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Sirkulasi Perpustakaan - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-20">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <div>
+                <span class="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-1">
+                    <i class="fa-solid fa-book-bookmark"></i> Perpustakaan Widya Shakti
+                </span>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Sirkulasi & Peminjaman Buku</h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Pencatatan peminjaman, pengembalian, perpanjangan, dan denda buku secara real-time.</p>
+            </div>
+            <!-- Secondary Navigation Actions -->
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="opac.html" class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition-all shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-blue-500"></i>
+                    <span>Katalog OPAC</span>
+                </a>
+                <a href="katalog.html" class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition-all shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-500"></i>
+                    <span>Kelola Katalog Buku</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats Cards (6 Kartu Ringkas & Menekankan Status Kritis) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+            <!-- 1. Total Judul -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Judul</span>
+                    <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                </div>
+                <div id="stat-total-judul" class="text-2xl font-black text-slate-800 dark:text-white leading-tight">0</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Judul Terdaftar</div>
+            </div>
+
+            <!-- 2. Total Fisik -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Fisik</span>
+                    <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-copy"></i>
+                    </div>
+                </div>
+                <div id="stat-total-eksemplar" class="text-2xl font-black text-slate-800 dark:text-white leading-tight">0</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Eksemplar Aset</div>
+            </div>
+
+            <!-- 3. Sedang Dipinjam (Emphasis) -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/20 dark:bg-amber-950/10 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-amber-600 dark:text-amber-400">Dipinjam</span>
+                    <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-hand-holding-hand"></i>
+                    </div>
+                </div>
+                <div id="stat-sedang-dipinjam" class="text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight">0</div>
+                <div class="text-[11px] text-amber-700/70 dark:text-amber-400/70 mt-0.5 font-medium">Sedang Beredar</div>
+            </div>
+
+            <!-- 4. Terlambat (Emphasis) -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/20 dark:bg-rose-950/10 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-rose-600 dark:text-rose-400">Terlambat</span>
+                    <div class="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                </div>
+                <div id="stat-terlambat" class="text-2xl font-black text-rose-600 dark:text-rose-400 leading-tight">0</div>
+                <div class="text-[11px] text-rose-700/70 dark:text-rose-400/70 mt-0.5 font-medium">Lewat Jatuh Tempo</div>
+            </div>
+
+            <!-- 5. Tersedia (Emphasis) -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Tersedia</span>
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-box-archive"></i>
+                    </div>
+                </div>
+                <div id="stat-tersedia" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">0</div>
+                <div class="text-[11px] text-emerald-700/70 dark:text-emerald-400/70 mt-0.5 font-medium">Siap Dipinjam</div>
+            </div>
+
+            <!-- 6. Pengunjung -->
+            <div class="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm select-none">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-semibold text-purple-600 dark:text-purple-400">Pengunjung</span>
+                    <div class="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <div id="stat-pengunjung-today" class="text-2xl font-black text-purple-600 dark:text-purple-400 leading-tight">0</div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Hari Ini</div>
+            </div>
+        </div>
+
+        <!-- FAST CIRCULATION ACTION CARDS (PINJAM / KEMBALI) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
+            
+            <!-- PANEL 1: FAST LOAN / FORM PEMINJAMAN (7 cols) -->
+            <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl p-5 md:p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                <div>
+                    <!-- Header Card -->
+                    <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg shrink-0">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-bold text-base text-slate-800 dark:text-white">Peminjaman Buku Baru</h2>
+                                <p class="text-xs text-slate-400">Scan barcode atau ketik identitas peminjam & nomor buku</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-bold text-[11px] shrink-0">
+                            3 Langkah Cepat
+                        </span>
+                    </div>
+
+                    <form id="form-peminjaman" class="space-y-4">
+                        <!-- Step 1: Peminjam (Stacking Context z-30) -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/70 space-y-3 relative z-30">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">1</span>
+                                    <span>Identitas Peminjam</span>
+                                </span>
+                                <!-- Segmented Radio Control -->
+                                <div class="inline-flex p-1 rounded-xl bg-slate-200/70 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold self-start sm:self-auto">
+                                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-blue-600 dark:has-[:checked]:text-blue-300 has-[:checked]:shadow-sm text-slate-600 dark:text-slate-400">
+                                        <input type="radio" name="peminjam_type" value="siswa" checked class="sr-only">
+                                        <i class="fa-solid fa-graduation-cap text-xs"></i>
+                                        <span>Siswa</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-blue-600 dark:has-[:checked]:text-blue-300 has-[:checked]:shadow-sm text-slate-600 dark:text-slate-400">
+                                        <input type="radio" name="peminjam_type" value="guru" class="sr-only">
+                                        <i class="fa-solid fa-chalkboard-user text-xs"></i>
+                                        <span>Guru / Staf</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                                <div class="md:col-span-8 relative z-40">
+                                    <label for="input-peminjam-search" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                        Nama / NIS / NIP Peminjam <span class="text-rose-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" id="input-peminjam-search" required
+                                            class="w-full px-3.5 h-11 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-medium focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition"
+                                            placeholder="Ketik NIS, NIP, atau nama peminjam..." autocomplete="off">
+                                    </div>
+                                    <div id="peminjam-dropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-60 overflow-y-auto z-50 divide-y divide-slate-100 dark:divide-slate-700 ring-1 ring-black/5"></div>
+                                </div>
+                                <div class="md:col-span-4">
+                                    <label for="input-peminjam-kelas" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                        Kelas / Jabatan
+                                    </label>
+                                    <input type="text" id="input-peminjam-kelas" readonly
+                                        class="w-full px-3.5 h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 text-sm font-bold truncate"
+                                        placeholder="Otomatis terisi">
+                                </div>
+                            </div>
+                            <input type="hidden" id="input-peminjam-id">
+                            <input type="hidden" id="input-peminjam-nama">
+
+                            <!-- Info batas & buku aktif peminjam -->
+                            <div id="peminjam-status-banner" class="hidden text-xs p-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center justify-between border border-blue-200/60 dark:border-blue-800/60">
+                                <span id="peminjam-status-text">Memeriksa kuota pinjam...</span>
+                                <span id="peminjam-active-loans" class="font-bold shrink-0 ml-2">0 Buku Aktif</span>
+                            </div>
+
+                            <!-- Cardlet Verifikasi Visual Identitas Peminjam (Pasfoto Guru / Siswa) -->
+                            <div id="peminjam-photo-cardlet" class="hidden p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-blue-200/80 dark:border-blue-800/60 shadow-xs flex items-center gap-3.5 transition-all">
+                                <div id="peminjam-photo-wrapper" class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden shrink-0 shadow-sm border border-slate-200/80 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 flex items-center justify-center ring-2 ring-blue-500/20">
+                                    <img id="peminjam-photo-img" src="" alt="Foto Peminjam" class="w-full h-full object-cover hidden"
+                                        onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('peminjam-photo-fallback')?.classList.remove('hidden');">
+                                    <div id="peminjam-photo-fallback" class="w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center select-none">
+                                        <span id="peminjam-photo-initials">GP</span>
+                                    </div>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <h4 id="peminjam-cardlet-name" class="font-bold text-sm text-slate-900 dark:text-white truncate">Nama Peminjam</h4>
+                                        <span id="peminjam-cardlet-badge" class="px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold text-[10px]">Guru</span>
+                                    </div>
+                                    <p id="peminjam-cardlet-id" class="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5 truncate">NIP. -</p>
+                                    <p id="peminjam-cardlet-sub" class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">Jabatan / Mapel</p>
+                                </div>
+                                <button type="button" id="btn-reset-borrower-cardlet" onclick="window.resetBorrowerSelection()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-700 dark:hover:bg-rose-950/40 text-slate-400 dark:text-slate-300 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-600 transition" title="Ganti Peminjam">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Buku / Eksemplar (Stacking Context z-10) -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/70 space-y-3 relative z-10">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">2</span>
+                                    <span>Barcode / Nomor Induk Buku</span>
+                                </span>
+                                <span class="text-[11px] text-slate-400 font-medium">
+                                    <i class="fa-solid fa-keyboard mr-1"></i>Tekan Enter setelah scan
+                                </span>
+                            </div>
+
+                            <div>
+                                <label for="input-book-barcode" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                    Kode Barcode / Nomor Induk Eksemplar <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                                    <input type="text" id="input-book-barcode" required
+                                        style="padding-left: 48px !important;"
+                                        class="w-full pr-3.5 h-11 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-mono font-bold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition tracking-wide"
+                                        placeholder="Scan barcode fisik atau ketik nomor induk..." autocomplete="off">
+                                </div>
+                            </div>
+
+                            <!-- Info Preview Buku Terpilih -->
+                            <div id="book-preview-card" class="hidden p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center gap-3.5 shadow-sm">
+                                <div class="w-12 h-14 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center text-xl shrink-0 border border-blue-100 dark:border-blue-800/40">
+                                    <i class="fa-solid fa-book"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 id="preview-book-title" class="font-bold text-sm text-slate-800 dark:text-white truncate">Judul Buku</h4>
+                                    <p id="preview-book-author" class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">Pengarang</p>
+                                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <span id="preview-book-call" class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-[11px] font-mono font-semibold">CALL</span>
+                                        <span id="preview-book-copy" class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-mono font-semibold">Copy 1</span>
+                                        <span id="preview-book-rak" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Rak: -</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="selected-eksemplar-id">
+                            <input type="hidden" id="selected-buku-id">
+                        </div>
+
+                        <!-- Step 3: Durasi & Jatuh Tempo (Fleksibel: Pilih Preset / Ketik Durasi / Pilih Kalender) -->
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/70 space-y-3 relative z-0">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">3</span>
+                                    <span>Durasi & Tanggal Jatuh Tempo</span>
+                                </span>
+                                <span id="badge-durasi-info" class="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-lg border border-blue-100 dark:border-blue-800/50">7 Hari Pinjam</span>
+                            </div>
+
+                            <!-- Pilihan Cepat Preset Durasi -->
+                            <div>
+                                <span class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Pilih Cepat Durasi:</span>
+                                <div class="grid grid-cols-4 gap-2" id="durasi-preset-container">
+                                    <button type="button" data-days="3" class="btn-durasi-preset py-1.5 px-2 rounded-xl text-xs font-bold border transition text-center bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600">3 Hari</button>
+                                    <button type="button" data-days="7" class="btn-durasi-preset py-1.5 px-2 rounded-xl text-xs font-bold border transition text-center bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-600/30">7 Hari</button>
+                                    <button type="button" data-days="14" class="btn-durasi-preset py-1.5 px-2 rounded-xl text-xs font-bold border transition text-center bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600">14 Hari</button>
+                                    <button type="button" data-days="30" class="btn-durasi-preset py-1.5 px-2 rounded-xl text-xs font-bold border transition text-center bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600">30 Hari</button>
+                                </div>
+                            </div>
+
+                            <!-- Baris Input Sinkronisasi: Tanggal Pinjam, Ketik Durasi (Hari), dan Tanggal Jatuh Tempo -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+                                <!-- Tanggal Pinjam -->
+                                <div class="sm:col-span-4">
+                                    <label for="input-tgl-pinjam" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Tanggal Pinjam</label>
+                                    <div class="relative">
+                                        <input type="text" id="input-tgl-pinjam" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off"
+                                            style="padding-right: 36px !important; padding-left: 12px !important;"
+                                            class="w-full h-11 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                                        <input type="date" id="input-tgl-pinjam-picker"
+                                            style="position:absolute; right:4px; top:50%; transform:translateY(-50%); width:28px; height:28px; opacity:0; cursor:pointer; z-index:10;"
+                                            tabindex="-1" aria-label="Pilih tanggal pinjam dari kalender">
+                                        <i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Ketik Durasi Hari -->
+                                <div class="sm:col-span-3">
+                                    <label for="input-durasi-hari" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Ketik Durasi</label>
+                                    <div class="relative">
+                                        <input type="number" inputmode="numeric" id="input-durasi-hari" min="1" max="365" value="7"
+                                            style="padding-left: 12px !important; padding-right: 48px !important; -moz-appearance: textfield; appearance: textfield;"
+                                            class="w-full h-11 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                                        <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 pointer-events-none select-none">Hari</span>
+                                    </div>
+                                </div>
+
+                                <!-- Tanggal Jatuh Tempo -->
+                                <div class="sm:col-span-5">
+                                    <label for="input-tgl-jatuh-tempo" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Jatuh Tempo Pengembalian</label>
+                                    <div class="relative">
+                                        <input type="text" id="input-tgl-jatuh-tempo" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off"
+                                            style="padding-right: 36px !important; padding-left: 12px !important;"
+                                            class="w-full h-11 rounded-xl border border-blue-400 dark:border-blue-600 bg-blue-50/40 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                                        <input type="date" id="input-tgl-jatuh-tempo-picker"
+                                            style="position:absolute; right:4px; top:50%; transform:translateY(-50%); width:28px; height:28px; opacity:0; cursor:pointer; z-index:10;"
+                                            tabindex="-1" aria-label="Pilih tanggal jatuh tempo dari kalender">
+                                        <i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 text-sm pointer-events-none"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Submit Utama -->
+                        <button type="submit" id="btn-submit-pinjam" class="w-full h-11 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 active:scale-[0.99]">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Proses Peminjaman Buku</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- PANEL 2: MODUL PENGEMBALIAN (5 cols) -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl p-5 md:p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                <div>
+                    <!-- Header & Mode Tabs -->
+                    <div class="flex flex-col gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shrink-0">
+                                    <i class="fa-solid fa-arrow-down-to-bracket"></i>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-base text-slate-800 dark:text-white">Pengembalian Buku</h2>
+                                    <p class="text-xs text-slate-400">Verifikasi peminjam & status buku</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-300 font-bold text-[11px] shrink-0">
+                                Anti-Tertukar
+                            </span>
+                        </div>
+
+                        <!-- Mode Switch Buttons -->
+                        <div class="flex rounded-xl bg-slate-100 dark:bg-slate-900/70 p-1 gap-1 text-xs font-semibold">
+                            <button type="button" id="btn-return-mode-borrower" onclick="window.switchReturnMode('borrower')"
+                                class="flex-1 py-2 px-3 rounded-lg font-bold transition text-center bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-slate-600/60 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-user-check"></i>
+                                <span>Cari Peminjam</span>
+                            </button>
+                            <button type="button" id="btn-return-mode-barcode" onclick="window.switchReturnMode('barcode')"
+                                class="flex-1 py-2 px-3 rounded-lg font-semibold transition text-center text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-barcode"></i>
+                                <span>Scan Barcode Cepat</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MODE 1: PENGEMBALIAN BY PEMINJAM (VERIFIKASI SISWA & ANTI-TERTUKAR) -->
+                    <div id="return-panel-borrower" class="space-y-3.5">
+                        <!-- Tipe Peminjam (Segmented Radio) -->
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Pilih Kategori:</label>
+                            <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                                <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-emerald-600 dark:has-[:checked]:text-emerald-400 has-[:checked]:shadow-sm text-slate-600 dark:text-slate-400">
+                                    <input type="radio" name="return_peminjam_type" value="siswa" checked class="sr-only">
+                                    <span>Siswa</span>
+                                </label>
+                                <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-emerald-600 dark:has-[:checked]:text-emerald-400 has-[:checked]:shadow-sm text-slate-600 dark:text-slate-400">
+                                    <input type="radio" name="return_peminjam_type" value="guru" class="sr-only">
+                                    <span>Guru / Staf</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Searchable Input Siswa / Guru -->
+                        <div class="relative">
+                            <label for="input-return-peminjam-search" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                Cari Peminjam
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="input-return-peminjam-search" autocomplete="off"
+                                    placeholder="Ketik Nama, NIS, atau Kelas peminjam..."
+                                    class="w-full px-3.5 h-11 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800 dark:text-white transition">
+                            </div>
+                            <div id="return-peminjam-dropdown" class="hidden absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-30 divide-y divide-slate-100 dark:divide-slate-700"></div>
+                        </div>
+
+                        <!-- Guidance Empty State ketika belum ada peminjam yang dicari/dipilih -->
+                        <div id="return-borrower-hint" class="p-6 text-center text-slate-400 dark:text-slate-500 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-2.5 text-base">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Pilih Peminjam Terlebih Dahulu</p>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 max-w-xs mx-auto">Ketik nama atau NIS peminjam di atas untuk memeriksa daftar buku yang sedang dipinjam.</p>
+                        </div>
+
+                        <!-- Info Peminjam & Daftar Buku Aktif yang Dipinjam -->
+                        <div id="return-borrower-active-loans-box" class="hidden space-y-3">
+                            <div class="flex items-center justify-between text-xs bg-emerald-50/70 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div id="return-borrower-photo-thumb" class="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-2xs border border-emerald-200 dark:border-emerald-800 bg-white dark:bg-slate-800 flex items-center justify-center">
+                                        <img id="return-borrower-img" src="" alt="Foto" class="w-full h-full object-cover hidden"
+                                            onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('return-borrower-fallback')?.classList.remove('hidden');">
+                                        <div id="return-borrower-fallback" class="w-full h-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white font-extrabold text-xs flex items-center justify-center select-none">
+                                            <span id="return-borrower-initials">P</span>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <span class="font-bold text-slate-800 dark:text-white text-sm block truncate" id="return-selected-borrower-name">-</span>
+                                        <span class="text-[11px] text-slate-500 font-mono block truncate" id="return-selected-borrower-sub">-</span>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="window.resetReturnBorrowerSelection()" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-rose-500 hover:text-rose-600 font-semibold text-xs border border-rose-200 dark:border-rose-800/60 shadow-sm transition shrink-0 ml-2">
+                                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Ganti
+                                </button>
+                            </div>
+
+                            <!-- Scan Barcode Verifikasi Anti-Tertukar -->
+                            <div>
+                                <label for="input-return-verify-barcode" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                    Verifikasi Barcode Fisik (Anti-Tertukar)
+                                </label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 text-sm pointer-events-none"></i>
+                                    <input type="text" id="input-return-verify-barcode"
+                                        style="padding-left: 48px !important;"
+                                        placeholder="Scan barcode buku yang disodorkan..."
+                                        class="w-full pr-3.5 h-11 rounded-xl border-2 border-emerald-500/50 bg-emerald-50/20 text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white transition" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <!-- List Pinjaman Buku Aktif Siswa Ini -->
+                            <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="return-borrower-loans-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODE 2: PENGEMBALIAN SCAN BARCODE CEPAT -->
+                    <div id="return-panel-barcode" class="hidden space-y-3.5">
+                        <div>
+                            <label for="input-return-barcode" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
+                                Scan Barcode Eksemplar
+                            </label>
+                            <div class="relative">
+                                <i class="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 text-sm pointer-events-none"></i>
+                                <input type="text" id="input-return-barcode"
+                                    style="padding-left: 48px !important;"
+                                    class="w-full pr-3.5 h-11 rounded-xl border-2 border-emerald-500/50 dark:border-emerald-500/40 bg-emerald-50/30 dark:bg-emerald-950/20 text-slate-800 dark:text-white text-sm font-mono font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                                    placeholder="Scan barcode buku di sini..." autocomplete="off">
+                            </div>
+                        </div>
+                        <div id="return-scan-hint" class="p-6 text-center text-slate-400 dark:text-slate-500 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                            <i class="fa-solid fa-qrcode text-3xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                            <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Siap Scan Barcode Cepat</p>
+                            <p class="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">Gunakan barcode scanner genggam atau ketik nomor barcode untuk memproses pengembalian instan.</p>
+                        </div>
+                    </div>
+
+                    <!-- Result Box Pengembalian (Digunakan oleh kedua mode) -->
+                    <div id="return-info-box" class="hidden p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 space-y-3 mt-3">
+                        <!-- Identitas Peminjam -->
+                        <div class="grid grid-cols-2 gap-2 text-xs pb-2 border-b border-slate-200 dark:border-slate-700/60">
+                            <div>
+                                <span class="text-slate-400 text-[11px] block">Peminjam</span>
+                                <span id="return-borrower-name" class="font-bold text-slate-800 dark:text-slate-200 block truncate">-</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 text-[11px] block">Tgl Pinjam</span>
+                                <span id="return-borrow-date" class="font-medium text-slate-700 dark:text-slate-300 block">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Buku & Barcode -->
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Judul Buku</span>
+                            <div id="return-book-title" class="font-bold text-sm text-slate-800 dark:text-white truncate">Judul Buku Terpilih</div>
+                            <div class="text-[11px] text-slate-500 font-mono mt-0.5" id="return-book-barcode-display">-</div>
+                        </div>
+
+                        <!-- Status Denda & Terlambat -->
+                        <div id="return-denda-container" class="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs">
+                            <div class="flex items-center justify-between font-bold">
+                                <span>Keterlambatan:</span>
+                                <span id="return-late-days">0 Hari</span>
+                            </div>
+                            <div class="flex items-center justify-between font-extrabold text-sm mt-1">
+                                <span>Total Denda:</span>
+                                <span id="return-fine-amount">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Opsi Kondisi Buku -->
+                        <div>
+                            <label for="return-condition" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Kondisi Fisik Pengembalian</label>
+                            <select id="return-condition" style="height: 40px !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 14px !important; padding-right: 34px !important; font-size: 12px !important; line-height: 38px !important;" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                                <option value="baik">Baik (Lengkap & Mulus)</option>
+                                <option value="rusak_ringan">Rusak Ringan</option>
+                                <option value="rusak_berat">Rusak Berat</option>
+                                <option value="hilang">Buku Hilang</option>
+                            </select>
+                        </div>
+
+                        <!-- Tindakan: Proses Pengembalian (Utama) & Perpanjang (Sekunder) -->
+                        <div class="flex gap-2 pt-1">
+                            <button id="btn-perpanjang" type="button" class="flex-1 h-11 px-3 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>Perpanjang</span>
+                            </button>
+                            <button id="btn-confirm-return" type="button" class="flex-1 h-11 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 active:scale-[0.99]">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Proses Pengembalian</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Tarif Denda -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-400 mt-4">
+                    <span>Tarif Denda: <b id="display-tarif-denda" class="text-slate-700 dark:text-slate-300">Rp 1.000 / hari</b></span>
+                    <a href="pengaturan.html" class="text-blue-500 hover:underline font-medium">Ubah Tarif</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL SIRKULASI AKTIF & RIWAYAT -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+            <!-- Header Table & Filters Toolbar -->
+            <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3.5">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base shrink-0">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Daftar Transaksi Sirkulasi</h3>
+                        <p class="text-xs text-slate-400">Data peminjaman aktif dan riwayat pengembalian buku</p>
+                    </div>
+                </div>
+
+                <!-- Filters Toolbar: Sejajar Rapi, Bebas Ikon Menumpuk Placeholder -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                    <!-- Search Input -->
+                    <div class="relative flex-1 sm:w-64">
+                        <input type="text" id="search-sirkulasi" placeholder="Cari nama, judul, barcode..."
+                            class="w-full px-3.5 h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                    </div>
+
+                    <!-- Filter Dropdown & Aksi -->
+                    <div class="flex items-center gap-2">
+                        <!-- Status Filter Dropdown -->
+                        <select id="filter-status-sirkulasi" style="height: 40px !important; padding-top: 0 !important; padding-bottom: 0 !important; padding-left: 14px !important; padding-right: 34px !important; font-size: 12px !important; line-height: 38px !important;" class="flex-1 sm:flex-initial rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer">
+                            <option value="dipinjam">Sedang Dipinjam</option>
+                            <option value="terlambat">Terlambat Saja</option>
+                            <option value="kembali">Sudah Kembali</option>
+                            <option value="semua">Semua Transaksi</option>
+                        </select>
+
+                        <!-- Export Excel -->
+                        <button id="btn-export-sirkulasi" class="h-10 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 font-bold text-xs transition flex items-center gap-1.5 shrink-0" title="Ekspor ke Excel (SheetJS)">
+                            <i class="fa-solid fa-file-excel text-sm"></i>
+                            <span>Excel</span>
+                        </button>
+
+                        <!-- Refresh Button -->
+                        <button id="btn-refresh-sirkulasi" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center text-xs transition shrink-0" title="Muat Ulang Data">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300 min-w-[720px]">
+                    <thead class="bg-slate-50 dark:bg-slate-900/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                        <tr>
+                            <th class="px-5 py-3">Peminjam</th>
+                            <th class="px-5 py-3">Buku & Barcode</th>
+                            <th class="px-5 py-3">Tgl Pinjam</th>
+                            <th class="px-5 py-3">Jatuh Tempo</th>
+                            <th class="px-5 py-3">Status / Denda</th>
+                            <th class="px-5 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sirkulasi-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400 italic">
+                                <i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data sirkulasi buku...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination info -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-400">
+                <span id="sirkulasi-count-info">Menampilkan 0 transaksi</span>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="index.js?v=26.11.02.1"></script>
+</body>
+
+</html>

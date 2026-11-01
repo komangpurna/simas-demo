@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Mengalihkan ke E-Kinerja Tendik - SIMAS SMAGESA</title>
+    <meta http-equiv="refresh" content="0; url=e-kinerja-tendik.html">
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <script>
+        // Pengalihan instan tanpa merusak riwayat tombol Back browser
+        (function () {
+            var target = 'e-kinerja-tendik.html' + window.location.search + window.location.hash;
+            window.location.replace(target);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-700 dark:text-slate-200 min-h-screen min-h-dvh flex items-center justify-center p-4">
+    <div class="max-w-md w-full p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 text-center space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shadow-inner">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+        <div class="space-y-1.5">
+            <h1 class="text-lg font-bold text-slate-800 dark:text-white">Mengalihkan ke E-Kinerja Tendik...</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Modul Agenda Pegawai telah resmi bermigrasi menjadi <strong>E-Kinerja Tendik</strong>. Anda sedang dialihkan secara otomatis.
+            </p>
+        </div>
+        <div class="pt-2">
+            <a id="btn-redirect-manual" href="e-kinerja-tendik.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-900/20">
+                <span>Buka E-Kinerja Tendik</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <script>
+        // Sinkronisasi query param & hash ke tautan manual jika JavaScript terlambat
+        var manualBtn = document.getElementById('btn-redirect-manual');
+        if (manualBtn) {
+            manualBtn.href = 'e-kinerja-tendik.html' + window.location.search + window.location.hash;
+        }
+    </script>
+</body>
+</html>

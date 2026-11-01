@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>OPAC - Katalog Online Perpustakaan SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        (function () {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const isEmbed = urlParams.get('mode') === 'popup' || urlParams.get('embed') === '1' || window.self !== window.top;
+                if (isEmbed) {
+                    document.documentElement.classList.add('is-embed-mode');
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        /* Styling mutlak saat halaman OPAC dimuat dalam mode popup / iframe */
+        html.is-embed-mode #app-layout,
+        body.opac-embed-mode #app-layout,
+        .is-embed-mode aside,
+        .is-embed-mode header,
+        .is-embed-mode nav.fixed,
+        .is-embed-mode #mobile-menu,
+        .is-embed-mode #feedback-btn-desktop,
+        .is-embed-mode #feedback-btn-mobile {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        html.is-embed-mode body,
+        body.opac-embed-mode {
+            background-color: transparent !important;
+            min-height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        html.is-embed-mode main,
+        body.opac-embed-mode main {
+            display: block !important;
+            padding-top: 0.5rem !important;
+            padding-bottom: 2rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+        }
+
+        html.is-embed-mode #section-pinjaman-saya {
+            display: none !important;
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased min-h-screen min-h-dvh">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <!-- Hero Search Section -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white p-8 md:p-12 mb-8 shadow-xl shadow-blue-900/20">
+            <!-- Decorative shapes -->
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute left-1/3 -top-10 w-48 h-48 bg-purple-500/20 rounded-full blur-xl pointer-events-none"></div>
+
+            <div class="relative z-10 max-w-3xl mx-auto text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold uppercase tracking-wider mb-4 border border-white/20">
+                    <i class="fa-solid fa-book-open-reader"></i> Online Public Access Catalog (OPAC)
+                </div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-3">
+                    Perpustakaan Widya Shakti
+                </h1>
+                <p class="text-sm sm:text-base text-blue-100/90 mb-6 font-normal max-w-xl mx-auto">
+                    Temukan buku pelajaran, fiksi, ensiklopedia, dan referensi akademik {{schoolName}} dengan cepat.
+                </p>
+
+                <!-- Search Input Box -->
+                <div class="relative max-w-2xl mx-auto">
+                    <input type="text" id="opac-search-input"
+                        class="w-full px-5 pr-28 py-4 rounded-2xl bg-white text-slate-900 shadow-2xl text-sm sm:text-base font-semibold placeholder-slate-400 outline-none focus:ring-4 focus:ring-blue-400/40"
+                        placeholder="Ketik judul buku, nama pengarang, penerbit, atau subjek...">
+                    <button id="btn-search-opac" class="absolute right-2 top-2 bottom-2 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-blue-600/30 flex items-center gap-1.5 active:scale-95">
+                        Cari Buku
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10 KELAS UTAMA DDC (DEWEY DECIMAL CLASSIFICATION) -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-blue-600"></i> Klasifikasi 10 Kelas Utama DDC
+                    </h2>
+                    <p class="text-xs text-slate-400">Jelajahi koleksi berdasarkan standar klasifikasi Dewey Decimal</p>
+                </div>
+                <button id="btn-reset-ddc-filter" class="hidden text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-rotate-left"></i> Tampilkan Semua
+                </button>
+            </div>
+
+            <!-- DDC Cards Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3" id="ddc-class-grid">
+                <button onclick="window.filterByDDC('000')" data-ddc="000" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-blue-600 text-xs px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40">000</span>
+                        <i class="fa-solid fa-microchip text-slate-400 group-hover:text-blue-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Karya Umum & Komputer</div>
+                </button>
+                <button onclick="window.filterByDDC('100')" data-ddc="100" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-indigo-600 text-xs px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40">100</span>
+                        <i class="fa-solid fa-brain text-slate-400 group-hover:text-indigo-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Filsafat & Psikologi</div>
+                </button>
+                <button onclick="window.filterByDDC('200')" data-ddc="200" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-emerald-600 text-xs px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/40">200</span>
+                        <i class="fa-solid fa-hands-praying text-slate-400 group-hover:text-emerald-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Agama & Teologi</div>
+                </button>
+                <button onclick="window.filterByDDC('300')" data-ddc="300" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-amber-600 text-xs px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-900/40">300</span>
+                        <i class="fa-solid fa-users text-slate-400 group-hover:text-amber-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Ilmu-ilmu Sosial</div>
+                </button>
+                <button onclick="window.filterByDDC('400')" data-ddc="400" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-teal-600 text-xs px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-900/40">400</span>
+                        <i class="fa-solid fa-language text-slate-400 group-hover:text-teal-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Bahasa & Linguistik</div>
+                </button>
+                <button onclick="window.filterByDDC('500')" data-ddc="500" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-cyan-600 text-xs px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/40">500</span>
+                        <i class="fa-solid fa-atom text-slate-400 group-hover:text-cyan-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Sains Murni & Alam</div>
+                </button>
+                <button onclick="window.filterByDDC('600')" data-ddc="600" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-orange-600 text-xs px-2 py-0.5 rounded bg-orange-50 dark:bg-orange-900/40">600</span>
+                        <i class="fa-solid fa-gear text-slate-400 group-hover:text-orange-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Teknologi & Terapan</div>
+                </button>
+                <button onclick="window.filterByDDC('700')" data-ddc="700" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-rose-600 text-xs px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-900/40">700</span>
+                        <i class="fa-solid fa-palette text-slate-400 group-hover:text-rose-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Kesenian & Olahraga</div>
+                </button>
+                <button onclick="window.filterByDDC('800')" data-ddc="800" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-purple-600 text-xs px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40">800</span>
+                        <i class="fa-solid fa-book-journal-whills text-slate-400 group-hover:text-purple-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Kesusastraan / Fiksi</div>
+                </button>
+                <button onclick="window.filterByDDC('900')" data-ddc="900" class="ddc-filter-btn p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:border-blue-500 hover:shadow-md transition text-left group">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-mono font-black text-yellow-600 text-xs px-2 py-0.5 rounded bg-yellow-50 dark:bg-yellow-900/40">900</span>
+                        <i class="fa-solid fa-landmark-dome text-slate-400 group-hover:text-yellow-500 transition text-sm"></i>
+                    </div>
+                    <div class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">Sejarah & Geografi</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PINJAMAN SAYA (Hanya tampil jika user sudah login & memiliki ID peminjam) -->
+        <div id="section-pinjaman-saya" class="hidden mb-8">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+                <!-- Header -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+                    <div>
+                        <h2 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-book-bookmark text-blue-600"></i> Pinjaman Saya
+                        </h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Daftar buku yang sedang kamu pinjam dan riwayat pengembalian.</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800">
+                            <i class="fa-solid fa-hand-holding-hand text-[10px]"></i>
+                            <span>Aktif: <span id="my-loans-count-active" class="font-black">0</span></span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                            <i class="fa-solid fa-check-circle text-[10px]"></i>
+                            <span>Kembali: <span id="my-loans-count-returned" class="font-black">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Toggle -->
+                <div class="flex border-b border-slate-100 dark:border-slate-700/60">
+                    <button id="btn-my-tab-active" onclick="window.switchMyLoanTab('active')"
+                        class="flex-1 py-2.5 text-xs font-bold text-blue-700 dark:text-blue-400 border-b-2 border-blue-600 transition">
+                        <i class="fa-solid fa-book-open mr-1"></i> Sedang Dipinjam
+                    </button>
+                    <button id="btn-my-tab-history" onclick="window.switchMyLoanTab('history')"
+                        class="flex-1 py-2.5 text-xs font-bold text-slate-400 dark:text-slate-500 border-b-2 border-transparent hover:text-slate-600 transition">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat Pengembalian
+                    </button>
+                </div>
+
+                <!-- Content: Active Loans -->
+                <div id="my-loans-active-panel" class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                    <div class="p-8 text-center text-slate-400 animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin text-lg text-blue-500 mb-2"></i>
+                        <p class="text-xs">Memuat data pinjaman...</p>
+                    </div>
+                </div>
+
+                <!-- Content: History Loans -->
+                <div id="my-loans-history-panel" class="hidden divide-y divide-slate-100 dark:divide-slate-700/60">
+                    <div class="p-6 text-center text-slate-400 italic text-xs">Belum ada riwayat pengembalian.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HASIL KATALOG BUKU -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="opac-result-title" class="font-bold text-sm text-slate-800 dark:text-white">
+                    Semua Koleksi Buku (<span id="opac-total-count">0</span> Judul)
+                </h3>
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="text-slate-400">Urutkan:</span>
+                    <select id="opac-sort" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+                        <option value="newest">Terbaru</option>
+                        <option value="title_asc">Judul (A - Z)</option>
+                        <option value="author_asc">Pengarang (A - Z)</option>
+                        <option value="available_desc">Stok Terbanyak</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid Kartu Buku -->
+            <div id="opac-books-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Skeleton loader by default -->
+                <div class="p-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 animate-pulse text-center col-span-full py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-blue-500"></i>
+                    <p class="text-xs">Memuat koleksi buku perpustakaan...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DETAIL BUKU & KETERSEDIAAN EKSEMPLAR -->
+        <div id="modal-opac-detail" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 fade-in">
+                <!-- Header Modal -->
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-slate-50 dark:bg-slate-900/50">
+                    <div>
+                        <span id="detail-book-ddc-badge" class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-mono font-bold text-[11px] border border-blue-200 dark:border-blue-800">000</span>
+                        <h3 id="detail-book-title" class="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white mt-1.5">Judul Buku</h3>
+                        <p id="detail-book-author" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Pengarang Buku</p>
+                    </div>
+                    <button onclick="document.getElementById('modal-opac-detail').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-200/60 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition shrink-0">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Body Modal -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-5 text-xs">
+                    <!-- Metadata Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-700/60">
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">Call Number</span>
+                            <span id="detail-book-call" class="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">Lokasi Rak</span>
+                            <span id="detail-book-rak" class="font-bold text-slate-700 dark:text-slate-300 text-xs">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">Penerbit</span>
+                            <span id="detail-book-penerbit" class="font-semibold text-slate-700 dark:text-slate-300 text-xs">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">Tahun Terbit</span>
+                            <span id="detail-book-tahun" class="font-semibold text-slate-700 dark:text-slate-300 text-xs">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">ISBN / ISSN</span>
+                            <span id="detail-book-isbn" class="font-mono text-slate-700 dark:text-slate-300 text-xs">-</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] uppercase font-bold block">Tipe Koleksi</span>
+                            <span id="detail-book-tipe" class="font-semibold text-slate-700 dark:text-slate-300 text-xs">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Eksemplar Status List -->
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-800 dark:text-white uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                            <span>Status Ketersediaan Fisik di Rak</span>
+                            <span id="detail-book-stock-summary" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">0 / 0 Tersedia</span>
+                        </h4>
+
+                        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase">
+                                    <tr>
+                                        <th class="px-4 py-2">Copy</th>
+                                        <th class="px-4 py-2">Kondisi</th>
+                                        <th class="px-4 py-2">Call Number</th>
+                                        <th class="px-4 py-2 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detail-eksemplar-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="opac.js?v=26.11.02.1"></script>
+</body>
+
+</html>

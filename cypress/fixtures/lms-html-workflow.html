@@ -1,0 +1,15 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Verifikasi LMS HTML</title><link rel="stylesheet" href="/css/tailwind.css"><link rel="stylesheet" href="/css/style.css"></head>
+<body class="bg-slate-100 text-slate-800 p-3 sm:p-6"><main class="max-w-3xl mx-auto space-y-4">
+<h1 class="text-xl font-bold">Materi HTML Interaktif · Guru Mapel</h1>
+<div id="demo-controls" class="hidden">
+<select id="select-mapel"><option>IPA</option></select><select id="select-kelas"><option>X-1</option></select><select id="select-semester"><option>1</option></select>
+<input id="input-lms-topic-mode" value="existing"><select id="select-lms-material-topic"><option>topic</option></select><input id="input-lms-material-id" value="mat">
+<input type="hidden" id="select-lms-material-published" value="2"><input type="datetime-local" id="input-lms-material-publish-at" required><input type="datetime-local" id="input-lms-material-due" required>
+</div>
+<div id="container-lms-materials-list"></div>
+<div class="flex flex-wrap gap-2">
+<button id="btn-submit-lms-material" onclick="window.saveLmsMaterialFromWizard()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold">Simpan Materi</button>
+<button id="demo-student" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold">Buka sebagai siswa</button>
+<button id="demo-progress" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold">Rekap durasi guru</button>
+</div><p id="demo-notice" role="status" class="text-sm"></p><pre id="demo-duration" class="whitespace-pre-wrap"></pre>
+</main><div id="demo-modals"></div><script type="module" src="/cypress/fixtures/lms-html-workflow.mjs"></script></body></html>

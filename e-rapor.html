@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>E-Rapor - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+
+        <!-- HEADER + TABS INTEGRATED -->
+        <div id="page-header"
+            class="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-6 mb-6 text-white shadow-lg relative overflow-hidden transition-all duration-500">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
+
+                <!-- Left Group: Title & Tabs -->
+                <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 flex-1">
+                    <!-- Title Area -->
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold flex items-center gap-2 leading-none">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <span id="header-title">E-Rapor Nilai Siswa</span>
+                        </h1>
+                        <p id="header-subtitle" class="text-blue-100 text-xs mt-1.5 opacity-90 font-medium">Input dan
+                            rekap nilai kelas XII</p>
+                    </div>
+
+                    <!-- Center Group: Main Tabs & Dynamic Sub-Tabs -->
+                    <div class="flex flex-col items-start md:items-center gap-2.5">
+                        <!-- Creative Tabs (Pills) - 2 Tab Utama -->
+                        <div
+                            class="relative inline-flex bg-white/20 p-1 rounded-xl backdrop-blur-md shadow-inner whitespace-nowrap overflow-x-auto max-w-full scrollbar-hide">
+                            <!-- Highlight Animation (JS Controlled) -->
+                            <div id="erapor-tab-highlight"
+                                class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-800 rounded-lg shadow-lg ring-4 ring-white/20 transition-all duration-300 ease-out z-0">
+                            </div>
+                            <button onclick="switchMainTab('ujian_sekolah')" id="tab-main-ujian"
+                                class="relative z-10 w-1/2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 text-blue-700 dark:text-blue-300">
+                                <i class="fa-solid fa-graduation-cap"></i> Ujian Sekolah
+                            </button>
+                            <button onclick="switchMainTab('pengaturan')" id="tab-main-pengaturan"
+                                class="relative z-10 w-1/2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center gap-2 text-purple-700 dark:text-purple-300 hover:text-white hidden">
+                                <i class="fa-solid fa-gear"></i> Pengaturan
+                            </button>
+                        </div>
+
+                        <!-- DYNAMIC SUB-TABS (Tepat di bawah tab Ujian Sekolah & Pengaturan) -->
+                        <div id="header-dynamic-subnav" class="flex items-center justify-center w-full">
+                            <!-- SUB-NAV 1: UJIAN SEKOLAH (Teori | Praktik | Rekap) -->
+                            <div id="subnav-ujian-sekolah"
+                                class="inline-flex bg-black/20 dark:bg-black/30 p-1 rounded-xl backdrop-blur-md border border-white/10 gap-1 shadow-inner">
+                                <button onclick="switchUjianSekolahSubTab('teori')" id="tab-btn-ujian-teori"
+                                    class="header-subtab-btn px-3.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 active bg-white text-blue-700 shadow-sm">
+                                    <i class="fa-solid fa-book text-xs"></i> Teori
+                                </button>
+                                <button onclick="switchUjianSekolahSubTab('praktik')" id="tab-btn-ujian-praktik"
+                                    class="header-subtab-btn px-3.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-white/85 hover:text-white hover:bg-white/10">
+                                    <i class="fa-solid fa-flask text-xs"></i> Praktik
+                                </button>
+                                <button onclick="switchUjianSekolahSubTab('rekap')" id="tab-btn-ujian-rekap"
+                                    class="header-subtab-btn px-3.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-white/85 hover:text-white hover:bg-white/10">
+                                    <i class="fa-solid fa-chart-column text-xs"></i> Rekap Leger
+                                </button>
+                            </div>
+
+                            <!-- SUB-NAV 2: PENGATURAN -->
+                            <div id="subnav-pengaturan"
+                                class="hidden inline-flex items-center gap-2 px-3.5 py-1 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 text-xs text-white/80 font-medium">
+                                <i class="fa-solid fa-sliders text-purple-300"></i> Pengaturan Kurikulum & Master XML
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Info Tahun Ajaran -->
+                <div class="text-right flex-shrink-0 border-l border-white/20 pl-6 hidden lg:block">
+                    <p class="text-[10px] font-bold text-white/70 uppercase tracking-wider">Tahun Ajaran</p>
+                    <p class="text-xl font-bold leading-none" id="tahun-ajaran-display">Memuat...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BANNER: INPUT NILAI TERKUNCI -->
+        <div id="banner-input-locked"
+            class="hidden mb-6 bg-gradient-to-r from-rose-600 to-pink-600 text-white p-4 rounded-xl shadow-lg border-l-4 border-rose-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-lock text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Input Nilai Dikunci</h3>
+                    <p class="text-rose-100 text-sm">Periode input nilai telah berakhir. Anda tetap dapat melihat data
+                        nilai, tetapi tidak dapat mengubah atau menambah data baru. Hubungi bagian kurikulum jika perlu
+                        akses edit.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: UJIAN SEKOLAH (Khusus Siswa Kelas XII) -->
+        <div id="section-ujian-sekolah">
+        <!-- TAB: INPUT INDIVIDUAL (Default View) -->
+        <div id="tab-input" class="tab-content">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <!-- Filter & Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Mata
+                            Pelajaran</label>
+                        <select id="select-mapel-input"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">-- Pilih Mapel --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Kelas
+                            XII</label>
+                        <select id="select-kelas-input"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">-- Pilih Mapel Dulu --</option>
+                        </select>
+                    </div>
+
+                    <div class="md:col-span-2 flex items-end gap-2 flex-wrap">
+                        <button onclick="loadStudentsForInput()" id="btn-load-students"
+                            class="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition active:scale-95 shadow">
+                            <i class="fa-solid fa-users mr-2"></i> Load Siswa
+                        </button>
+                        <button onclick="saveInputScores()" id="btn-save-input"
+                            class="hidden px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition active:scale-95 shadow">
+                            <i class="fa-solid fa-save mr-2"></i> <span id="btn-save-text">Simpan Nilai</span>
+                        </button>
+                        <button onclick="openModalImportUjian()" id="btn-open-modal-import" type="button"
+                            class="px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition active:scale-95 shadow flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> <span>Import Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Input -->
+                <div id="input-table-container" class="overflow-x-auto">
+                    <div class="text-center text-slate-400 py-12">
+                        <i class="fa-solid fa-arrow-pointer text-3xl mb-2"></i>
+                        <p class="text-sm">Pilih kelas dan mata pelajaran, lalu klik "Load Siswa"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: IMPORT EXCEL UJIAN SEKOLAH -->
+        <div id="modal-import-ujian" class="tab-content hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 fade-in">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-700 to-indigo-700 text-white flex items-center justify-between shadow-md flex-shrink-0">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                            <i class="fa-solid fa-file-excel text-emerald-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm leading-tight" id="modal-import-ujian-title">Import Nilai Excel - Ujian Sekolah</h3>
+                            <p class="text-[11px] text-blue-100">Salin dan tempel data nilai dari format spreadsheet Excel</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModalImportUjian()" type="button" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition" title="Tutup Modal">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                    <!-- Header Section: Mapel & Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-slate-100 dark:border-slate-800 pb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Mata Pelajaran</label>
+                            <select id="select-mapel-import"
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">-- Pilih Mapel --</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                <h3 class="font-bold text-slate-700 dark:text-slate-200 text-sm uppercase mb-1 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-info text-blue-500"></i> Format Data
+                                </h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                    Copy data dari Excel (kolom NIS dan Nilai), lalu paste di bawah.
+                                    <br>Format: <span class="font-mono bg-white dark:bg-slate-700 px-1 border border-slate-200 dark:border-slate-600 rounded text-slate-700 dark:text-slate-200">NIS [Tab/Spasi] Nilai</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Section: Input & Preview -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Left Column: Input (4 cols) -->
+                        <div class="lg:col-span-4 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Area Paste Data</label>
+                                <textarea id="textarea-paste" rows="10"
+                                    class="w-full p-3 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none resize-none shadow-sm transition-shadow focus:shadow-md"
+                                    placeholder="NIS      Nilai&#10;12345    85&#10;12346    90&#10;..."></textarea>
+                                <p class="text-[10px] text-slate-400 mt-1 italic text-right">* Pastikan tidak ada header kolom</p>
+                            </div>
+
+                            <button onclick="previewPasteData()" type="button"
+                                class="w-full px-4 py-2.5 bg-slate-700 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition active:scale-95 shadow-sm">
+                                <i class="fa-solid fa-eye mr-2"></i> Preview Data
+                            </button>
+                        </div>
+
+                        <!-- Right Column: Preview Table (8 cols) -->
+                        <div class="lg:col-span-8">
+                            <div id="preview-container" class="hidden h-full flex flex-col">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-table text-blue-500"></i> Hasil Preview
+                                    </h3>
+                                    <span id="preview-count"
+                                        class="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full border border-blue-200 shadow-sm">
+                                        0 item
+                                    </span>
+                                </div>
+
+                                <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm flex-1">
+                                    <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scrollbar">
+                                        <table class="w-full text-sm text-left relative">
+                                            <thead class="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400 sticky top-0 z-10 shadow-sm">
+                                                <tr>
+                                                    <th class="px-4 py-3 font-semibold border-b">No</th>
+                                                    <th class="px-4 py-3 font-semibold border-b">NIS</th>
+                                                    <th class="px-4 py-3 font-semibold border-b">Nama Siswa</th>
+                                                    <th class="px-4 py-3 font-semibold border-b text-center">Kelas</th>
+                                                    <th class="px-4 py-3 font-semibold border-b text-center">Nilai</th>
+                                                    <th class="px-4 py-3 font-semibold border-b">Status Validasi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="preview-body" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty State Placeholder -->
+                            <div id="preview-placeholder"
+                                class="h-full min-h-[220px] flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 bg-slate-50/50 dark:bg-slate-800/30">
+                                <i class="fa-regular fa-file-excel text-4xl mb-3 opacity-50"></i>
+                                <p class="text-sm font-medium">Belum ada data di-preview</p>
+                                <p class="text-xs">Paste data di sebelah kiri lalu klik Preview Data</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-3 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 flex-shrink-0">
+                    <button onclick="closeModalImportUjian()" type="button"
+                        class="px-4 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition">
+                        Batal
+                    </button>
+                    <button onclick="savePasteData()" id="btn-save-paste" type="button"
+                        class="hidden px-5 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition active:scale-95 shadow">
+                        <i class="fa-solid fa-upload mr-1.5"></i> Simpan Nilai Ujian
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: REKAP LEGER -->
+        <div id="tab-rekap" class="tab-content hidden">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Filter Jenis Nilai -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Jenis
+                            Nilai</label>
+                        <select id="select-jenis-rekap"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="teori" selected>Nilai Teori</option>
+                            <option value="praktik">Nilai Praktik</option>
+                            <option value="all">Gabungan (Teori & Praktik)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Kelas</label>
+                        <select id="select-kelas-rekap"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Semua Kelas XII</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 flex items-end gap-2">
+                        <button onclick="loadRekapData()"
+                            class="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition active:scale-95 shadow">
+                            <i class="fa-solid fa-search mr-2"></i> Tampilkan
+                        </button>
+                        <button onclick="loadRekapData(true)" title="Muat ulang data terbaru (abaikan cache)"
+                            class="px-3 py-2.5 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition active:scale-95 shadow">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                        <button onclick="downloadLeger()" id="btn-download-leger"
+                            class="hidden px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition active:scale-95 shadow">
+                            <i class="fa-solid fa-file-excel mr-2"></i> Download
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rekap Table - dengan sticky scrollbar di bawah -->
+                <div class="relative">
+                    <div id="rekap-container" class="overflow-x-auto overflow-y-visible pb-4 scrollbar-hide"
+                        style="scrollbar-gutter: stable;">
+                        <div class="text-center text-slate-400 py-12">
+                            <i class="fa-solid fa-chart-bar text-3xl mb-2"></i>
+                            <p class="text-sm">Pilih filter dan klik "Tampilkan" untuk melihat rekap nilai</p>
+                        </div>
+                    </div>
+                    <!-- Sticky scrollbar wrapper -->
+                    <div id="rekap-scrollbar-wrapper"
+                        class="hidden sticky bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 py-1 z-10">
+                        <div id="rekap-scrollbar" class="overflow-x-auto h-3">
+                            <div id="rekap-scrollbar-content" style="height: 1px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        <!-- END SECTION 1: UJIAN SEKOLAH -->
+
+        <!-- SECTION 2: TAB PENGATURAN E-RAPOR -->
+        <div id="tab-pengaturan" class="tab-content hidden">
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 space-y-6">
+                
+                <!-- Grid Top Configuration (3 Grid Compact & Seimbang) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 1. Tahun Ajaran Aktif & Tanggal Cetak Rapor SSOT -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/60 flex flex-col justify-between space-y-2">
+                        <!-- Tahun Ajaran Aktif (Compact Inline) -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <div class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-calendar-alt text-[9px]"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="font-bold text-slate-700 dark:text-slate-200 text-xs block leading-tight">Tahun Ajaran</span>
+                                    <span class="text-[8px] text-emerald-700 dark:text-emerald-400 font-semibold">Otomatis</span>
+                                </div>
+                            </div>
+                            <input type="text" id="input-tahun-ajaran" readonly placeholder="Mendeteksi..."
+                                class="w-32 min-w-[115px] px-2 py-0.5 border border-emerald-200 dark:border-emerald-800 rounded-md text-xs text-center bg-white/90 dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 font-bold cursor-not-allowed outline-none shadow-2xs shrink-0 tracking-normal">
+                        </div>
+
+                        <!-- Tanggal Cetak Rapor (SSOT Kurikulum - Compact) -->
+                        <div class="pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/60">
+                            <div class="flex items-center justify-between gap-1.5 mb-1">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <div class="w-5 h-5 rounded bg-amber-600 text-white flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-calendar-day text-[9px]"></i>
+                                    </div>
+                                    <span class="font-bold text-slate-700 dark:text-slate-200 text-xs truncate">Tanggal Cetak Rapor</span>
+                                </div>
+                                <span class="text-[8px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 px-1.5 py-0.2 rounded font-bold uppercase tracking-wider shrink-0">SSOT</span>
+                            </div>
+                            <div class="flex gap-1.5">
+                                <input type="date" id="input-tgl-cetak-rapor"
+                                    class="flex-1 min-w-0 px-2 py-0.5 border border-amber-300 dark:border-amber-700 rounded-md text-[11px] bg-white dark:bg-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-amber-400 outline-none font-medium h-7">
+                                <button onclick="window.saveTanggalCetakRapor()" id="btn-save-tgl-rapor"
+                                    class="px-2.5 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 shadow-2xs flex items-center gap-1 shrink-0 h-7"
+                                    title="Simpan Tanggal Cetak Rapor Resmi">
+                                    <i class="fa-solid fa-floppy-disk text-[9px]"></i> Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Toggle Input Nilai (Teori & Praktik) -->
+                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-800/50 dark:to-gray-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-1.5">
+                        <div class="flex items-center justify-between gap-1.5 mb-0.5">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <div class="w-5 h-5 rounded bg-slate-600 text-white flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-toggle-on text-[9px]"></i>
+                                </div>
+                                <span class="font-bold text-slate-700 dark:text-slate-200 text-xs truncate">Kunci / Buka Input Nilai</span>
+                            </div>
+                            <span class="text-[8px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded font-bold uppercase tracking-wider shrink-0">Ujian</span>
+                        </div>
+                        <div class="space-y-1 flex-1 flex flex-col justify-center">
+                            <!-- Toggle Teori -->
+                            <div id="card-toggle-input-teori"
+                                class="flex items-center justify-between px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60">
+                                <div class="flex items-center gap-1.5">
+                                    <div id="icon-input-teori"
+                                        class="w-4 h-4 rounded bg-rose-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-lock text-[8px]"></i>
+                                    </div>
+                                    <span class="font-semibold text-slate-700 dark:text-slate-200 text-xs">Teori</span>
+                                    <span id="status-input-teori" class="text-[10px] text-rose-600 font-medium">• TERKUNCI</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggle-input-teori" class="sr-only peer"
+                                        onchange="window.saveInputNilaiStatus()">
+                                    <div
+                                        class="w-7 h-4 bg-rose-200 dark:bg-rose-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600">
+                                    </div>
+                                </label>
+                            </div>
+                            <!-- Toggle Praktik -->
+                            <div id="card-toggle-input-praktik"
+                                class="flex items-center justify-between px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60">
+                                <div class="flex items-center gap-1.5">
+                                    <div id="icon-input-praktik"
+                                        class="w-4 h-4 rounded bg-rose-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-lock text-[8px]"></i>
+                                    </div>
+                                    <span class="font-semibold text-slate-700 dark:text-slate-200 text-xs">Praktik</span>
+                                    <span id="status-input-praktik" class="text-[10px] text-rose-600 font-medium">• TERKUNCI</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggle-input-praktik" class="sr-only peer"
+                                        onchange="window.saveInputNilaiStatus()">
+                                    <div
+                                        class="w-7 h-4 bg-rose-200 dark:bg-rose-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Tambah Mapel Baru -->
+                    <div class="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/60 flex flex-col justify-between space-y-1.5">
+                        <div>
+                            <div class="flex items-center justify-between gap-1.5 mb-0.5">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <div class="w-5 h-5 rounded bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-plus text-[9px]"></i>
+                                    </div>
+                                    <span class="font-bold text-slate-700 dark:text-slate-200 text-xs truncate">Tambah Mapel Baru</span>
+                                </div>
+                                <span class="text-[8px] bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 px-1.5 py-0.2 rounded font-bold uppercase tracking-wider shrink-0">Manual</span>
+                            </div>
+                            <p class="text-[10px] text-indigo-700/80 dark:text-indigo-300/80 mb-1 leading-snug">
+                                Daftarkan mapel baru jika belum termuat otomatis dari jadwal XML.
+                            </p>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <input type="text" id="input-new-mapel" placeholder="Nama mapel baru..."
+                                class="flex-1 min-w-0 px-2 py-0.5 h-7 border border-indigo-200 dark:border-indigo-800 rounded-md text-[11px] bg-white dark:bg-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-indigo-400 outline-none"
+                                onkeydown="if(event.key==='Enter')window.addMapel()">
+                            <button onclick="window.addMapel()"
+                                class="px-2.5 py-0.5 h-7 bg-indigo-600 text-white rounded-md text-[11px] font-bold hover:bg-indigo-700 transition-all active:scale-95 shadow-2xs shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-plus text-[9px]"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KONFIGURASI JADWAL XML ASC TIMETABLES -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center shadow-sm">
+                                <i class="fa-solid fa-calendar-days text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100">Jadwal Pelajaran aSc Timetables (XML)</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Sinkronisasi jadwal resmi sekolah & pemetaan akun guru SSOT</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="input-upload-xml" accept=".xml" class="hidden" onchange="window.handleUploadASCScheduleXML(this)">
+                            <button onclick="document.getElementById('input-upload-xml').click()" 
+                                class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition active:scale-95 shadow-sm flex items-center gap-1.5"
+                                title="Unggah berkas XML Jadwal aSc Timetables baru (Otomatis Sync)">
+                                <i class="fa-solid fa-file-arrow-up"></i> Upload XML Jadwal
+                            </button>
+                            <button onclick="window.syncASCScheduleXML()" 
+                                class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold transition active:scale-95 shadow-sm flex items-center gap-1.5"
+                                title="Sinkronkan ulang seluruh jadwal & mata pelajaran dari XML">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Sync Master XML
+                            </button>
+                            <button onclick="window.openTeacherMappingModal()" 
+                                class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition active:scale-95 shadow-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-network-wired"></i> Pemetaan Guru
+                                <span id="badge-unmatched-count" class="hidden bg-amber-400 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- Status Info Container -->
+                    <div id="xml-schedule-status-container" class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Status Master</span>
+                            <span id="xml-status-master" class="font-bold text-emerald-600 dark:text-emerald-400">Memuat...</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">File Master</span>
+                            <span id="xml-status-file" class="font-mono text-slate-700 dark:text-slate-300 font-semibold">assets/Jadwal.xml</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Total Pelajaran (Cards)</span>
+                            <span id="xml-status-lessons" class="font-bold text-slate-700 dark:text-slate-300">-</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Matching Guru</span>
+                            <span id="xml-status-matching" class="font-bold text-slate-700 dark:text-slate-300">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DAFTAR MAPEL -->
+
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 flex items-center justify-center shadow-sm">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100">Daftar Mata Pelajaran</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Kelola guru pengampu dan status nilai praktik</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-lg font-bold border border-purple-200 dark:border-purple-800/60 flex items-center gap-1">
+                                <i class="fa-solid fa-database text-[10px]"></i> Source: XML
+                            </span>
+                            <span id="mapel-count"
+                                class="text-xs bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">0 Mapel</span>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Unified List Header -->
+                    <div class="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        <div class="col-span-1 text-center">No</div>
+                        <div class="col-span-4 md:col-span-3">Nama Mapel</div>
+                        <div class="col-span-2 text-center">Nilai Praktik?</div>
+                        <div class="col-span-4 md:col-span-5">Guru Pengampu</div>
+                        <div class="col-span-1 text-right">Aksi</div>
+                    </div>
+
+                    <!-- Mapel List Container -->
+                    <div id="unified-mapel-list" class="space-y-2">
+                        <div class="text-center text-slate-400 text-sm py-8 italic">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat daftar mapel...
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Alert -->
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="alert-icon-bg"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600">
+                    <i id="alert-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+                <h3 id="alert-title" class="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">Berhasil!</h3>
+                <div id="alert-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-6">Aksi berhasil dilakukan.
+                </div>
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-lg transition-transform active:scale-95">
+                    OK, Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Sub-Tabs (Input vs Import) */
+        .tab-btn {
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #475569;
+            border-bottom: 2px solid #475569;
+            background: linear-gradient(to bottom, transparent, rgba(71, 85, 105, 0.05));
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f8fafc;
+        }
+
+        html.dark .tab-btn {
+            color: #94a3b8;
+        }
+
+        html.dark .tab-btn.active {
+            color: #e2e8f0;
+            border-bottom-color: #e2e8f0;
+            background: linear-gradient(to bottom, transparent, rgba(226, 232, 240, 0.05));
+        }
+
+        html.dark .tab-btn:hover:not(.active) {
+            background: rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+        }
+
+        /* Mode Indicator Colors */
+        .mode-teori {
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            border-color: #1e40af;
+            color: white;
+        }
+
+        .mode-teori .mode-icon-bg {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-praktik {
+            background: linear-gradient(to right, #059669, #0d9488);
+            border-color: #047857;
+            color: white;
+        }
+
+        .mode-praktik .mode-icon-bg {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Header Themes */
+        .header-teori, .header-ujian_sekolah {
+            background: linear-gradient(to right, #2563eb, #4f46e5) !important;
+        }
+
+        .header-praktik {
+            background: linear-gradient(to right, #059669, #0d9488) !important;
+        }
+
+        .header-rekap {
+            background: linear-gradient(to right, #6366f1, #8b5cf6) !important;
+        }
+
+        .header-pengaturan {
+            background: linear-gradient(to right, #6b21a8, #3730a3) !important;
+        }
+    </style>
+
+    <!-- MODAL: PILIH GURU PENGAMPU -->
+    <div id="modal-pilih-guru"
+        class="hidden fixed inset-0 z-[140] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4 text-emerald-600 dark:text-emerald-400">
+                    <i class="fa-solid fa-user-plus text-2xl"></i>
+                    <div>
+                        <h3 class="font-bold text-lg dark:text-slate-100">Tambah Guru Pengampu</h3>
+                        <p id="modal-mapel-name" class="text-sm text-slate-500 dark:text-slate-400">Mapel: -</p>
+                    </div>
+                </div>
+
+                <!-- Pilih Guru dengan Search -->
+                <div class="mb-4 relative">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Pilih Guru</label>
+                    <input type="text" id="search-guru-pengampu" placeholder="Ketik nama guru untuk mencari..."
+                        class="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
+                        onfocus="window.showGuruDropdown()" oninput="window.filterGuruDropdown(this.value)" autocomplete="off">
+                    <input type="hidden" id="select-guru-pengampu">
+                    <div id="guru-dropdown-list"
+                        class="hidden absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
+                        <div class="text-center text-slate-400 text-sm py-4 italic">Memuat daftar guru...</div>
+                    </div>
+                </div>
+
+                <!-- Pilih Kelas yang Diampu -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400">Kelas yang Diampu</label>
+                        <button type="button" onclick="window.toggleAllKelas()"
+                            class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 px-2 py-1 bg-emerald-50 dark:bg-emerald-950/50 rounded-lg transition-colors">
+                            <i class="fa-solid fa-check-double mr-1"></i>Semua Kelas
+                        </button>
+                    </div>
+                    <div id="checklist-kelas"
+                        class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <p class="col-span-2 text-center text-slate-400 text-xs py-2">Memuat daftar kelas...</p>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1"><i class="fa-solid fa-info-circle mr-1"></i>Centang kelas yang diajar oleh guru ini untuk mapel tersebut</p>
+                </div>
+
+                <div class="flex gap-3 justify-end mt-6">
+                    <button onclick="window.closeGuruModal()"
+                        class="px-4 py-2 rounded-lg font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">Batal</button>
+                    <button onclick="window.confirmAddGuruPengampu()"
+                        class="px-4 py-2 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg">
+                        <i class="fa-solid fa-check mr-1"></i> Tambahkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PENGATURAN MAPEL -->
+    <div id="modal-mapel-settings"
+        class="hidden fixed inset-0 z-[130] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3 text-indigo-600 dark:text-indigo-400">
+                        <i class="fa-solid fa-gear text-2xl"></i>
+                        <div>
+                            <h3 class="font-bold text-lg dark:text-slate-100">Pengaturan Mapel</h3>
+                            <p id="modal-settings-mapel-name" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Mapel: -</p>
+                        </div>
+                    </div>
+                    <button onclick="window.openEditMapelModal(currentSettingsMapel)" 
+                        class="px-2.5 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-pen-to-square text-[11px]"></i> Edit Nama
+                    </button>
+                </div>
+
+                <!-- Toggle Praktik -->
+                <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                    <div>
+                        <p class="font-bold text-slate-700 dark:text-slate-200 text-sm">Nilai Praktik</p>
+                        <p class="text-xs text-slate-400">Aktifkan jika mapel memiliki nilai praktik</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="modal-toggle-praktik" class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-slate-300 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Daftar Guru Pengampu -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400">Guru Pengampu</label>
+                        <button onclick="window.openAddGuruFromSettings()"
+                            class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 px-2 py-1 bg-indigo-50 dark:bg-indigo-950/50 rounded-lg transition-colors">
+                            <i class="fa-solid fa-plus mr-1"></i>Tambah Guru
+                        </button>
+                    </div>
+                    <div id="modal-guru-list" class="space-y-2 max-h-60 overflow-y-auto">
+                        <div class="text-center text-slate-400 text-sm py-4 italic">Belum ada guru pengampu</div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button onclick="document.getElementById('modal-mapel-settings').classList.add('hidden')"
+                        class="px-4 py-2 rounded-lg font-bold text-white bg-slate-600 hover:bg-slate-700">
+                        <i class="fa-solid fa-check mr-1"></i> Selesai
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT NAMA MAPEL -->
+    <div id="modal-edit-mapel-name"
+        class="hidden fixed inset-0 z-[140] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base dark:text-slate-100">Edit Nama Mapel</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Ubah nama mata pelajaran yang sudah terdaftar</p>
+                    </div>
+                </div>
+
+                <input type="hidden" id="edit-mapel-old-name" value="">
+                
+                <div class="mb-5">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1.5">Nama Mata Pelajaran</label>
+                    <input type="text" id="edit-mapel-input-name" placeholder="Ketik nama mapel baru..."
+                        class="w-full p-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                        onkeydown="if(event.key==='Enter')window.saveEditMapelName()">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('modal-edit-mapel-name').classList.add('hidden')"
+                        class="px-4 py-2 rounded-lg font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" onclick="window.saveEditMapelName()"
+                        class="px-4 py-2 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 text-xs shadow-sm active:scale-95 transition-all">
+                        <i class="fa-solid fa-save mr-1.5"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PEMETAAN GURU XML ↔ {{appName}} -->
+    <div id="modal-mapping-guru"
+        class="hidden fixed inset-0 z-[150] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 bg-gradient-to-r from-indigo-700 to-purple-800 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-network-wired text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base leading-tight">Pemetaan Guru XML ↔ {{appName}} (SSOT)</h3>
+                        <p class="text-xs text-indigo-100 opacity-90">Hubungkan nama guru dari aSc Timetables ke akun resmi {{appName}}</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-mapping-guru').classList.add('hidden')"
+                    class="text-white/80 hover:text-white text-xl p-1 transition">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Body Modal: Filter & Tabel -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex-1">
+                        <input type="text" id="search-mapping-guru" placeholder="Cari nama guru XML..."
+                            oninput="window.filterMappingTable(this.value)"
+                            class="w-full px-3.5 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg text-xs dark:bg-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.filterMappingByStatus('all')" id="btn-filter-map-all"
+                            class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-600 text-white">Semua</button>
+                        <button onclick="window.filterMappingByStatus('unmatched')" id="btn-filter-map-unmatched"
+                            class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">Belum Terhubung</button>
+                    </div>
+                </div>
+
+                <!-- Table Pemetaan -->
+                <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                    <div class="max-h-[380px] overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase font-bold sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-4 py-2.5 w-10">No</th>
+                                    <th class="px-4 py-2.5">Nama di Jadwal.xml</th>
+                                    <th class="px-4 py-2.5 w-24 text-center">Kode XML</th>
+                                    <th class="px-4 py-2.5">Akun Resmi {{appName}} (SSOT)</th>
+                                    <th class="px-4 py-2.5 w-28 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mapping-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-slate-400 italic">
+                                        <i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat pemetaan...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="px-6 py-3 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+                <span class="text-xs text-slate-500 dark:text-slate-400">
+                    <i class="fa-solid fa-info-circle mr-1 text-indigo-500"></i> Pemetaan tersimpan secara permanen untuk seluruh pengguna.
+                </span>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('modal-mapping-guru').classList.add('hidden')"
+                        class="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        Batal
+                    </button>
+                    <button onclick="window.saveTeacherMappingFromModal()"
+                        class="px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md active:scale-95 transition">
+                        <i class="fa-solid fa-save mr-1"></i> Simpan Pemetaan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-e-rapor.js?v=26.11.02.1"></script>
+</body>
+
+</html>

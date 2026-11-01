@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description"
+        content="Portal Game Interaktif PID - {{schoolName}}. Kumpulan game edukatif karya guru-guru {{schoolShortName}}.">
+    <title>🎮 Game Interaktif PID | SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        :root {
+            /* Sidebar */
+            --sidebar-bg: #d2e8f7;
+            --sidebar-w: 240px;
+
+            /* Main */
+            --main-bg: #f3f6fb;
+            --white: #ffffff;
+
+            /* Text */
+            --text-dark: #0c1a69;
+            --text-body: #3a4275;
+            --text-muted: #8892b3;
+
+            /* Card colors (pastel) */
+            --c-green: #b8f0c8;
+            --c-green-border: #6dd89a;
+            --c-orange: #ffe0b2;
+            --c-orange-border: #ffb347;
+            --c-teal: #b2e8e0;
+            --c-teal-border: #5cc5b5;
+            --c-red: #ffc8c8;
+            --c-red-border: #f08080;
+            --c-purple: #dcc8f5;
+            --c-purple-border: #b088e0;
+            --c-blue: #b8d4f0;
+            --c-blue-border: #6ba3d6;
+            --c-pink: #f5c8e8;
+            --c-pink-border: #e088c8;
+            --c-yellow: #f5f0b8;
+            --c-yellow-border: #d6c86b;
+
+            --radius-card: 22px;
+            --radius-btn: 14px;
+            --radius-pill: 50px;
+            --shadow-card: 0 4px 16px rgba(12, 26, 105, 0.06);
+            --shadow-hover: 0 8px 32px rgba(12, 26, 105, 0.12);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--main-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            height: 100vh;
+            max-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: var(--white);
+            padding: 3px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        .sidebar-brand .brand-info h2 {
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--text-dark);
+            line-height: 1.15;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .sidebar-brand .brand-info span {
+            font-size: 10px;
+            color: var(--text-body);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Sidebar nav */
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 4px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.25);
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            font-family: 'Nunito', sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.6);
+        }
+
+        .nav-btn.active {
+            background: var(--white);
+            color: var(--text-dark);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        .nav-btn .ico { font-size: 15px; }
+
+        .nav-count {
+            margin-left: auto;
+            background: var(--text-dark);
+            color: var(--white);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 6px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Sidebar info box */
+        .sidebar-info {
+            flex-shrink: 0;
+            margin-top: auto;
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.7);
+            border-radius: 12px;
+            padding: 10px 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .sidebar-info .emoji { font-size: 22px; display: block; margin-bottom: 2px; line-height: 1; }
+
+        .sidebar-info p {
+            font-size: 10.5px;
+            color: var(--text-body);
+            line-height: 1.35;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .sidebar-info .school-name {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-top: 3px;
+        }
+
+        .btn-back-dashboard {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: var(--white);
+            color: var(--text-dark);
+            font-family: 'Nunito', sans-serif;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            border: 1.5px solid var(--c-blue-border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-back-dashboard:hover {
+            background: var(--text-dark);
+            color: var(--white);
+            border-color: var(--text-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(12,26,105,0.15);
+        }
+
+        .btn-back-dashboard .ico {
+            font-size: 13px;
+        }
+
+        /* Mobile toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: none;
+            background: var(--white);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            font-size: 22px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 40;
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-height: 100vh;
+            padding: 24px 20px 48px 24px;
+        }
+
+        /* Search + Filter bar */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            background: var(--white);
+            border: 2px solid transparent;
+            border-radius: var(--radius-pill);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            outline: none;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--c-blue-border);
+        }
+
+        .search-box input::placeholder { color: var(--text-muted); font-weight: 500; }
+
+        .search-box .s-ico {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            pointer-events: none;
+        }
+        
+        .toolbar-btn {
+            padding: 14px 20px;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: var(--white);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover { background: var(--c-blue); }
+
+        /* ==================== DISCOVERY TABS (TRI-TAB MODE) ==================== */
+        .discovery-tabs-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 6px;
+            margin-bottom: 22px;
+        }
+        .discovery-tabs-wrap::-webkit-scrollbar { display: none; }
+
+        .discovery-tabs {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(210, 232, 247, 0.45);
+            padding: 5px 6px;
+            border-radius: var(--radius-pill);
+            border: 1.5px solid rgba(107, 163, 214, 0.35);
+            backdrop-filter: blur(8px);
+        }
+
+        .discovery-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            border: 1.5px solid transparent;
+            background: transparent;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all 0.22s ease;
+            white-space: nowrap;
+        }
+
+        .discovery-tab:hover {
+            background: rgba(255, 255, 255, 0.65);
+            color: var(--text-dark);
+        }
+
+        .discovery-tab.active {
+            background: var(--white);
+            color: var(--text-dark);
+            border-color: var(--c-blue-border);
+            box-shadow: 0 4px 12px rgba(12, 26, 105, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .discovery-tab .tab-badge {
+            padding: 1px 7px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            background: rgba(12, 26, 105, 0.08);
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+
+        .discovery-tab.active .tab-badge {
+            background: var(--text-dark);
+            color: var(--white);
+        }
+
+        .sidebar-section-header {
+            font-size: 9.5px;
+            font-weight: 900;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 10px 8px 4px;
+            border-top: 1px dashed rgba(12, 26, 105, 0.12);
+            margin-top: 6px;
+        }
+        .sidebar-section-header:first-child {
+            border-top: none;
+            margin-top: 0;
+            padding-top: 4px;
+        }
+
+        /* ==================== GAME GRID ==================== */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        /* ==================== GAME CARD (COMPACT DENSITY) ==================== */
+        .game-card {
+            border-radius: 16px;
+            padding: 12px 10px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 165px;
+            height: auto;
+            overflow: hidden;
+            justify-content: flex-start;
+            box-shadow: var(--shadow-card);
+        }
+
+        .game-card.card-not-published {
+            border-style: dashed !important;
+            border-width: 2.5px !important;
+            opacity: 0.85;
+            background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.025), rgba(0, 0, 0, 0.025) 10px, transparent 10px, transparent 20px);
+        }
+
+        .game-card:hover {
+            transform: scale(1.04);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .game-card.card-not-published:hover {
+            opacity: 1;
+        }
+
+        .game-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Card color variants */
+        .card-green   { background: var(--c-green);  border-color: var(--c-green-border); }
+        .card-orange  { background: var(--c-orange); border-color: var(--c-orange-border); }
+        .card-teal    { background: var(--c-teal);   border-color: var(--c-teal-border); }
+        .card-red     { background: var(--c-red);    border-color: var(--c-red-border); }
+        .card-purple  { background: var(--c-purple); border-color: var(--c-purple-border); }
+        .card-blue    { background: var(--c-blue);   border-color: var(--c-blue-border); }
+        .card-pink    { background: var(--c-pink);   border-color: var(--c-pink-border); }
+        .card-yellow  { background: var(--c-yellow); border-color: var(--c-yellow-border); }
+
+        /* Decorative Background Patterns */
+        .card-pattern-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.12;
+            z-index: 1;
+            border-radius: 16px;
+            background-repeat: repeat;
+        }
+        .pat-math {
+            background-image: radial-gradient(#0c1a69 1.5px, transparent 1.5px), linear-gradient(to right, rgba(12,26,105,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(12,26,105,0.06) 1px, transparent 1px);
+            background-size: 16px 16px, 16px 16px, 16px 16px;
+        }
+        .pat-science {
+            background-image: radial-gradient(#0c1a69 2px, transparent 2px), radial-gradient(rgba(12,26,105,0.4) 1px, transparent 1px);
+            background-size: 24px 24px, 12px 12px;
+            background-position: 0 0, 12px 12px;
+        }
+        .pat-literature {
+            background-image: repeating-linear-gradient(0deg, rgba(12,26,105,0.08) 0px, rgba(12,26,105,0.08) 1px, transparent 1px, transparent 12px);
+        }
+        .pat-art {
+            background-image: radial-gradient(circle, rgba(236,72,153,0.3) 3px, transparent 3px), radial-gradient(circle, rgba(59,130,246,0.3) 2px, transparent 2px);
+            background-size: 20px 20px, 15px 15px;
+            background-position: 0 0, 10px 10px;
+        }
+        .pat-cyber {
+            background-image: linear-gradient(90deg, rgba(139,92,246,0.1) 1px, transparent 1px), linear-gradient(0deg, rgba(139,92,246,0.1) 1px, transparent 1px);
+            background-size: 14px 14px;
+        }
+        .pat-stars {
+            background-image: radial-gradient(rgba(234,179,8,0.4) 1.5px, transparent 1.5px), radial-gradient(rgba(245,158,11,0.3) 2px, transparent 2px);
+            background-size: 18px 18px, 28px 28px;
+            background-position: 0 0, 9px 9px;
+        }
+        .pat-waves {
+            background-image: repeating-radial-gradient(circle at 0 0, transparent 0, rgba(12,26,105,0.05) 8px, transparent 16px);
+        }
+        .pat-diagonal {
+            background-image: repeating-linear-gradient(45deg, rgba(12,26,105,0.05) 0, rgba(12,26,105,0.05) 6px, transparent 6px, transparent 14px);
+        }
+
+        /* Thumbnail circle & Vector Art */
+        .card-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            box-shadow: 0 3px 10px rgba(12, 26, 105, 0.08);
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+            padding: 4px;
+            transition: transform 0.2s ease;
+        }
+        .game-card:hover .card-icon-wrap {
+            transform: scale(1.08) rotate(-2deg);
+        }
+
+        .card-icon-wrap img, .card-icon-wrap svg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .card-icon-wrap .ph-emoji {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* Searchable GTK Dropdown Item */
+        .gtk-dropdown-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gtk-dropdown-item:hover, .gtk-dropdown-item.active {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+        }
+
+        .ai-pulse {
+            animation: pulse-glow 1.5s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 4px rgba(99, 102, 241, 0.4); }
+            to { box-shadow: 0 0 16px rgba(168, 85, 247, 0.8); }
+        }
+
+        /* Card text */
+        .card-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-transform: uppercase;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+            width: 100%;
+            word-break: break-word;
+        }
+
+        .card-author {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-body);
+            margin-bottom: 4px;
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            display: block;
+        }
+
+        .card-submitter {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: var(--text-body);
+            margin-top: -3px;
+            margin-bottom: 4px;
+            opacity: 0.7;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            display: block;
+        }
+
+        /* ==================== THEME DARK ADAPTIVE CONTRAST (WCAG AA) ==================== */
+        .game-card.theme-dark .card-title {
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75), 0 2px 8px rgba(0, 0, 0, 0.55);
+            font-weight: 900;
+        }
+
+        .game-card.theme-dark .card-author {
+            color: #f1f5f9 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+            opacity: 0.95;
+            font-weight: 700;
+        }
+
+        .game-card.theme-dark .card-submitter {
+            color: #cbd5e1 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            opacity: 0.85;
+        }
+
+        .game-card.theme-dark .card-subject-chip {
+            background: rgba(255, 255, 255, 0.92);
+            color: #0f172a;
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            font-weight: 800;
+        }
+
+        .game-card.theme-dark .card-source-chip {
+            background: rgba(6, 95, 70, 0.6);
+            border-color: rgba(52, 211, 153, 0.5);
+            color: #6ee7b7;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-card.theme-dark .card-pattern-layer {
+            opacity: 0.16;
+            filter: invert(1);
+        }
+
+        .game-card.theme-dark.card-not-published {
+            background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08) 10px, transparent 10px, transparent 20px) !important;
+        }
+
+        .game-card.theme-dark .card-edit-btn {
+            background: rgba(255, 255, 255, 0.92);
+            color: #0f172a;
+        }
+
+        .card-subject {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px 4px;
+            margin-top: auto;
+            margin-bottom: 0;
+            width: 100%;
+            justify-content: center;
+            max-height: 44px;
+            overflow: hidden;
+            padding: 0 2px;
+        }
+
+        .card-subject-chip {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(12, 26, 105, 0.08);
+            color: var(--text-body);
+            font-size: 8.5px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: 0.15px;
+            text-transform: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 2px 5px rgba(12,26,105,0.04);
+        }
+
+        .card-source-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #065f46;
+            font-size: 9.5px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Play button */
+        .btn-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 24px;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: var(--text-dark);
+            color: var(--white);
+            font-family: 'Nunito', sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            margin-top: auto;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.06);
+            box-shadow: 0 4px 16px rgba(12,26,105,0.2);
+        }
+
+        /* Category badge on card */
+        .card-cat-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.82);
+            color: var(--text-dark);
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 8px 18px rgba(12,26,105,0.12);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .card-cat-group {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 4px;
+            max-width: 90px;
+        }
+
+        .card-cat-badge:hover {
+            transform: translateY(-1px);
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 12px 22px rgba(12,26,105,0.16);
+        }
+
+        .card-edit-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.82);
+            color: var(--text-dark);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(12,26,105,0.12);
+            backdrop-filter: blur(6px);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .card-edit-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 12px 22px rgba(12,26,105,0.16);
+        }
+
+        .card-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 6px;
+            margin-bottom: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            flex-shrink: 0;
+        }
+
+        .card-status-badge.status-badge-active {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1.5px solid #a7f3d0;
+        }
+
+        .card-status-badge.status-badge-hidden {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1.5px dashed #94a3b8;
+        }
+
+        .btn-main.btn-preview {
+            background: #475569;
+        }
+
+        .btn-main.btn-preview:hover {
+            background: #334155;
+        }
+
+        /* ==================== ARCADE & GAMIFIED MODAL STYLES ==================== */
+        .arcade-modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 530px;
+            border-radius: 26px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(12, 26, 105, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 3.5px solid rgba(255, 255, 255, 0.95);
+        }
+
+        .arcade-hero-stage {
+            padding: 24px 22px 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            transition: background 0.25s ease;
+        }
+
+        .arcade-thumb-wrap {
+            width: 66px;
+            height: 66px;
+            border-radius: 20px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 0 0 3.5px rgba(255, 255, 255, 0.95);
+            position: relative;
+            z-index: 2;
+            padding: 6px;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .arcade-thumb-wrap:hover {
+            transform: scale(1.08) rotate(-3deg);
+        }
+
+        .arcade-btn-close-x {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            color: #475569;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 0 #cbd5e1, 0 4px 10px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+            transition: all 0.12s ease;
+        }
+
+        .arcade-btn-close-x:hover {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 3px 0 #991b1b, 0 6px 14px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .arcade-btn-close-x:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #991b1b;
+        }
+
+        .arcade-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(4px);
+        }
+
+        .arcade-pill-source {
+            background: rgba(16, 185, 129, 0.92);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .arcade-pill-cat {
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--text-dark, #0c1a69);
+            border: 1px solid rgba(12, 26, 105, 0.1);
+        }
+
+        .arcade-quest-card {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .arcade-mission-box {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        /* 3D Push-Button Controls */
+        .btn-arcade-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 26px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #047857, 0 8px 18px rgba(16, 185, 129, 0.35);
+            transition: all 0.12s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-arcade-play:hover {
+            background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+            box-shadow: 0 5px 0 #047857, 0 10px 22px rgba(16, 185, 129, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .btn-arcade-play:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #047857, 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-arcade-edit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            font-family: 'Nunito', sans-serif;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b45309, 0 6px 14px rgba(245, 158, 11, 0.3);
+            transition: all 0.12s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-arcade-edit:hover {
+            background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 5px 0 #b45309, 0 8px 18px rgba(245, 158, 11, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-arcade-edit:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #b45309;
+        }
+
+        .btn-arcade-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            color: #475569;
+            font-family: 'Nunito', sans-serif;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #cbd5e1;
+            transition: all 0.12s ease;
+        }
+
+        .btn-arcade-close:hover {
+            background: #ffffff;
+            color: #1e293b;
+            box-shadow: 0 4px 0 #94a3b8;
+            transform: translateY(-1px);
+        }
+
+        .btn-arcade-close:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #94a3b8;
+        }
+
+        /* ==================== EMPTY STATE ==================== */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 72px 20px;
+        }
+
+        .empty-state .e-ico {
+            font-size: 72px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-body);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ==================== LOADING SKELETON ==================== */
+        .skel {
+            border-radius: 16px;
+            background: var(--white);
+            padding: 12px 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 155px;
+            height: 165px;
+        }
+
+        .skel-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(90deg, #eef1f7 25%, #e0e5ef 50%, #eef1f7 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin-bottom: 8px;
+        }
+
+        .skel-line {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #eef1f7 25%, #e0e5ef 50%, #eef1f7 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin-bottom: 6px;
+            width: 85%;
+        }
+
+        .skel-line.short { width: 55%; }
+
+        .skel-btn {
+            display: none;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ==================== FADE IN ==================== */
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .pop-in {
+            opacity: 0;
+            animation: popIn 0.35s ease forwards;
+        }
+
+        .pop-in:nth-child(1)  { animation-delay: 0.03s; }
+        .pop-in:nth-child(2)  { animation-delay: 0.06s; }
+        .pop-in:nth-child(3)  { animation-delay: 0.09s; }
+        .pop-in:nth-child(4)  { animation-delay: 0.12s; }
+        .pop-in:nth-child(5)  { animation-delay: 0.15s; }
+        .pop-in:nth-child(6)  { animation-delay: 0.18s; }
+        .pop-in:nth-child(7)  { animation-delay: 0.21s; }
+        .pop-in:nth-child(8)  { animation-delay: 0.24s; }
+        .pop-in:nth-child(9)  { animation-delay: 0.27s; }
+        .pop-in:nth-child(10) { animation-delay: 0.30s; }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show { display: block; }
+
+            .menu-toggle { display: flex; }
+
+            .main {
+                margin-left: 0;
+                padding: 72px 16px 40px;
+            }
+
+            .game-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .card-icon-wrap {
+                width: 38px;
+                height: 38px;
+                margin-bottom: 4px;
+            }
+
+            .card-icon-wrap .ph-emoji { font-size: 20px; }
+
+            .card-title { font-size: 11px; }
+
+            .card-author { font-size: 9.5px; margin-bottom: 2px; }
+
+            .game-card {
+                min-height: 165px;
+                height: auto;
+                padding: 10px 8px 8px;
+            }
+
+            .card-subject {
+                max-height: 44px;
+            }
+
+            .btn-main { font-size: 10px; padding: 6px 16px; }
+
+            .toolbar { flex-direction: column; }
+
+            .filter-pills {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+            }
+
+            .filter-pills::-webkit-scrollbar { display: none; }
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c5cfe0; border-radius: 3px; }
+
+        /* ==================== STATUS POPUP ==================== */
+        .status-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 26, 105, 0.22);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 320;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.28s ease, visibility 0.28s ease;
+        }
+
+        .status-popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .status-popup-card {
+            width: min(100%, 420px);
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: 28px;
+            padding: 26px 24px 22px;
+            box-shadow: 0 28px 70px rgba(12, 26, 105, 0.22);
+            text-align: center;
+            transform: translateY(18px) scale(0.96);
+            transition: transform 0.28s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-popup-overlay.show .status-popup-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .status-popup-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto;
+            height: 5px;
+            background: linear-gradient(90deg, #7c9cff 0%, #7ce7c6 50%, #f7c96c 100%);
+        }
+
+        .status-popup-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 16px 30px rgba(12, 26, 105, 0.12);
+        }
+
+        .status-popup-card.success .status-popup-icon {
+            background: linear-gradient(135deg, #dffff0 0%, #b8f0c8 100%);
+        }
+
+        .status-popup-card.error .status-popup-icon {
+            background: linear-gradient(135deg, #ffe2e2 0%, #ffc8c8 100%);
+        }
+
+        .status-popup-card.warning .status-popup-icon {
+            background: linear-gradient(135deg, #fff4d7 0%, #ffe0b2 100%);
+        }
+
+        .status-popup-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .status-popup-message {
+            font-size: 14px;
+            line-height: 1.65;
+            color: var(--text-body);
+            margin-bottom: 20px;
+        }
+
+        .status-popup-btn {
+            min-width: 128px;
+            border: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--white);
+            background: linear-gradient(135deg, #20338f 0%, #4158d8 100%);
+            box-shadow: 0 14px 24px rgba(32, 51, 143, 0.22);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .status-popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 30px rgba(32, 51, 143, 0.26);
+        }
+
+        .status-popup-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+
+    <!-- Cek Login {{appName}} -->
+    <script type="module">
+        import { auth, APP_VERSION } from '../js/config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        
+        window.auth = auth;
+
+        // Simpan state kunjungan Game PID agar indikator "BARU" di menu utama hilang
+        localStorage.setItem('visited_game_pid', 'true');
+        
+        document.documentElement.style.visibility = 'hidden';
+        
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                const currentPath = window.location.pathname + window.location.search;
+                window.location.replace('../index.html?redirect=' + encodeURIComponent(currentPath));
+            } else {
+                const primaryRole = localStorage.getItem('user_role') || '';
+                let additionalRoles = [];
+                try {
+                    additionalRoles = JSON.parse(localStorage.getItem('user_additional_roles') || '[]');
+                } catch (e) {
+                    additionalRoles = [];
+                }
+                const allUserRoles = [primaryRole, ...(Array.isArray(additionalRoles) ? additionalRoles : [])].filter(Boolean);
+                const canAccessPid = allUserRoles.some(r => ['super_admin', 'guru_mapel', 'guru_bk'].includes(r));
+
+                const cachedUserName = localStorage.getItem(`cached_user_name_${user.uid}`) || localStorage.getItem('user_name') || user.displayName || user.email || '';
+                window.pidPortalViewer = {
+                    uid: user.uid || null,
+                    name: cachedUserName,
+                    role: primaryRole,
+                    roles: allUserRoles
+                };
+                if (typeof window.refreshPidGamesVisibility === 'function') {
+                    window.refreshPidGamesVisibility();
+                }
+                if (!canAccessPid) {
+                    window.location.replace('../dashboard.html');
+                } else {
+                    document.documentElement.style.visibility = '';
+                }
+                
+                // Render versi dinamis dari SSOT
+                const versionEl = document.getElementById('pid-version-display');
+                if (versionEl) {
+                    versionEl.innerText = `Versi ${APP_VERSION}`;
+                }
+
+                // Prefetch data siswa untuk game handshake di latar belakang
+                if (typeof window.getStudentsDataForHandshake === 'function') {
+                    window.getStudentsDataForHandshake().catch(() => {});
+                }
+            }
+        });
+    </script>
+    <script type="module" src="../js/school-config.js"></script>
+</head>
+
+<body>
+    <!-- Mobile menu toggle -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Menu">☰</button>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="../assets/logo-sekolah.png" alt="Logo {{schoolShortName}}">
+            <div class="brand-info">
+                <h2>Game PID</h2>
+                <span>{{schoolShortName}}</span>
+            </div>
+        </div>
+
+        <!-- Category Navigation -->
+        <nav class="sidebar-nav" id="sidebar-nav">
+            <!-- Dynamic category buttons will be injected here -->
+        </nav>
+
+        <!-- Info box -->
+        <div class="sidebar-info">
+            <span class="emoji">🏫</span>
+            <p>Koleksi game interaktif edukatif karya guru-guru</p>
+            <div class="school-name">{{schoolName}}</div>
+            <div id="pid-version-display" style="font-size: 9.5px; color: var(--text-muted); margin-top: 3px; font-weight: 700;">Versi --</div>
+            <a href="../dashboard.html" class="btn-back-dashboard" id="btn-back-dashboard" title="Kembali ke Halaman Utama {{appName}}">
+                <span class="ico">🏠</span>
+                <span class="btn-text">Dashboard Utama</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <!-- Toolbar: Search + Actions -->
+        <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 16px;">
+            <div class="search-box" style="flex: 1;">
+                <span class="s-ico">🔍</span>
+                <input type="search" id="search-input" name="search_pid_game_query" placeholder="Cari game, guru, atau mata pelajaran..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other">
+            </div>
+            <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                <button id="btn-semua" class="nav-btn active" data-category="all" style="border: 2px solid var(--c-blue-border); background: var(--white); color: var(--text-dark); margin: 0; padding: 8px 12px; font-size: 12px; justify-content: center;">
+                    <span class="ico">🎮</span>
+                    <span class="btn-text">Semua Game</span>
+                    <span class="nav-count" id="nav-count-all" style="margin-left: 4px; background: var(--text-dark); color: var(--white); padding: 2px 6px; border-radius: 8px; font-size: 10px;">0</span>
+                </button>
+                <button id="btn-open-ajukan" class="nav-btn" style="border: 2px dashed var(--c-green-border); background: var(--c-green); color: var(--text-dark); margin: 0; padding: 8px 12px; font-size: 12px; justify-content: center;">
+                    <span class="ico">➕</span>
+                    <span class="btn-text">Tambah Game</span>
+                </button>
+                <a href="admin.html" target="_blank" id="link-admin" class="nav-btn" style="display: none; text-decoration: none; border: 2px dashed var(--c-blue-border); background: var(--white); margin: 0; padding: 8px 12px; font-size: 12px; justify-content: center;">
+                    <span class="ico">🛠️</span>
+                    <span class="btn-text">Panel Admin</span>
+                </a>
+                <script>
+                    if (localStorage.getItem('user_role') === 'super_admin') {
+                        document.getElementById('link-admin').style.display = 'flex';
+                    }
+                </script>
+            </div>
+        </div>
+
+        <!-- Discovery Mode Tabs: Semua | Game Pembelajaran | Game Santai & Ice Breaking -->
+        <div class="discovery-tabs-wrap">
+            <div class="discovery-tabs" id="discovery-tabs" role="tablist" aria-label="Mode Penjelajahan Game PID">
+                <button type="button" class="discovery-tab active" data-mode="all" role="tab" aria-selected="true" id="tab-mode-all">
+                    <span class="tab-icon">🌟</span>
+                    <span class="tab-text">Semua Game</span>
+                    <span class="tab-badge" id="tab-count-all">0</span>
+                </button>
+                <button type="button" class="discovery-tab" data-mode="learning" role="tab" aria-selected="false" id="tab-mode-learning">
+                    <span class="tab-icon">📚</span>
+                    <span class="tab-text">Game Pembelajaran</span>
+                    <span class="tab-badge" id="tab-count-learning">0</span>
+                </button>
+                <button type="button" class="discovery-tab" data-mode="casual" role="tab" aria-selected="false" id="tab-mode-casual">
+                    <span class="tab-icon">🕹️</span>
+                    <span class="tab-text">Game Santai &amp; Ice Breaking</span>
+                    <span class="tab-badge" id="tab-count-casual">0</span>
+                </button>
+            </div>
+        </div>
+
+    <!-- Game Grid -->
+        <div class="game-grid" id="game-grid">
+            <!-- Loading skeletons -->
+            <div class="skel"><div class="skel-circle"></div><div class="skel-line"></div><div class="skel-line short"></div></div>
+            <div class="skel"><div class="skel-circle"></div><div class="skel-line"></div><div class="skel-line short"></div></div>
+            <div class="skel"><div class="skel-circle"></div><div class="skel-line"></div><div class="skel-line short"></div></div>
+            <div class="skel"><div class="skel-circle"></div><div class="skel-line"></div><div class="skel-line short"></div></div>
+            <div class="skel"><div class="skel-circle"></div><div class="skel-line"></div><div class="skel-line short"></div></div>
+        </div>
+    </main>
+
+    <!-- Modal Ajukan Game -->
+    <div id="modal-ajukan" class="sidebar-overlay" style="z-index: 200; display: none; align-items: center; justify-content: center;">
+        <div class="pop-in" style="background: var(--white); width: 90%; max-width: 580px; border-radius: var(--radius-card); padding: 24px; box-shadow: var(--shadow-hover); max-height: 92vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 20px; font-weight: 800; color: var(--text-dark); margin: 0;">➕ Tambah Game Baru</h2>
+                <button type="button" id="btn-close-modal-x" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">✕</button>
+            </div>
+            
+            <form id="form-ajukan">
+                <!-- Pilihan Tipe Sumber Game (Segmented Control) -->
+                <div style="margin-bottom: 14px; display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <button type="button" id="tab-src-url" style="flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s; background: var(--white); color: var(--text-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        🔗 Tautan / URL Web
+                    </button>
+                    <button type="button" id="tab-src-html" style="flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-body);">
+                        📄 Berkas / Kode HTML Mandiri
+                    </button>
+                    <input type="hidden" id="ajukan-source-type" value="url">
+                </div>
+
+                <!-- 1A. Sumber URL Game -->
+                <div id="section-source-url" style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(168,85,247,0.1)); border: 1.5px dashed #818cf8; border-radius: 14px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-size: 12px; font-weight: 800; color: var(--text-dark);">🔗 Link / URL Game <span style="color: red;">*</span></label>
+                        <span style="font-size: 11px; color: #6366f1; font-weight: 800;">✨ Asisten Cerdas AI</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="url" id="ajukan-url" placeholder="https://... (Wordwall, Scratch, Portal Game)" style="flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ccc; font-family: 'Nunito', sans-serif; font-size: 13px; outline: none;">
+                        <button type="button" id="btn-ai-inspect" style="padding: 10px 14px; border-radius: 8px; border: none; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(79,70,229,0.3); transition: transform 0.15s;">
+                            <span>✨ Intip Link & Rancang AI</span>
+                        </button>
+                    </div>
+                    <div id="ai-status-note" style="display: none; font-size: 11.5px; margin-top: 10px; font-weight: 700; color: #4338ca; align-items: center; gap: 8px;">
+                        <span class="ai-spin">🤖</span> <span id="ai-status-text">Sedang mengintip konten game & merancang tema visual...</span>
+                    </div>
+                </div>
+
+                <!-- 1B. Sumber Berkas / Kode HTML Game Mandiri -->
+                <div id="section-source-html" style="display: none; margin-bottom: 16px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(56,189,248,0.08)); border: 1.5px dashed #10b981; border-radius: 14px; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                        <label style="font-size: 12px; font-weight: 800; color: var(--text-dark);">📄 Berkas / Kode HTML Game <span style="color: red;">*</span></label>
+                        <span style="font-size: 11px; color: #059669; font-weight: 800;">🔒 Sandboxed Player (Aman & 0 Biaya)</span>
+                    </div>
+                    
+                    <!-- Drag & drop zone -->
+                    <div id="html-dropzone" style="border: 2px dashed #6ee7b7; background: rgba(255,255,255,0.7); border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; margin-bottom: 10px; transition: background 0.2s;">
+                        <div style="font-size: 26px; margin-bottom: 2px;">📁</div>
+                        <div style="font-size: 12px; font-weight: 800; color: var(--text-dark);">Pilih Berkas .html atau Seret ke Sini</div>
+                        <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">Mendukung berkas tunggal game HTML (Maks 2 MB)</div>
+                        <input type="file" id="ajukan-html-file" accept=".html,.htm" style="display: none;">
+                    </div>
+
+                    <!-- Textarea Kode HTML -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 11px; font-weight: 700; color: var(--text-body);">Atau Tempel (Paste) Kode HTML:</span>
+                            <div style="display: flex; gap: 6px;">
+                                <button type="button" id="btn-paste-html" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700; color: var(--text-dark);">📋 Tempel</button>
+                                <button type="button" id="btn-clear-html" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700; color: #ef4444;">Bersihkan</button>
+                            </div>
+                        </div>
+                        <textarea id="ajukan-html-code" rows="5" placeholder="<!DOCTYPE html>... Tempelkan kode HTML game di sini atau unggah berkas di atas" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: monospace; font-size: 11.5px; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                            <span id="html-size-info" style="font-size: 10.5px; color: var(--text-muted);">Ukuran: 0 KB (Maks 2 MB)</span>
+                            <span id="html-valid-badge" style="font-size: 10.5px; color: #059669; font-weight: 700;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi: AI Inspect & Live Sandbox Test -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" id="btn-ai-inspect-html" style="flex: 1; min-width: 160px; padding: 9px 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(79,70,229,0.25);">
+                            <span>✨ Baca Kode & Rancang AI</span>
+                        </button>
+                        <button type="button" id="btn-test-sandbox" style="padding: 9px 14px; border-radius: 8px; border: 1.5px solid #10b981; background: #ecfdf5; color: #047857; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>🧪 Uji Coba Game (Preview)</span>
+                        </button>
+                    </div>
+                    <div id="ai-status-note-html" style="display: none; font-size: 11.5px; margin-top: 10px; font-weight: 700; color: #047857; align-items: center; gap: 8px;">
+                        <span class="ai-spin">🤖</span> <span id="ai-status-text-html">Sedang menganalisis kode game...</span>
+                    </div>
+                </div>
+
+                <!-- 2. Nama Guru (Searchable GTK Combobox - Strict Master Data) -->
+                <div style="margin-bottom: 14px; position: relative;" id="gtk-combobox-wrap">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                        <label style="font-size: 12px; font-weight: 700; color: var(--text-body);">Nama Guru (Pembuat) <span id="guru-req-star" style="color: red;">*</span></label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; user-select: none;">
+                                <input type="checkbox" id="chk-game-eksternal" style="cursor: pointer; accent-color: #4f46e5;"> 🌐 Game Eksternal
+                            </label>
+                            <button type="button" id="btn-self-gtk" style="font-size: 11px; background: rgba(56,189,248,0.15); color: var(--text-dark); border: 1px solid var(--c-blue-border); border-radius: 6px; padding: 2px 8px; cursor: pointer; font-weight: 700;">👤 Saya Sendiri</button>
+                        </div>
+                    </div>
+                    <div style="position: relative;" id="gtk-input-container">
+                        <input type="text" id="ajukan-guru-search" required placeholder="Ketik untuk mencari nama GTK..." autocomplete="off" style="width: 100%; padding: 10px 34px 10px 12px; border-radius: 8px; border: 1.5px solid #ccc; font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--text-dark); background: var(--white);">
+                        <span id="gtk-search-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 14px; opacity: 0.6;">🔍</span>
+                    </div>
+                    <div id="gtk-dropdown-list" style="display: none; position: absolute; left: 0; right: 0; top: 100%; max-height: 180px; overflow-y: auto; background: var(--white); border: 1.5px solid var(--c-blue-border); border-radius: 8px; box-shadow: var(--shadow-hover); z-index: 250; margin-top: 4px;">
+                    </div>
+                    <input type="hidden" id="ajukan-guru-val" required>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px;">
+                        <span id="gtk-hint-text" style="font-size: 10.5px; color: var(--text-muted);">Wajib memilih dari data master GTK sekolah</span>
+                        <span id="gtk-selected-badge" style="font-size: 10.5px; color: #0284c7; font-weight: 700;"></span>
+                    </div>
+                </div>
+
+                <!-- 3. Judul Game -->
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-body);">Judul Game <span style="color: red;">*</span></label>
+                    <input type="text" id="ajukan-judul" required placeholder="Contoh: Lab Komposisi: Mesin Fungsi" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ccc; font-family: 'Nunito', sans-serif; font-size: 13px;">
+                </div>
+
+                <!-- 4. Mata Pelajaran (Checklist) -->
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-body);">Mata Pelajaran (Pilih satu atau lebih)</label>
+                    <div id="mapel-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 140px; overflow-y: auto; padding: 10px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 12.5px;">
+                        <label><input type="checkbox" value="Umum"> Umum</label>
+                        <label><input type="checkbox" value="Ice Breaking"> Ice Breaking</label>
+                        <div style="grid-column: 1 / -1; text-align: center; font-size: 11px; color: gray;">Memuat mapel...</div>
+                    </div>
+                </div>
+
+                <!-- 5. Kategori Game (Checklist) -->
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-body);">Kategori Game <span style="color: red;">*</span></label>
+                    <div id="kategori-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 140px; overflow-y: auto; padding: 10px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 12.5px;">
+                        <label title="Tebak-tebakan, pilihan ganda, mencocokkan, atau menguji wawasan umum secara cepat."><input type="checkbox" name="ajukan-kat" value="kuis"> ❓ Kuis & Trivia</label>
+                        <label title="Menyusun balok, memecahkan teka-teki, mencari jalan keluar, atau melatih nalar logika."><input type="checkbox" name="ajukan-kat" value="puzzle"> 🧩 Puzzle & Logika</label>
+                        <label title="Percobaan interaktif, eksperimen sains, atau simulasi yang mendekati dunia nyata."><input type="checkbox" name="ajukan-kat" value="simulasi"> 🔬 Simulasi & Eksper</label>
+                        <label title="Game ringan bertempo cepat yang mengandalkan refleks, ketepatan, atau ketangkasan tangan."><input type="checkbox" name="ajukan-kat" value="arcade"> 🕹️ Arcade & Ketangkasan</label>
+                        <label title="Kartu bolak-balik untuk berlatih menghafal istilah, kosakata, atau konsep tertentu."><input type="checkbox" name="ajukan-kat" value="flashcard"> 🎴 Flashcard</label>
+                        <label title="Game roleplay (RPG), eksplorasi, atau mengikuti alur cerita untuk memecahkan misi."><input type="checkbox" name="ajukan-kat" value="petualangan"> 🗺️ Petualangan</label>
+                        <label title="Game mewarnai, merakit bentuk, menciptakan musik, atau desain bebas."><input type="checkbox" name="ajukan-kat" value="kreativitas"> 🎨 Kreativitas</label>
+                        <label title="Kategori game edukasi lainnya yang tidak termasuk dalam daftar di atas."><input type="checkbox" name="ajukan-kat" value="lainnya"> ✨ Lainnya</label>
+                    </div>
+                </div>
+
+                <!-- 6. Deskripsi Singkat -->
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 12px; font-weight: 700; color: var(--text-body);">Deskripsi Singkat</label>
+                    <textarea id="ajukan-deskripsi" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #ccc; font-family: 'Nunito', sans-serif; font-size: 12.5px;" rows="2" placeholder="Jelaskan ringkasan atau keunikan game ini..."></textarea>
+                </div>
+
+                <!-- 7. Live Card Preview -->
+                <div id="card-preview-wrap" style="margin-bottom: 18px; padding: 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 12px; font-weight: 800; color: var(--text-dark);">👁️ Pratinjau Tampilan Kartu di Grid:</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Otomatis Menyesuaikan Tema</span>
+                    </div>
+                    <div style="display: flex; justify-content: center; padding: 8px 0;">
+                        <div id="live-card-preview" style="max-width: 220px; width: 100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="ajukan-thumbnail-data">
+                <input type="hidden" id="ajukan-theme-data">
+                <input type="hidden" id="ajukan-edit-id">
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" id="btn-batal-ajukan" style="padding: 10px 18px; border-radius: 8px; border: none; background: #eee; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px;">Batal</button>
+                    <button type="submit" id="btn-submit-ajukan" style="padding: 10px 22px; border-radius: 8px; border: none; background: var(--text-dark); color: white; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;">Kirim Pengajuan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Input Gemini API Key (Bagi pengguna baru) -->
+    <div id="modal-gemini-key" class="sidebar-overlay" style="z-index: 300; display: none; align-items: center; justify-content: center;">
+        <form class="pop-in" autocomplete="off" onsubmit="return false;" style="background: var(--white); width: 90%; max-width: 440px; border-radius: var(--radius-card); padding: 24px; box-shadow: var(--shadow-hover); margin: 0;">
+            <!-- Dummy hidden fields to capture browser credentials autofill -->
+            <input type="text" name="fake_username_gemini" style="display:none;" aria-hidden="true" autocomplete="username">
+            <input type="password" name="fake_password_gemini" style="display:none;" aria-hidden="true" autocomplete="current-password">
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <span style="font-size: 28px;">🔑</span>
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">Hubungkan Gemini AI</h3>
+                    <span style="font-size: 11px; color: var(--text-muted);">Aktifkan asisten pintar perancang kartu game</span>
+                </div>
+            </div>
+            <p style="font-size: 12.5px; color: var(--text-body); margin-bottom: 12px; line-height: 1.5;">
+                Untuk membaca isi game dan merancang ilustrasi vektor SVG serta latar tematik secara otomatis, masukkan <b>Google Gemini API Key</b> Anda. API Key dapat dibuat secara <b>gratis</b>.
+            </p>
+            <div style="margin-bottom: 14px;">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="input-modal-gemini-key" name="gemini_api_key_field" placeholder="AIzaSy..." autocomplete="new-password" style="width: 100%; padding: 10px 40px 10px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-family: monospace; font-size: 13px; outline: none;">
+                    <button type="button" id="btn-toggle-eye-key" style="position: absolute; right: 10px; background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.6; line-height: 1; padding: 4px;" title="Lihat / Sembunyikan API Key">👁️</button>
+                </div>
+                <div style="margin-top: 8px;">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #4f46e5; font-weight: 700; text-decoration: none;">🔗 Buka Google AI Studio untuk Dapatkan API Key Gratis &rarr;</a>
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" id="btn-modal-key-cancel" style="padding: 8px 14px; border-radius: 8px; border: none; background: #f1f5f9; color: #475569; font-weight: 700; font-size: 12px; cursor: pointer;">Batal</button>
+                <button type="button" id="btn-modal-key-save" style="padding: 8px 18px; border-radius: 8px; border: none; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; font-weight: 800; font-size: 12px; cursor: pointer;">Simpan & Lanjutkan ✨</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Popup Status -->
+    <div id="status-popup" class="status-popup-overlay" aria-hidden="true">
+        <div id="status-popup-card" class="status-popup-card success" role="alertdialog" aria-modal="true" aria-labelledby="status-popup-title" aria-describedby="status-popup-message">
+            <div id="status-popup-icon" class="status-popup-icon">✅</div>
+            <h3 id="status-popup-title" class="status-popup-title">Berhasil</h3>
+            <p id="status-popup-message" class="status-popup-message">Pengajuan berhasil dikirim.</p>
+            <button type="button" id="status-popup-close" class="status-popup-btn">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Modal Pemutar Game (PID Game Player Runner - Sandboxed OWASP/ASVS) -->
+    <div id="modal-game-player" class="sidebar-overlay" style="z-index: 500; display: none; align-items: center; justify-content: center; padding: 0; background: rgba(3, 7, 18, 0.95); backdrop-filter: blur(12px);">
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #030712;">
+            <!-- Player Topbar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; z-index: 10;">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                    <span id="player-game-emoji" style="font-size: 24px; line-height: 1;">🎮</span>
+                    <div style="min-width: 0;">
+                        <h2 id="player-game-title" style="font-size: 15px; font-weight: 800; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">Memuat Game...</h2>
+                        <span id="player-game-author" style="font-size: 11px; color: #94a3b8; font-weight: 600;">Guru SMAGESA</span>
+                    </div>
+                    <span id="player-game-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">📄 HTML</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <button type="button" id="btn-player-reload" title="Muat Ulang Game" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s;">🔄</button>
+                    <button type="button" id="btn-player-fullscreen" title="Layar Penuh" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s;">⛶</button>
+                    <button type="button" id="btn-player-close" title="Tutup / Kembali" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; transition: background 0.2s;">✕</button>
+                </div>
+            </div>
+            <!-- Player Frame Container -->
+            <div id="player-frame-wrap" style="flex: 1; width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden;">
+                <div id="player-loading-spinner" style="position: absolute; display: flex; flex-direction: column; align-items: center; gap: 10px; color: #94a3b8; font-size: 13px; font-weight: 700; z-index: 5;">
+                    <span style="font-size: 28px;" class="ai-spin">⏳</span>
+                    <span>Menyiapkan lingkungan game...</span>
+                </div>
+                <iframe id="player-iframe" sandbox="allow-scripts allow-forms allow-pointer-lock allow-fullscreen" style="width: 100%; height: 100%; border: none; background: #fff; position: relative; z-index: 6; display: block;" allow="fullscreen; autoplay; gamepad"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detail Game Lengkap (PID Game Arcade Popup) -->
+    <div id="modal-game-detail" class="sidebar-overlay" style="z-index: 250; display: none; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(8px); background: rgba(12, 26, 105, 0.45);">
+        <div class="pop-in arcade-modal-card">
+            <!-- Header Hero Stage -->
+            <div id="game-detail-banner" class="arcade-hero-stage">
+                <div id="game-detail-pattern" class="card-pattern-layer" style="opacity: 0.18;"></div>
+                <button type="button" id="btn-close-game-detail-x" class="arcade-btn-close-x" onclick="window.closeGameDetailModal?.()" title="Tutup Modal Detail">✕</button>
+                
+                <div id="game-detail-thumb" class="arcade-thumb-wrap">
+                    <!-- Thumbnail diinjeksi via JavaScript -->
+                </div>
+                <div style="flex: 1; min-width: 0; z-index: 2;">
+                    <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+                        <span id="game-detail-source-badge" class="arcade-pill arcade-pill-source">📄 HTML</span>
+                        <span id="game-detail-type-badge" class="arcade-pill arcade-pill-type" style="background: rgba(2, 132, 199, 0.16); color: #0284c7; font-weight: 800; border: 1px solid rgba(2, 132, 199, 0.3);">📚 Game Pembelajaran</span>
+                        <span id="game-detail-cat-badge" class="arcade-pill arcade-pill-cat">🎮 Game</span>
+                        <span id="game-detail-status-badge" style="display: none;"></span>
+                    </div>
+                    <h3 id="game-detail-title" style="font-size: 18px; font-weight: 900; color: var(--text-dark); margin: 0; line-height: 1.25; overflow-wrap: break-word; text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);">Judul Game</h3>
+                </div>
+            </div>
+
+            <!-- Body Detail: Game Quest & Lore -->
+            <div style="padding: 18px 20px 14px; overflow-y: auto; flex: 1;">
+                <!-- Quest Info & Creator Box -->
+                <div class="arcade-quest-card">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 22px; line-height: 1;">👨‍🏫</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; display: block;">Game Master / Kreator:</span>
+                            <div id="game-detail-author" style="font-size: 13.5px; font-weight: 900; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nama Guru</div>
+                            <div id="game-detail-submitter" style="font-size: 11px; color: var(--text-body); opacity: 0.75; font-style: italic; margin-top: 1px; display: none;"></div>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px dashed rgba(12, 26, 105, 0.12); padding-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                            <span style="font-size: 13px;">🎯</span>
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px;">Mata Pelajaran:</span>
+                        </div>
+                        <div id="game-detail-subject-chips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
+                </div>
+
+                <!-- Mission & Guide Box -->
+                <div class="arcade-mission-box">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <span style="font-size: 14px;">📜</span>
+                        <span style="font-size: 11px; color: var(--text-dark); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Misi & Panduan Game:</span>
+                    </div>
+                    <p id="game-detail-desc" style="font-size: 12.5px; color: var(--text-body); line-height: 1.55; margin: 0; white-space: pre-line;"></p>
+                </div>
+            </div>
+
+            <!-- Arcade Controls Footer -->
+            <div style="padding: 14px 20px 16px; background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%); border-top: 2px solid #e2e8f0; display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+                <button type="button" id="btn-detail-close" class="btn-arcade-close" onclick="window.closeGameDetailModal?.()">Tutup</button>
+                <button type="button" id="btn-detail-edit" class="btn-arcade-edit" style="display: none;">
+                    <span>✏️</span> <span>Edit Game</span>
+                </button>
+                <button type="button" id="btn-detail-play" class="btn-arcade-play">
+                    <span>▶</span> <span id="btn-detail-play-text">Mainkan Game</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="games.js?v=26.11.02.1"></script>
+
+    <!-- Logika Ajukan Game, Combobox GTK & AI Generator -->
+    <script type="module">
+        import { auth, db, getAiConfig, getAiConfigAsync, getUserGeminiApiKeysAsync } from '../js/config.js';
+        import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        
+        window.auth = auth;
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.serverTimestamp = serverTimestamp;
+        window.getAiConfig = getAiConfig;
+        window.getAiConfigAsync = getAiConfigAsync;
+        window.getUserGeminiApiKeysAsync = getUserGeminiApiKeysAsync;
+
+        // Muat system_config untuk menyinkronkan AI Model yang diatur Super Admin di Pengaturan
+        try {
+            getDoc(doc(db, 'settings', 'system_config')).then((snap) => {
+                if (snap && snap.exists()) {
+                    const data = snap.data();
+                    if (data.geminiModel) localStorage.setItem('simas_gemini_model', data.geminiModel);
+                    if (data.geminiDisplayName) localStorage.setItem('simas_gemini_display_name', data.geminiDisplayName);
+                }
+            }).catch(() => {});
+        } catch (e) {}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnOpen = document.getElementById('btn-open-ajukan');
+            if (!btnOpen) return;
+
+            const btnCancel = document.getElementById('btn-batal-ajukan');
+            const btnCloseX = document.getElementById('btn-close-modal-x');
+            const modal = document.getElementById('modal-ajukan');
+            const form = document.getElementById('form-ajukan');
+            const mapelContainer = document.getElementById('mapel-container');
+            const kategoriContainer = document.getElementById('kategori-container');
+            const inputUrl = document.getElementById('ajukan-url');
+            const inputJudul = document.getElementById('ajukan-judul');
+            const inputDesc = document.getElementById('ajukan-deskripsi');
+            const inputGuruSearch = document.getElementById('ajukan-guru-search');
+            const inputGuruVal = document.getElementById('ajukan-guru-val');
+            const gtkDropdownList = document.getElementById('gtk-dropdown-list');
+            const btnSelfGtk = document.getElementById('btn-self-gtk');
+            const chkGameEksternal = document.getElementById('chk-game-eksternal');
+            const guruReqStar = document.getElementById('guru-req-star');
+            const gtkHintText = document.getElementById('gtk-hint-text');
+            const gtkSelectedBadge = document.getElementById('gtk-selected-badge');
+            const btnSubmit = document.getElementById('btn-submit-ajukan');
+            const editIdInput = document.getElementById('ajukan-edit-id');
+            const inputThumbData = document.getElementById('ajukan-thumbnail-data');
+            const inputThemeData = document.getElementById('ajukan-theme-data');
+            const modalTitle = modal.querySelector('h2');
+            
+            // AI Components
+            const btnAiInspect = document.getElementById('btn-ai-inspect');
+            const aiStatusNote = document.getElementById('ai-status-note');
+            const aiStatusText = document.getElementById('ai-status-text');
+            const modalGeminiKey = document.getElementById('modal-gemini-key');
+            const inputModalGeminiKey = document.getElementById('input-modal-gemini-key');
+            const btnModalKeySave = document.getElementById('btn-modal-key-save');
+            const btnModalKeyCancel = document.getElementById('btn-modal-key-cancel');
+
+            // Source Switch & HTML Components
+            const tabSrcUrl = document.getElementById('tab-src-url');
+            const tabSrcHtml = document.getElementById('tab-src-html');
+            const inputSourceType = document.getElementById('ajukan-source-type');
+            const sectionSourceUrl = document.getElementById('section-source-url');
+            const sectionSourceHtml = document.getElementById('section-source-html');
+            const htmlDropzone = document.getElementById('html-dropzone');
+            const inputHtmlFile = document.getElementById('ajukan-html-file');
+            const inputHtmlCode = document.getElementById('ajukan-html-code');
+            const btnPasteHtml = document.getElementById('btn-paste-html');
+            const btnClearHtml = document.getElementById('btn-clear-html');
+            const htmlSizeInfo = document.getElementById('html-size-info');
+            const htmlValidBadge = document.getElementById('html-valid-badge');
+            const btnAiInspectHtml = document.getElementById('btn-ai-inspect-html');
+            const btnTestSandbox = document.getElementById('btn-test-sandbox');
+            const aiStatusNoteHtml = document.getElementById('ai-status-note-html');
+            const aiStatusTextHtml = document.getElementById('ai-status-text-html');
+
+            // Player Runner Controls
+            const btnPlayerReload = document.getElementById('btn-player-reload');
+            const btnPlayerFullscreen = document.getElementById('btn-player-fullscreen');
+            const btnPlayerClose = document.getElementById('btn-player-close');
+            const modalGamePlayer = document.getElementById('modal-game-player');
+
+            const role = localStorage.getItem('user_role');
+            const CACHE_KEY = 'pid_games_data';
+            const CACHE_TS_KEY = 'pid_games_ts';
+            const cfWorkerUrl = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+            const esc = window.esc || ((str) => {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            });
+
+            let mapelLoaded = false;
+            let gtkTeachers = [];
+            let lastValidTeacherName = '';
+
+            const isEditMode = () => Boolean(editIdInput.value);
+
+            const getCurrentUserName = () => {
+                const uid = auth.currentUser?.uid || window.pidPortalViewer?.uid;
+                return (
+                    window.pidPortalViewer?.name ||
+                    (uid ? localStorage.getItem(`cached_user_name_${uid}`) : null) ||
+                    localStorage.getItem('user_name') ||
+                    auth.currentUser?.displayName ||
+                    'Guru SMAGESA'
+                );
+            };
+
+            // ==================== LOAD GTK MASTER DATA ====================
+            const loadGtkMaster = async () => {
+                if (gtkTeachers.length > 0) return;
+                
+                // Cek cache lokal dulu untuk render instan
+                const cached = localStorage.getItem('simas_cached_gtk_master');
+                if (cached) {
+                    try {
+                        const parsed = JSON.parse(cached);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            gtkTeachers = parsed;
+                        }
+                    } catch (e) {}
+                }
+
+                try {
+                    const token = auth.currentUser ? await auth.currentUser.getIdToken().catch(() => null) : null;
+                    const headers = {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    };
+
+                    let mRes = await fetch(`${cfWorkerUrl}/api/pid-games/teachers`, { headers });
+                    if (!mRes.ok) {
+                        mRes = await fetch(`${cfWorkerUrl}/api/jurnal/master`, { headers });
+                    }
+                    if (!mRes.ok) {
+                        mRes = await fetch(`${cfWorkerUrl}/api/gtk?status=active&limit=500`, { headers });
+                    }
+
+                    if (mRes.ok) {
+                        const mJson = await mRes.json();
+                        const teachers = mJson.data?.teachers || mJson.data || [];
+                        if (Array.isArray(teachers) && teachers.length > 0) {
+                            gtkTeachers = teachers
+                                .filter(t => t && (t.nama || t.name))
+                                .map(t => ({
+                                    id: t.id || t.uid || '',
+                                    nama: (t.nama || t.name || '').trim(),
+                                    nip: t.nip || ''
+                                }))
+                                .sort((a, b) => a.nama.localeCompare(b.nama, 'id'));
+                            
+                            localStorage.setItem('simas_cached_gtk_master', JSON.stringify(gtkTeachers));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[PID] Gagal memuat data master GTK:', e);
+                }
+
+                // Fallback darurat jika endpoint jaringan belum siap / offline
+                if (gtkTeachers.length === 0) {
+                    const fallbackAuthors = new Set();
+                    const currentName = getCurrentUserName();
+                    if (currentName) fallbackAuthors.add(currentName);
+                    if (Array.isArray(window.allGames)) {
+                        window.allGames.forEach(g => {
+                            if (g.author && g.author !== 'none') fallbackAuthors.add(g.author);
+                            if (g.submitted_by_name) fallbackAuthors.add(g.submitted_by_name);
+                        });
+                    }
+                    if (fallbackAuthors.size > 0) {
+                        gtkTeachers = Array.from(fallbackAuthors).map(name => ({ id: name, nama: name, nip: '' })).sort((a,b) => a.nama.localeCompare(b.nama, 'id'));
+                    }
+                }
+            };
+
+            // Muat data master GTK segera di latar belakang
+            loadGtkMaster();
+
+            const setGameEksternalState = (isEksternal) => {
+                const active = Boolean(isEksternal);
+                if (chkGameEksternal) chkGameEksternal.checked = active;
+                if (active) {
+                    inputGuruSearch.disabled = true;
+                    inputGuruSearch.required = false;
+                    inputGuruVal.required = false;
+                    inputGuruSearch.style.background = '#f1f5f9';
+                    inputGuruSearch.style.color = '#94a3b8';
+                    inputGuruSearch.placeholder = 'Game publik / karya luar (tanpa nama guru)';
+                    inputGuruSearch.value = '';
+                    inputGuruVal.value = 'none';
+                    if (btnSelfGtk) btnSelfGtk.style.display = 'none';
+                    if (guruReqStar) guruReqStar.style.display = 'none';
+                    if (gtkHintText) gtkHintText.textContent = 'Karya umum / luar sekolah (nama guru tidak ditampilkan)';
+                    gtkSelectedBadge.textContent = '🌐 Game Eksternal';
+                    gtkDropdownList.style.display = 'none';
+                } else {
+                    inputGuruSearch.disabled = false;
+                    inputGuruSearch.required = true;
+                    inputGuruVal.required = true;
+                    inputGuruSearch.style.background = 'var(--white)';
+                    inputGuruSearch.style.color = 'var(--text-dark)';
+                    inputGuruSearch.placeholder = 'Ketik untuk mencari nama GTK...';
+                    if (btnSelfGtk) btnSelfGtk.style.display = 'inline-block';
+                    if (guruReqStar) guruReqStar.style.display = 'inline';
+                    if (gtkHintText) gtkHintText.textContent = 'Wajib memilih dari data master GTK sekolah';
+                    selectGtkTeacher(lastValidTeacherName || getCurrentUserName());
+                }
+                updateLivePreview();
+            };
+
+            if (chkGameEksternal) {
+                chkGameEksternal.addEventListener('change', (e) => {
+                    setGameEksternalState(e.target.checked);
+                });
+            }
+
+            const selectGtkTeacher = (name) => {
+                const cleanName = String(name || '').trim();
+                inputGuruVal.value = cleanName;
+                inputGuruSearch.value = cleanName;
+                lastValidTeacherName = cleanName;
+                gtkSelectedBadge.textContent = cleanName ? `✅ Guru terpilih: ${cleanName}` : '⚠️ Pilih nama guru dari daftar';
+                gtkDropdownList.style.display = 'none';
+                updateLivePreview();
+            };
+
+            const renderGtkDropdown = async (filterQuery = '') => {
+                if (chkGameEksternal?.checked) return;
+                if (gtkTeachers.length === 0) {
+                    await loadGtkMaster();
+                }
+
+                const q = filterQuery.toLowerCase().trim();
+                const filtered = q
+                    ? gtkTeachers.filter(t => t.nama.toLowerCase().includes(q) || (t.nip && t.nip.includes(q)))
+                    : gtkTeachers;
+
+                if (filtered.length === 0) {
+                    gtkDropdownList.innerHTML = '<div style="padding: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">Tidak ada GTK yang cocok</div>';
+                } else {
+                    gtkDropdownList.innerHTML = filtered.map(t => `
+                        <div class="gtk-dropdown-item ${t.nama === inputGuruVal.value ? 'active' : ''}" data-name="${esc(t.nama)}" style="padding: 8px 12px; font-size: 12px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600;">${esc(t.nama)}</span>
+                            ${t.nip ? `<span style="font-size: 10px; color: var(--text-muted);">${esc(t.nip)}</span>` : ''}
+                        </div>
+                    `).join('');
+
+                    gtkDropdownList.querySelectorAll('.gtk-dropdown-item').forEach(item => {
+                        item.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            selectGtkTeacher(item.dataset.name);
+                        });
+                    });
+                }
+                gtkDropdownList.style.display = 'block';
+            };
+
+            inputGuruSearch.addEventListener('focus', async () => {
+                if (!chkGameEksternal?.checked) await renderGtkDropdown(inputGuruSearch.value);
+            });
+
+            inputGuruSearch.addEventListener('click', async () => {
+                if (!chkGameEksternal?.checked) await renderGtkDropdown(inputGuruSearch.value);
+            });
+
+            inputGuruSearch.addEventListener('input', async () => {
+                if (!chkGameEksternal?.checked) await renderGtkDropdown(inputGuruSearch.value);
+            });
+
+            inputGuruSearch.addEventListener('blur', () => {
+                if (chkGameEksternal?.checked) return;
+                setTimeout(() => {
+                    gtkDropdownList.style.display = 'none';
+                    // Strict validation: Kembalikan ke nama guru valid terakhir jika input tidak sesuai
+                    const match = gtkTeachers.find(t => t.nama.toLowerCase() === inputGuruSearch.value.trim().toLowerCase());
+                    if (match) {
+                        selectGtkTeacher(match.nama);
+                    } else if (lastValidTeacherName) {
+                        selectGtkTeacher(lastValidTeacherName);
+                    }
+                }, 200);
+            });
+
+            btnSelfGtk.addEventListener('click', () => {
+                if (chkGameEksternal?.checked) return;
+                const selfName = getCurrentUserName();
+                const matched = gtkTeachers.find(t => t.nama.toLowerCase() === selfName.toLowerCase());
+                if (matched) {
+                    selectGtkTeacher(matched.nama);
+                } else {
+                    selectGtkTeacher(selfName);
+                }
+            });
+
+            // ==================== TAB SWITCH & FILE HANDLER ====================
+            const setSourceTab = (type) => {
+                const isHtml = type === 'html';
+                if (inputSourceType) inputSourceType.value = isHtml ? 'html' : 'url';
+                if (isHtml) {
+                    if (tabSrcHtml) {
+                        tabSrcHtml.style.background = 'var(--white)';
+                        tabSrcHtml.style.color = 'var(--text-dark)';
+                        tabSrcHtml.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        tabSrcHtml.style.fontWeight = '800';
+                    }
+                    if (tabSrcUrl) {
+                        tabSrcUrl.style.background = 'transparent';
+                        tabSrcUrl.style.color = 'var(--text-body)';
+                        tabSrcUrl.style.boxShadow = 'none';
+                        tabSrcUrl.style.fontWeight = '700';
+                    }
+                    if (sectionSourceHtml) sectionSourceHtml.style.display = 'block';
+                    if (sectionSourceUrl) sectionSourceUrl.style.display = 'none';
+                } else {
+                    if (tabSrcUrl) {
+                        tabSrcUrl.style.background = 'var(--white)';
+                        tabSrcUrl.style.color = 'var(--text-dark)';
+                        tabSrcUrl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                        tabSrcUrl.style.fontWeight = '800';
+                    }
+                    if (tabSrcHtml) {
+                        tabSrcHtml.style.background = 'transparent';
+                        tabSrcHtml.style.color = 'var(--text-body)';
+                        tabSrcHtml.style.boxShadow = 'none';
+                        tabSrcHtml.style.fontWeight = '700';
+                    }
+                    if (sectionSourceUrl) sectionSourceUrl.style.display = 'block';
+                    if (sectionSourceHtml) sectionSourceHtml.style.display = 'none';
+                }
+                updateLivePreview();
+            };
+
+            if (tabSrcUrl) tabSrcUrl.addEventListener('click', () => setSourceTab('url'));
+            if (tabSrcHtml) tabSrcHtml.addEventListener('click', () => setSourceTab('html'));
+
+            const updateHtmlSizeIndicator = () => {
+                const text = inputHtmlCode?.value || '';
+                const bytes = new Blob([text]).size;
+                const kb = (bytes / 1024).toFixed(1);
+                if (bytes > 2097152) {
+                    if (htmlSizeInfo) {
+                        htmlSizeInfo.textContent = `Ukuran: ${kb} KB (⚠️ Melebihi batas 2 MB)`;
+                        htmlSizeInfo.style.color = '#ef4444';
+                    }
+                    if (htmlValidBadge) htmlValidBadge.textContent = '';
+                } else if (bytes > 0) {
+                    if (htmlSizeInfo) {
+                        htmlSizeInfo.textContent = `Ukuran: ${kb} KB / 2048 KB`;
+                        htmlSizeInfo.style.color = 'var(--text-muted)';
+                    }
+                    if (htmlValidBadge) htmlValidBadge.textContent = '✅ Siap';
+                } else {
+                    if (htmlSizeInfo) {
+                        htmlSizeInfo.textContent = 'Ukuran: 0 KB (Maks 2 MB)';
+                        htmlSizeInfo.style.color = 'var(--text-muted)';
+                    }
+                    if (htmlValidBadge) htmlValidBadge.textContent = '';
+                }
+            };
+
+            const handleHtmlFileSelected = (file) => {
+                if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+                    showStatusPopup('warning', 'Pilih berkas dengan ekstensi .html atau .htm');
+                    return;
+                }
+                if (file.size > 2097152) {
+                    showStatusPopup('warning', `Ukuran berkas (${(file.size / 1024).toFixed(1)} KB) melebihi batas maksimal 2 MB.`);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (inputHtmlCode) inputHtmlCode.value = e.target.result;
+                    updateHtmlSizeIndicator();
+                    if (!inputJudul.value.trim()) {
+                        const cleanFileName = file.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_+]/g, ' ');
+                        inputJudul.value = cleanFileName.charAt(0).toUpperCase() + cleanFileName.slice(1);
+                    }
+                    updateLivePreview();
+                };
+                reader.readAsText(file);
+            };
+
+            if (inputHtmlCode) inputHtmlCode.addEventListener('input', () => {
+                updateHtmlSizeIndicator();
+                updateLivePreview();
+            });
+
+            if (htmlDropzone && inputHtmlFile) {
+                htmlDropzone.addEventListener('click', () => inputHtmlFile.click());
+                htmlDropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    htmlDropzone.style.background = '#d1fae5';
+                });
+                htmlDropzone.addEventListener('dragleave', () => {
+                    htmlDropzone.style.background = 'rgba(255,255,255,0.7)';
+                });
+                htmlDropzone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    htmlDropzone.style.background = 'rgba(255,255,255,0.7)';
+                    const files = e.dataTransfer.files;
+                    if (files && files[0]) handleHtmlFileSelected(files[0]);
+                });
+                inputHtmlFile.addEventListener('change', (e) => {
+                    const files = e.target.files;
+                    if (files && files[0]) handleHtmlFileSelected(files[0]);
+                });
+            }
+
+            if (btnPasteHtml && inputHtmlCode) {
+                btnPasteHtml.addEventListener('click', async () => {
+                    try {
+                        const text = await navigator.clipboard.readText();
+                        if (text && text.trim()) {
+                            inputHtmlCode.value = text;
+                            updateHtmlSizeIndicator();
+                            updateLivePreview();
+                        } else {
+                            showStatusPopup('warning', 'Papan klip (clipboard) kosong.');
+                        }
+                    } catch (err) {
+                        showStatusPopup('warning', 'Gunakan kombinasi keyboard Ctrl+V (atau Cmd+V) untuk menempelkan kode ke dalam textarea.');
+                    }
+                });
+            }
+
+            if (btnClearHtml && inputHtmlCode) {
+                btnClearHtml.addEventListener('click', () => {
+                    inputHtmlCode.value = '';
+                    if (inputHtmlFile) inputHtmlFile.value = '';
+                    updateHtmlSizeIndicator();
+                    updateLivePreview();
+                });
+            }
+
+            if (btnTestSandbox && inputHtmlCode) {
+                btnTestSandbox.addEventListener('click', () => {
+                    const code = inputHtmlCode.value.trim();
+                    if (!code) {
+                        showStatusPopup('warning', 'Unggah berkas atau tempelkan kode HTML terlebih dahulu sebelum uji coba.');
+                        inputHtmlCode.focus();
+                        return;
+                    }
+                    const tempGame = {
+                        id: 'preview_temp',
+                        title: inputJudul.value.trim() || 'Pratinjau Game Mandiri',
+                        author: inputGuruVal.value.trim() || getCurrentUserName(),
+                        theme: { emoji: '🧪' }
+                    };
+                    window.launchPidGame(tempGame, code);
+                });
+            }
+
+            // Player Runner Event Listeners
+            if (btnPlayerClose) btnPlayerClose.addEventListener('click', () => window.closePidGamePlayer?.());
+            if (btnPlayerReload) btnPlayerReload.addEventListener('click', () => window.reloadPidGamePlayer?.());
+            if (btnPlayerFullscreen) {
+                btnPlayerFullscreen.addEventListener('click', () => {
+                    const pModal = document.getElementById('modal-game-player');
+                    if (!document.fullscreenElement) {
+                        pModal?.requestFullscreen().catch(() => {});
+                    } else {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                });
+            }
+
+            // ==================== LIVE PREVIEW UPDATE ====================
+            const updateLivePreview = () => {
+                const checkedMapels = Array.from(mapelContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                const checkedKats = Array.from(kategoriContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                
+                let themeObj = null;
+                if (inputThemeData.value) {
+                    try { themeObj = JSON.parse(inputThemeData.value); } catch(e) {}
+                }
+
+                const isEksternal = chkGameEksternal && chkGameEksternal.checked;
+                const effectiveAuthor = isEksternal ? 'none' : (inputGuruVal.value || getCurrentUserName());
+                const isHtmlMode = inputSourceType && inputSourceType.value === 'html';
+
+                const gameData = {
+                    title: inputJudul.value.trim() || 'Judul Game',
+                    subject: checkedMapels.join(', ') || 'Umum',
+                    category: checkedKats.length > 0 ? checkedKats : ['lainnya'],
+                    author: effectiveAuthor,
+                    url: isHtmlMode ? '/api/pid-games/preview/play' : (inputUrl.value.trim() || '#'),
+                    source_type: isHtmlMode ? 'html' : 'url',
+                    has_html: isHtmlMode,
+                    thumbnail_url: inputThumbData.value || '',
+                    theme: themeObj,
+                    is_active: true
+                };
+
+                window.renderLiveCardPreview(gameData, 'live-card-preview');
+            };
+
+            inputJudul.addEventListener('input', updateLivePreview);
+            mapelContainer.addEventListener('change', updateLivePreview);
+            kategoriContainer.addEventListener('change', updateLivePreview);
+
+            // ==================== RESET & ENSURE BASE FORM ====================
+            const resetAjukanFormState = () => {
+                form.reset();
+                editIdInput.value = '';
+                inputThumbData.value = '';
+                inputThemeData.value = '';
+                modalTitle.textContent = '➕ Tambah Game Baru';
+                btnSubmit.textContent = 'Kirim Pengajuan';
+                aiStatusNote.style.display = 'none';
+                
+                setGameEksternalState(false);
+                const defaultName = getCurrentUserName();
+                selectGtkTeacher(defaultName);
+
+                kategoriContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                mapelContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                updateLivePreview();
+            };
+
+            const closeAjukanModal = () => {
+                modal.style.display = 'none';
+                resetAjukanFormState();
+            };
+
+            const ensureBaseFormData = async () => {
+                await loadGtkMaster();
+                const defaultName = getCurrentUserName();
+
+                if (!chkGameEksternal?.checked && !inputGuruVal.value && defaultName) {
+                    const matched = gtkTeachers.find(t => t.nama.toLowerCase() === defaultName.toLowerCase());
+                    selectGtkTeacher(matched ? matched.nama : defaultName);
+                }
+
+                if (!mapelLoaded) {
+                    try {
+                        let allowedMapels = [];
+                        try {
+                            const cfgRes = await fetch(`${cfWorkerUrl}/api/pid-games/config`);
+                            if (cfgRes.ok) {
+                                const cfgJson = await cfgRes.json();
+                                if (Array.isArray(cfgJson.data?.allowed_subjects) && cfgJson.data.allowed_subjects.length > 0) {
+                                    allowedMapels = cfgJson.data.allowed_subjects;
+                                } else if (Array.isArray(cfgJson.data?.schedule_subjects) && cfgJson.data.schedule_subjects.length > 0) {
+                                    allowedMapels = cfgJson.data.schedule_subjects;
+                                }
+                            }
+                        } catch (e) {}
+
+                        window.pidAllowedMapelsCache = allowedMapels;
+
+                        let html = '';
+                        if (allowedMapels.length === 0) {
+                            html = '<div style="grid-column: 1 / -1; color: gray; font-size: 11px; text-align: center;">Belum ada mapel dikonfigurasi</div>';
+                        } else {
+                            allowedMapels.forEach(nama => {
+                                html += `<label><input type="checkbox" value="${nama}"> ${nama}</label>`;
+                            });
+                        }
+                        mapelContainer.innerHTML = html;
+                        mapelLoaded = true;
+                    } catch (e) {
+                        console.error('Gagal load mapel config:', e);
+                    }
+                }
+            };
+
+            const openAjukanModal = async () => {
+                await ensureBaseFormData();
+                modal.style.display = 'flex';
+                updateLivePreview();
+            };
+
+            // ==================== AI INSPECTOR TRIGGER ====================
+            const runAiInspector = async (apiKey) => {
+                const rawUrl = inputUrl.value.trim();
+                if (!rawUrl) {
+                    showStatusPopup('warning', 'Masukkan link / URL game terlebih dahulu di kolom paling atas.');
+                    inputUrl.focus();
+                    return;
+                }
+
+                aiStatusNote.style.display = 'flex';
+                aiStatusText.textContent = '🤖 Sedang mengintip konten game dari URL...';
+                btnAiInspect.disabled = true;
+
+                try {
+                    // 1. Inspeksi URL via Cloudflare Worker
+                    const inspectData = await window.inspectGameUrl(rawUrl);
+
+                    aiStatusText.textContent = '🎨 Gemini AI sedang merancang ilustrasi vektor SVG & latar kartu...';
+
+                    // 2. Generate Card Visual & Metadata via Gemini AI
+                    const allAvailableMapels = Array.from(mapelContainer.querySelectorAll('input')).map(cb => cb.value);
+                    const checkedMapels = Array.from(mapelContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                    const checkedKats = Array.from(kategoriContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+
+                    const aiResult = await window.generateCardVisualAI({
+                        url: rawUrl,
+                        inspectData,
+                        title: inputJudul.value.trim(),
+                        subject: checkedMapels.join(', '),
+                        category: checkedKats,
+                        apiKey,
+                        availableSubjects: allAvailableMapels
+                    });
+
+                    // 3. Terapkan hasil AI ke Form
+                    if (aiResult.title) {
+                        inputJudul.value = aiResult.title;
+                    }
+                    if (aiResult.description) {
+                        inputDesc.value = aiResult.description;
+                    }
+
+                    // Centang Mapel hasil AI
+                    if (Array.isArray(aiResult.subject)) {
+                        aiResult.subject.forEach(sub => {
+                            const cb = mapelContainer.querySelector(`input[value="${sub}"]`) ||
+                                       Array.from(mapelContainer.querySelectorAll('input')).find(i => i.value.toLowerCase() === sub.toLowerCase());
+                            if (cb) cb.checked = true;
+                        });
+                    }
+
+                    // Centang Kategori hasil AI
+                    if (Array.isArray(aiResult.category)) {
+                        aiResult.category.forEach(kat => {
+                            const cb = kategoriContainer.querySelector(`input[value="${kat}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                    }
+
+                    // Simpan SVG & Theme
+                    if (aiResult.svg_illustration) {
+                        const svgDataUri = (typeof window.safeSvgToDataUri === 'function')
+                            ? window.safeSvgToDataUri(aiResult.svg_illustration)
+                            : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(aiResult.svg_illustration).replace(/'/g, '%27')}`;
+                        inputThumbData.value = svgDataUri;
+                    }
+                    if (aiResult.theme) {
+                        inputThemeData.value = JSON.stringify(aiResult.theme);
+                    }
+
+                    updateLivePreview();
+                    aiStatusText.textContent = '✨ Kartu game berhasil dirancang secara otomatis!';
+
+                } catch (err) {
+                    console.error('[PID AI Error]', err);
+                    showStatusPopup('error', 'Gagal merancang AI: ' + err.message);
+                    aiStatusNote.style.display = 'none';
+                } finally {
+                    btnAiInspect.disabled = false;
+                }
+            };
+
+            const runAiInspectorHtml = async (apiKey, code) => {
+                aiStatusNoteHtml.style.display = 'flex';
+                aiStatusTextHtml.textContent = '🤖 Sedang menganalisis kode HTML game...';
+                btnAiInspectHtml.disabled = true;
+
+                try {
+                    const inspectData = window.inspectHtmlCode(code);
+                    aiStatusTextHtml.textContent = '🎨 Gemini AI sedang merancang tema visual kartu...';
+
+                    const allAvailableMapels = Array.from(mapelContainer.querySelectorAll('input')).map(cb => cb.value);
+                    const checkedMapels = Array.from(mapelContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                    const checkedKats = Array.from(kategoriContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+
+                    const aiResult = await window.generateCardVisualAI({
+                        url: 'Kode HTML Game Mandiri',
+                        inspectData,
+                        title: inputJudul.value.trim() || inspectData.title,
+                        subject: checkedMapels.join(', '),
+                        category: checkedKats,
+                        apiKey,
+                        availableSubjects: allAvailableMapels
+                    });
+
+                    if (aiResult.title) {
+                        inputJudul.value = aiResult.title;
+                    }
+                    if (aiResult.description) {
+                        inputDesc.value = aiResult.description;
+                    }
+                    if (Array.isArray(aiResult.subject)) {
+                        aiResult.subject.forEach(sub => {
+                            const cb = mapelContainer.querySelector(`input[value="${sub}"]`) ||
+                                       Array.from(mapelContainer.querySelectorAll('input')).find(i => i.value.toLowerCase() === sub.toLowerCase());
+                            if (cb) cb.checked = true;
+                        });
+                    }
+                    if (Array.isArray(aiResult.category)) {
+                        aiResult.category.forEach(kat => {
+                            const cb = kategoriContainer.querySelector(`input[value="${kat}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                    }
+                    if (aiResult.svg_illustration) {
+                        const svgDataUri = (typeof window.safeSvgToDataUri === 'function')
+                            ? window.safeSvgToDataUri(aiResult.svg_illustration)
+                            : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(aiResult.svg_illustration).replace(/'/g, '%27')}`;
+                        inputThumbData.value = svgDataUri;
+                    }
+                    if (aiResult.theme) {
+                        inputThemeData.value = JSON.stringify(aiResult.theme);
+                    }
+
+                    updateLivePreview();
+                    aiStatusTextHtml.textContent = '✨ Kartu game berhasil dirancang secara otomatis!';
+                } catch (err) {
+                    console.error('[PID AI Error]', err);
+                    showStatusPopup('error', 'Gagal merancang AI: ' + err.message);
+                    aiStatusNoteHtml.style.display = 'none';
+                } finally {
+                    btnAiInspectHtml.disabled = false;
+                }
+            };
+
+            btnAiInspect.addEventListener('click', async () => {
+                const apiKey = await window.getStoredGeminiApiKey();
+                if (!apiKey) {
+                    modalGeminiKey.style.display = 'flex';
+                    inputModalGeminiKey.focus();
+                    return;
+                }
+                await runAiInspector(apiKey);
+            });
+
+            if (btnAiInspectHtml) {
+                btnAiInspectHtml.addEventListener('click', async () => {
+                    const code = inputHtmlCode.value.trim();
+                    if (!code) {
+                        showStatusPopup('warning', 'Unggah berkas atau tempelkan kode HTML terlebih dahulu sebelum meminta AI merancang.');
+                        inputHtmlCode.focus();
+                        return;
+                    }
+                    const apiKey = await window.getStoredGeminiApiKey();
+                    if (!apiKey) {
+                        modalGeminiKey.style.display = 'flex';
+                        inputModalGeminiKey.focus();
+                        return;
+                    }
+                    await runAiInspectorHtml(apiKey, code);
+                });
+            }
+
+            btnModalKeySave.addEventListener('click', async () => {
+                const key = inputModalGeminiKey.value.trim();
+                if (!key || key.length < 10) {
+                    alert('Masukkan Google Gemini API Key yang valid.');
+                    return;
+                }
+                await window.saveStoredGeminiApiKey(key);
+                modalGeminiKey.style.display = 'none';
+                inputModalGeminiKey.value = '';
+
+                if (inputSourceType && inputSourceType.value === 'html') {
+                    const code = inputHtmlCode.value.trim();
+                    if (code) await runAiInspectorHtml(key, code);
+                } else {
+                    await runAiInspector(key);
+                }
+            });
+
+            const btnToggleEyeKey = document.getElementById('btn-toggle-eye-key');
+            if (btnToggleEyeKey && inputModalGeminiKey) {
+                btnToggleEyeKey.addEventListener('click', () => {
+                    const isPass = inputModalGeminiKey.type === 'password';
+                    inputModalGeminiKey.type = isPass ? 'text' : 'password';
+                    btnToggleEyeKey.textContent = isPass ? '🙈' : '👁️';
+                });
+            }
+
+            btnModalKeyCancel.addEventListener('click', () => {
+                modalGeminiKey.style.display = 'none';
+                if (inputModalGeminiKey) inputModalGeminiKey.type = 'password';
+                if (btnToggleEyeKey) btnToggleEyeKey.textContent = '👁️';
+            });
+
+            // ==================== EDIT FORM FILL ====================
+            const fillEditForm = (game) => {
+                editIdInput.value = game.id || '';
+                modalTitle.textContent = '✏️ Edit Pengajuan Game';
+                btnSubmit.textContent = 'Simpan Perubahan';
+                inputJudul.value = game.title || '';
+                inputDesc.value = game.description || '';
+
+                const isHtml = game.source_type === 'html' || Boolean(game.has_html);
+                if (isHtml) {
+                    setSourceTab('html');
+                    if (game.html_content) {
+                        inputHtmlCode.value = game.html_content;
+                        updateHtmlSizeIndicator();
+                    } else if (game.id) {
+                        fetch(`${cfWorkerUrl}/api/pid-games/${encodeURIComponent(game.id)}`)
+                            .then(r => r.json())
+                            .then(res => {
+                                if (res.data?.html_content && editIdInput.value === game.id) {
+                                    inputHtmlCode.value = res.data.html_content;
+                                    updateHtmlSizeIndicator();
+                                }
+                            }).catch(() => {});
+                    }
+                } else {
+                    setSourceTab('url');
+                    inputUrl.value = game.url || '';
+                }
+                
+                if (!game.author || game.author === 'none') {
+                    setGameEksternalState(true);
+                } else {
+                    setGameEksternalState(false);
+                    selectGtkTeacher(game.author);
+                }
+
+                kategoriContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = Array.isArray(game.category) ? game.category.includes(cb.value) : game.category === cb.value;
+                });
+
+                const selectedSubjects = String(game.subject || '')
+                    .split(',')
+                    .map(item => item.trim())
+                    .filter(Boolean);
+                mapelContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = selectedSubjects.includes(cb.value);
+                });
+
+                inputThumbData.value = game.thumbnail_url || '';
+                inputThemeData.value = game.theme ? JSON.stringify(game.theme) : '';
+                updateLivePreview();
+            };
+
+            btnOpen.addEventListener('click', async () => {
+                resetAjukanFormState();
+                await openAjukanModal();
+            });
+            btnCancel.addEventListener('click', closeAjukanModal);
+            if (btnCloseX) btnCloseX.addEventListener('click', closeAjukanModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeAjukanModal();
+            });
+
+            window.pidPortalOpenEditor = async (gameId) => {
+                const game = Array.isArray(window.allGames) ? window.allGames.find(item => item.id === gameId) : null;
+                if (!game) return;
+
+                const isEditable = (typeof canUserEditGame === 'function')
+                    ? canUserEditGame(game)
+                    : (window.pidPortalViewer?.role === 'super_admin');
+
+                if (!isEditable) {
+                    showStatusPopup('warning', 'Anda tidak memiliki izin untuk mengedit game ini.');
+                    return;
+                }
+
+                resetAjukanFormState();
+                await openAjukanModal();
+                fillEditForm(game);
+            };
+
+            // ==================== POPUP STATUS ====================
+            const statusPopup = document.getElementById('status-popup');
+            const statusPopupCard = document.getElementById('status-popup-card');
+            const statusPopupIcon = document.getElementById('status-popup-icon');
+            const statusPopupTitle = document.getElementById('status-popup-title');
+            const statusPopupMessage = document.getElementById('status-popup-message');
+            const statusPopupClose = document.getElementById('status-popup-close');
+
+            const popupConfig = {
+                success: { title: 'Pengajuan Terkirim', icon: '✅', buttonLabel: 'Sip, Tutup' },
+                warning: { title: 'Cek Dulu Formulir', icon: '⚠️', buttonLabel: 'Saya Mengerti' },
+                error: { title: 'Pengajuan Belum Berhasil', icon: '❌', buttonLabel: 'Coba Lagi' }
+            };
+
+            const closeStatusPopup = () => {
+                statusPopup.classList.remove('show');
+                statusPopup.setAttribute('aria-hidden', 'true');
+            };
+
+            const showStatusPopup = (type, message, customTitle = '') => {
+                const cfg = popupConfig[type] || popupConfig.success;
+                statusPopupCard.className = `status-popup-card ${type}`;
+                statusPopupIcon.textContent = cfg.icon;
+                statusPopupTitle.textContent = customTitle || cfg.title;
+                statusPopupMessage.textContent = message;
+                statusPopupClose.textContent = cfg.buttonLabel;
+                statusPopup.setAttribute('aria-hidden', 'false');
+                statusPopup.classList.add('show');
+            };
+
+            statusPopupClose.addEventListener('click', closeStatusPopup);
+            statusPopup.addEventListener('click', (event) => {
+                if (event.target === statusPopup) closeStatusPopup();
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && statusPopup.classList.contains('show')) closeStatusPopup();
+                if (event.key === 'Escape' && modal.style.display === 'flex') closeAjukanModal();
+                if (event.key === 'Escape' && modalGeminiKey.style.display === 'flex') {
+                    modalGeminiKey.style.display = 'none';
+                    if (inputModalGeminiKey) inputModalGeminiKey.type = 'password';
+                    if (btnToggleEyeKey) btnToggleEyeKey.textContent = '👁️';
+                }
+                if (event.key === 'Escape' && modalGamePlayer && modalGamePlayer.style.display === 'flex') {
+                    window.closePidGamePlayer?.();
+                }
+            });
+
+            modalGeminiKey.addEventListener('click', (event) => {
+                if (event.target === modalGeminiKey) {
+                    modalGeminiKey.style.display = 'none';
+                    if (inputModalGeminiKey) inputModalGeminiKey.type = 'password';
+                    if (btnToggleEyeKey) btnToggleEyeKey.textContent = '👁️';
+                }
+            });
+
+            // ==================== SUBMIT GAME ====================
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const isEksternal = chkGameEksternal && chkGameEksternal.checked;
+                const authorVal = isEksternal ? 'none' : inputGuruVal.value.trim();
+
+                if (!isEksternal && (!authorVal || authorVal === 'none')) {
+                    showStatusPopup('warning', 'Pilih nama guru dari daftar data master GTK sekolah, atau centang Game Eksternal jika merupakan karya luar.');
+                    inputGuruSearch.focus();
+                    return;
+                }
+
+                const checkedMapels = Array.from(mapelContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                const mapelString = checkedMapels.join(', ');
+
+                const checkedKats = Array.from(kategoriContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+                if (checkedKats.length === 0) {
+                    showStatusPopup('warning', 'Silakan pilih minimal 1 kategori game sebelum pengajuan dikirim.');
+                    return;
+                }
+
+                const activeUser = auth.currentUser;
+                const submittedByUid = activeUser?.uid || null;
+                const submittedByName = localStorage.getItem(`cached_user_name_${submittedByUid}`) || localStorage.getItem('user_name') || activeUser?.displayName || inputGuruVal.value || '';
+                const submittedByRole = localStorage.getItem('user_role') || role || '';
+
+                if (!submittedByUid) {
+                    showStatusPopup('error', 'Sesi login belum siap. Muat ulang halaman lalu coba kirim lagi.');
+                    return;
+                }
+
+                const existingGame = isEditMode() && Array.isArray(window.allGames)
+                    ? window.allGames.find(item => item.id === editIdInput.value)
+                    : null;
+
+                const isHtmlMode = inputSourceType && inputSourceType.value === 'html';
+                let gameUrl = inputUrl.value.trim();
+                let htmlContent = null;
+
+                if (isHtmlMode) {
+                    htmlContent = inputHtmlCode.value.trim();
+                    if (!htmlContent) {
+                        showStatusPopup('warning', 'Unggah berkas atau tempelkan kode HTML game terlebih dahulu.');
+                        inputHtmlCode.focus();
+                        return;
+                    }
+                    const bytes = new Blob([htmlContent]).size;
+                    if (bytes > 2097152) {
+                        showStatusPopup('warning', `Ukuran kode HTML game (${(bytes/1024).toFixed(1)} KB) melebihi batas maksimal 2 MB.`);
+                        return;
+                    }
+                    gameUrl = isEditMode() && existingGame?.url ? existingGame.url : `/api/pid-games/${editIdInput.value || 'auto'}/play`;
+                } else {
+                    if (!gameUrl) {
+                        showStatusPopup('warning', 'Masukkan tautan / URL game terlebih dahulu.');
+                        inputUrl.focus();
+                        return;
+                    }
+                }
+
+                let themePayload = null;
+                if (inputThemeData && inputThemeData.value) {
+                    try {
+                        themePayload = typeof inputThemeData.value === 'string' ? JSON.parse(inputThemeData.value) : inputThemeData.value;
+                    } catch (e) {
+                        themePayload = null;
+                    }
+                } else if (isEditMode()) {
+                    themePayload = existingGame?.theme || null;
+                }
+
+                const data = {
+                    title: inputJudul.value.trim(),
+                    url: gameUrl,
+                    source_type: isHtmlMode ? 'html' : 'url',
+                    html_content: htmlContent,
+                    author: isEksternal ? 'none' : (authorVal || 'none'),
+                    submitted_by_uid: isEditMode() && existingGame?.submitted_by_uid ? existingGame.submitted_by_uid : submittedByUid,
+                    submitted_by_name: isEditMode() && existingGame?.submitted_by_name ? existingGame.submitted_by_name : submittedByName,
+                    submitted_by_role: isEditMode() && existingGame?.submitted_by_role ? existingGame.submitted_by_role : submittedByRole,
+                    category: checkedKats,
+                    subject: mapelString || null,
+                    thumbnail_url: inputThumbData.value.trim() || (isEditMode() ? existingGame?.thumbnail_url : null),
+                    theme: themePayload,
+                    description: inputDesc.value.trim() || null,
+                    review_status: 'approved',
+                    is_active: isEditMode() ? (existingGame?.is_active !== false) : true
+                };
+
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = isEditMode() ? '⏳ Menyimpan...' : '⏳ Mengirim...';
+
+                try {
+                    const pidToken = auth.currentUser ? await auth.currentUser.getIdToken().catch(() => null) : null;
+                    const pidHeaders = { 'Content-Type': 'application/json', ...(pidToken ? { 'Authorization': `Bearer ${pidToken}` } : {}) };
+                    if (isEditMode()) {
+                        const resp = await fetch(`${cfWorkerUrl}/api/pid-games/${encodeURIComponent(editIdInput.value)}`, {
+                            method: 'PUT',
+                            headers: pidHeaders,
+                            body: JSON.stringify(data)
+                        });
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    } else {
+                        const resp = await fetch(`${cfWorkerUrl}/api/pid-games`, {
+                            method: 'POST',
+                            headers: pidHeaders,
+                            body: JSON.stringify(data)
+                        });
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    }
+
+                    localStorage.removeItem(CACHE_KEY);
+                    localStorage.removeItem(CACHE_TS_KEY);
+                    closeAjukanModal();
+                    if (typeof window.loadGames === 'function') {
+                        await window.loadGames();
+                    } else if (typeof window.refreshPidGamesVisibility === 'function') {
+                        window.refreshPidGamesVisibility();
+                    }
+                    showStatusPopup(
+                        'success',
+                        isEditMode()
+                            ? 'Data game berhasil diperbarui.'
+                            : 'Game berhasil diajukan dan langsung tampil di portal PID dengan latar visual tematik!',
+                        isEditMode() ? 'Perubahan Tersimpan' : 'Game Berhasil Ditambahkan'
+                    );
+                } catch (err) {
+                    console.error(err);
+                    showStatusPopup('error', 'Terjadi kesalahan saat menyimpan pengajuan. ' + err.message);
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = isEditMode() ? 'Simpan Perubahan' : 'Kirim Pengajuan';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

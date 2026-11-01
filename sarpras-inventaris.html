@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Master Inventaris & KIR - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        [aria-label="Bagian inventaris"] button[aria-pressed="true"],
+        #sarpras-smsr-assets-panel .sarpras-tab-btn.active,
+        #sarpras-smsr-assets-panel .sarpras-subtab-btn.active {
+            background-color: #059669 !important;
+            border-color: #059669 !important;
+            color: #fff !important;
+        }
+        #sarpras-smsr-assets-panel .sarpras-tab-btn,
+        #sarpras-smsr-assets-panel .sarpras-subtab-btn {
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-kir-area, #printable-kir-area * {
+                visibility: visible;
+            }
+            #printable-kir-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                display: block !important;
+            }
+            #printable-qr-area, #printable-qr-area * {
+                visibility: visible;
+            }
+            #printable-qr-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                display: block !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <!-- KONTAINER LAYOUT GLOBAL (Navigasi, Sidebar, Topbar diinjeksi oleh global.js) -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA (Awalnya hidden fade-in, dibuka otomatis setelah inisialisasi layout selesai) -->
+    <main class="hidden fade-in pb-16 lg:pb-12">
+
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                    <span>Master Inventaris & KIR Ruangan</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Pendataan aset sarana, prasarana, dan Kartu Inventaris Ruangan (KIR).
+                </p>
+            </div>
+
+            <!-- Kelompok Tombol Aksi -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <button type="button" id="btn-refresh-inventory" onclick="window.loadSarprasData?.()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Segarkan Data Inventaris">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span>Segarkan</span>
+                </button>
+                <button type="button" id="btn-manage-rooms" onclick="window.openRoomsModal?.()" class="hidden px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Kelola Master Ruangan">
+                    <i class="fa-solid fa-door-open text-xs text-amber-500"></i>
+                    <span>Master Ruang</span>
+                </button>
+                <button type="button" id="btn-open-kir" onclick="window.openKirPrintModal?.()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Cetak Lembar Kartu Inventaris Ruangan (KIR) Resmi">
+                    <i class="fa-solid fa-print text-xs"></i>
+                    <span>Cetak KIR A4</span>
+                </button>
+                <button type="button" id="btn-open-qr" onclick="window.openQrPrintModal?.()" class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Cetak Lembar Label Barcode / QR Code Fisik Barang">
+                    <i class="fa-solid fa-qrcode text-xs"></i>
+                    <span>Cetak Label QR</span>
+                </button>
+                <button type="button" id="btn-export-excel" onclick="window.exportSarprasExcel?.()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Ekspor data inventaris ke format spreadsheet Excel">
+                    <i class="fa-solid fa-file-excel text-xs"></i>
+                    <span>Export XLSX</span>
+                </button>
+                <button type="button" id="btn-open-create-modal" onclick="window.openCreateItemModal?.()" class="hidden px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" aria-label="Tambah Aset Baru">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>+ Tambah Aset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB NAVIGASI BAGIAN INVENTARIS & ASET INDUK -->
+        <nav class="flex items-center gap-2 mb-4 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-2xl w-fit border border-slate-200/80 dark:border-slate-800" aria-label="Bagian inventaris">
+            <button id="sarpras-tab-inventaris" aria-pressed="true" type="button" onclick="window.switchSarprasInventoryView('inventaris')" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white shadow-sm text-xs font-bold transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-xs"></i>
+                <span>Inventaris &amp; KIR Ruangan</span>
+            </button>
+            <button id="sarpras-tab-aset" aria-pressed="false" type="button" onclick="window.switchSarprasInventoryView('aset')" class="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800">
+                <i class="fa-solid fa-landmark text-xs"></i>
+                <span>Tanah, Bangunan &amp; Aset Induk</span>
+            </button>
+        </nav>
+
+        <div id="sarpras-inventory-panel" class="space-y-4">
+
+        <!-- ============================================== -->
+        <!-- 2. GRID KARTU STATISTIK / KPI METRICS         -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-2.5 sm:gap-3 mb-4">
+            <!-- Metric 1: Total Aset Barang -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Jenis Aset</p>
+                    <h3 id="kpi-total-items" class="text-base sm:text-lg font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 2: Total Unit Fisik -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Total Fisik</p>
+                    <h3 id="kpi-total-units" class="text-base sm:text-lg font-black text-slate-800 dark:text-white leading-tight">0 Unit</h3>
+                </div>
+            </div>
+
+            <!-- Metric 3: Kondisi Baik -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Baik (B)</p>
+                    <h3 id="kpi-total-good" class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 4: Rusak Ringan -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Rusak Ringan</p>
+                    <h3 id="kpi-total-minor" class="text-base sm:text-lg font-black text-amber-600 dark:text-amber-400 leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 5: Rusak Berat -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Rusak Berat</p>
+                    <h3 id="kpi-total-major" class="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400 leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 6: Estimasi Nilai Perolehan -->
+            <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-2.5">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Nilai Aset</p>
+                    <h3 id="kpi-total-value" class="text-xs sm:text-sm font-black text-slate-800 dark:text-white leading-tight truncate">Rp 0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 3. BANNER INFORMASI RUANGAN (KIR SELECTOR)     -->
+        <!-- ============================================== -->
+        <div id="room-info-card" class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-3.5 sm:p-4 rounded-2xl border border-slate-800 shadow-sm mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-lg shrink-0">
+                    <i class="fa-solid fa-door-open"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="active-room-badge" class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">SELURUH RUANGAN</span>
+                        <h2 id="active-room-title" class="text-sm sm:text-base font-bold text-white">Semua Ruang & Fasilitas Sekolah</h2>
+                    </div>
+                    <p id="active-room-subtext" class="text-xs text-slate-300 mt-0.5">Memuat seluruh aset sarana dan prasarana terdaftar di SMA Negeri 1 Abang.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button type="button" id="btn-quick-kir" onclick="window.printCurrentRoomKir?.()" class="w-full md:w-auto px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition active:scale-95 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-file-pdf text-rose-400"></i>
+                    <span>Cetak KIR Ruang Ini</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 4. TOOLBAR FILTER & PENCARIAN                  -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs mb-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
+            <!-- Filter Dropdown Ruangan (Selector KIR) -->
+            <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div class="sm:w-64">
+                    <select id="select-room-filter" onchange="window.handleRoomFilterChange?.(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                        <option value="">-- Seluruh Ruangan (Global) --</option>
+                    </select>
+                </div>
+                <div class="sm:w-44">
+                    <select id="select-category-filter" onchange="window.handleCategoryFilterChange?.(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                        <option value="">Semua Kategori</option>
+                        <option value="Perabot">Perabot / Meubeler</option>
+                        <option value="Elektronik">Elektronik & Multimedia</option>
+                        <option value="Praktikum">Alat Praktikum / Lab</option>
+                        <option value="Olahraga">Alat Olahraga & Kesenian</option>
+                        <option value="Kebersihan">Perlengkapan Kebersihan</option>
+                        <option value="Buku">Buku & Referensi</option>
+                        <option value="Kendaraan">Kendaraan Dinas</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div class="sm:w-40">
+                    <select id="select-condition-filter" onchange="window.handleConditionFilterChange?.(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                        <option value="all">Semua Kondisi</option>
+                        <option value="good">Kondisi Baik (100%)</option>
+                        <option value="minor_damage">Ada Rusak Ringan</option>
+                        <option value="major_damage">Ada Rusak Berat</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Input Pencarian Lega -->
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1 sm:w-64">
+                    <input type="text" id="input-search" oninput="window.handleSearchInput?.(this.value)" placeholder="Ketik nama aset / kode..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium placeholder:text-slate-400">
+                </div>
+                <button type="button" id="btn-reset-filter" onclick="window.resetSarprasFilter?.()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0" title="Reset filter">
+                    <i class="fa-solid fa-arrow-rotate-left text-xs"></i> <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 5. TABEL DATA INVENTARIS ELEGAN & RESPONSIF   -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] sm:text-[11px] tracking-wider">
+                            <th class="py-2.5 px-3.5 sm:px-4 w-12 text-center">No</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 min-w-[140px]">Kode Barang</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 min-w-[200px]">Nama & Spesifikasi</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 min-w-[150px]">Ruang Penempatan</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 min-w-[110px]">Kategori</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 text-center min-w-[160px]">Distribusi Kondisi</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 min-w-[110px]">Tahun / Sumber</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 text-right min-w-[120px]">Harga Satuan</th>
+                            <th class="py-2.5 px-3.5 sm:px-4 text-center w-28">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                        <!-- Skeleton loading awal -->
+                        <tr>
+                            <td colspan="9" class="p-8 text-center text-slate-400 dark:text-slate-500">
+                                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-500 mb-2"></i>
+                                <p class="text-xs">Memuat katalog aset sarpras...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Pagination -->
+            <div class="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div id="pagination-info">Menampilkan 0 dari 0 data aset</div>
+                <div class="flex items-center gap-1.5" id="pagination-controls">
+                    <button type="button" id="btn-prev-page" onclick="window.changePage?.(-1)" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span id="current-page-display" class="px-2 font-semibold text-slate-700 dark:text-slate-300">1</span>
+                    <button type="button" id="btn-next-page" onclick="window.changePage?.(1)" class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <section id="sarpras-smsr-assets-panel" class="hidden space-y-4">
+            <button type="button" onclick="window.smsrSarpras.reloadSarprasData()" class="px-3 py-2 rounded-xl bg-slate-800 text-white text-xs font-semibold"><i id="sarpras-refresh-icon" class="fa-solid fa-rotate mr-1"></i> Segarkan Aset Sekolah</button>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3">
+                <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">Kelola aset tanah, bangunan, stok, dan sumber bantuan sekolah. Pengadaan dan transaksi baru menggunakan menu RKAS, Penggunaan, serta Pemeliharaan.</p>
+                <div class="flex gap-2 flex-wrap">
+<button id="tab-btn-master" type="button" class="sarpras-tab-btn px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" onclick="window.smsrSarpras.switchSarprasTab('master', false)">Master Aset & Stok</button>
+<button id="tab-btn-laporan" type="button" class="sarpras-tab-btn px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" onclick="window.smsrSarpras.switchSarprasTab('laporan', false)">Laporan Aset</button>
+<button id="tab-btn-pengadaan" type="button" class="sarpras-tab-btn px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" onclick="window.smsrSarpras.switchSarprasTab('pengadaan', false)">Riwayat Usulan</button>
+<button id="tab-btn-peminjaman" type="button" class="sarpras-tab-btn px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" onclick="window.smsrSarpras.switchSarprasTab('peminjaman', false)">Riwayat Peminjaman</button>
+<button id="tab-btn-pemeliharaan" type="button" class="sarpras-tab-btn px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold" onclick="window.smsrSarpras.switchSarprasTab('pemeliharaan', false)">Riwayat Perbaikan</button>
+</div></div>
+<section id="tab-content-master" class="hidden space-y-4">
+            <!-- SUB-TAB SELECTOR -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <button onclick="window.smsrSarpras.switchMasterSubtab('barang')" id="subtab-btn-barang"
+                        class="sarpras-subtab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all">
+                        <i class="fa-solid fa-box mr-1.5"></i> <span>Aset Barang</span>
+                    </button>
+                    <button onclick="window.smsrSarpras.switchMasterSubtab('bangunan')" id="subtab-btn-bangunan"
+                        class="sarpras-subtab-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all">
+                        <i class="fa-solid fa-building mr-1.5"></i> <span>Aset Bangunan</span>
+                    </button>
+                    <button onclick="window.smsrSarpras.switchMasterSubtab('tanah')" id="subtab-btn-tanah"
+                        class="sarpras-subtab-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all">
+                        <i class="fa-solid fa-map-location-dot mr-1.5"></i> <span>Aset Tanah</span>
+                    </button>
+                    <button onclick="window.smsrSarpras.switchMasterSubtab('kelompok')" id="subtab-btn-kelompok"
+                        class="sarpras-subtab-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i> <span>Kelompok Barang</span>
+                    </button>
+                    <button onclick="window.smsrSarpras.switchMasterSubtab('bantuan')" id="subtab-btn-bantuan"
+                        class="sarpras-subtab-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all">
+                        <i class="fa-solid fa-hand-holding-heart mr-1.5"></i> <span>Jenis Bantuan</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-add-smsr-asset" onclick="window.smsrSarpras.openAddModalCurrentSubtab()"
+                        class="hidden px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-plus text-xs"></i> <span id="btn-add-master-label">Tambah Barang</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUBTAB CONTAINER 1: ASET BARANG -->
+            <div id="master-view-barang" class="space-y-3">
+                <!-- MASTER ASET FILTER TOOLBAR -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[58px]">
+                    <div class="flex flex-wrap items-center gap-2 flex-1">
+                        <select id="filter-barang-kelompok" onchange="window.smsrSarpras.filterBarang()" 
+                            class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-2.5 py-1.5 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-none min-w-[160px]">
+                            <option value="">Semua Kelompok Barang</option>
+                        </select>
+                        <select id="filter-barang-bantuan" onchange="window.smsrSarpras.filterBarang()" 
+                            class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-2.5 py-1.5 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-none min-w-[150px]">
+                            <option value="">Semua Jenis Bantuan</option>
+                        </select>
+                        <div class="relative flex-1 sm:flex-initial sm:w-72">
+                            <input type="text" id="search-barang" oninput="window.smsrSarpras.handleSearchBarangInput(this)" placeholder="Cari nama / kode barang..."
+                                class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 pr-8 py-1.5 w-full focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all">
+                            <i class="fa-solid fa-magnifying-glass absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                            <button type="button" id="btn-clear-search-barang" onclick="window.smsrSarpras.clearSearch('search-barang', window.smsrSarpras.filterBarang)" 
+                                class="hidden absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5" title="Hapus Pencarian">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                        <button type="button" onclick="window.smsrSarpras.resetFilterBarang()" title="Reset Filter"
+                            class="px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded-lg border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto max-h-[70vh]">
+                        <table class="w-full text-left text-xs sarpras-table">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] sticky top-0 z-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                                <tr>
+                                    <th class="py-2.5 px-3 w-12 text-center">No</th>
+                                    <th class="py-2.5 px-3">Kode</th>
+                                    <th class="py-2.5 px-3">Nama Barang</th>
+                                    <th class="py-2.5 px-3">Kelompok / Jenis</th>
+                                    <th class="py-2.5 px-3 text-center">Tahun</th>
+                                    <th class="py-2.5 px-3 text-right">Jml (Stok)</th>
+                                    <th class="py-2.5 px-3 text-right">Harga Satuan</th>
+                                    <th class="py-2.5 px-3">Bantuan</th>
+                                    <th class="py-2.5 px-3">Ket</th>
+                                    <th class="py-2.5 px-3 text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-barang" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="10" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat data aset barang...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB CONTAINER 2: ASET BANGUNAN -->
+            <div id="master-view-bangunan" class="hidden space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Kode</th>
+                                    <th class="py-3 px-3">Nama Bangunan / Gedung</th>
+                                    <th class="py-3 px-3">Tahun Pembangunan</th>
+                                    <th class="py-3 px-3">Luas (m²)</th>
+                                    <th class="py-3 px-3 text-center">Jumlah Ruang</th>
+                                    <th class="py-3 px-3">Jenis Bantuan</th>
+                                    <th class="py-3 px-3">Keterangan</th>
+                                    <th class="py-3 px-3 text-center w-20">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-bangunan" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="9" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat data aset bangunan...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB CONTAINER 3: ASET TANAH -->
+            <div id="master-view-tanah" class="hidden space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Kode</th>
+                                    <th class="py-3 px-3">Nama Aset Tanah</th>
+                                    <th class="py-3 px-3">Luas (m²)</th>
+                                    <th class="py-3 px-3">Lokasi</th>
+                                    <th class="py-3 px-3">Status Kepemilikan</th>
+                                    <th class="py-3 px-3">Jenis Bantuan</th>
+                                    <th class="py-3 px-3 text-center w-20">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-tanah" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="8" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat data aset tanah...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB CONTAINER 4: KELOMPOK BARANG -->
+            <div id="master-view-kelompok" class="hidden space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Kode</th>
+                                    <th class="py-3 px-3">Jenis / Kelompok Barang</th>
+                                    <th class="py-3 px-3">Keterangan</th>
+                                    <th class="py-3 px-3 text-center w-20">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-kelompok" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat data kelompok...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB CONTAINER 5: JENIS BANTUAN -->
+            <div id="master-view-bantuan" class="hidden space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Kode</th>
+                                    <th class="py-3 px-3">Nama Bantuan / Sumber Dana</th>
+                                    <th class="py-3 px-3">Keterangan</th>
+                                    <th class="py-3 px-3 text-center w-20">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-bantuan" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat data bantuan...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+<section id="tab-content-pengadaan" class="hidden space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <select id="filter-permintaan-status" onchange="window.smsrSarpras.filterPermintaan()" class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-2.5 py-1.5 font-medium">
+                        <option value="">Semua Status Pengajuan</option>
+                        <option value="Menunggu">Menunggu Persetujuan</option>
+                        <option value="Disetujui">Disetujui</option>
+                        <option value="Ditolak">Ditolak</option>
+                        <option value="Selesai">Selesai Realisasi</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.smsrSarpras.exportExcelPermintaan()" class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1 active:scale-95">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel
+                    </button>
+                    
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                            <tr>
+                                <th class="py-3 px-3 w-10 text-center">No</th>
+                                <th class="py-3 px-3">Tanggal</th>
+                                <th class="py-3 px-3">Nama Pemohon</th>
+                                <th class="py-3 px-3">Nama Barang Yang Diminta</th>
+                                <th class="py-3 px-3 text-center">Jumlah</th>
+                                <th class="py-3 px-3">Keperluan Untuk</th>
+                                <th class="py-3 px-3 text-center">Status</th>
+                                <th class="py-3 px-3">Keterangan</th>
+                                <th class="py-3 px-3 text-center w-28">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-permintaan" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tr><td colspan="9" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat usulan pengadaan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+<section id="tab-content-peminjaman" class="hidden space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <button onclick="window.smsrSarpras.switchPinjamSubtab('aktif')" id="subtab-btn-pinjam-aktif"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 dark:bg-emerald-600 text-white transition-all">
+                        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Sedang Dipinjam
+                    </button>
+                    <button onclick="window.smsrSarpras.switchPinjamSubtab('riwayat')" id="subtab-btn-pinjam-riwayat"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Riwayat Pengembalian
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <input type="text" id="search-peminjaman" oninput="window.smsrSarpras.filterPeminjaman()" placeholder="Cari nama peminjam / barang..."
+                            class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 pr-8 py-1.5 w-48 sm:w-60 focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        <i class="fa-solid fa-magnifying-glass absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- VIEW 1: AKTIF (BELUM KEMBALI) -->
+            <div id="pinjam-view-aktif" class="space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Tgl Pinjam</th>
+                                    <th class="py-3 px-3">Nama Peminjam</th>
+                                    <th class="py-3 px-3">Barang Dipinjam</th>
+                                    <th class="py-3 px-3 text-center">Jumlah</th>
+                                    <th class="py-3 px-3">Batas Kembali</th>
+                                    <th class="py-3 px-3 text-center">Status</th>
+                                    <th class="py-3 px-3">Keterangan</th>
+                                    <th class="py-3 px-3 text-center w-28">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-pinjam-aktif" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="9" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat transaksi peminjaman...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: RIWAYAT PENGEMBALIAN -->
+            <div id="pinjam-view-riwayat" class="hidden space-y-3">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px]">
+                                <tr>
+                                    <th class="py-3 px-3 w-10 text-center">No</th>
+                                    <th class="py-3 px-3">Nama Peminjam</th>
+                                    <th class="py-3 px-3">Barang</th>
+                                    <th class="py-3 px-3 text-center">Jumlah</th>
+                                    <th class="py-3 px-3">Tgl Pinjam</th>
+                                    <th class="py-3 px-3">Tgl Kembali Realisasi</th>
+                                    <th class="py-3 px-3 text-center">Kondisi</th>
+                                    <th class="py-3 px-3">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-pinjam-riwayat" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr><td colspan="8" class="text-center py-8 text-slate-400 dark:text-slate-500">Belum ada riwayat pengembalian.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+<section id="tab-content-pemeliharaan" class="hidden space-y-4">
+            <!-- PEMELIHARAAN FILTER TOOLBAR -->
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm min-h-[58px]">
+                <div class="flex flex-wrap items-center gap-2 flex-1">
+                    <!-- Period / Date Filter Control -->
+                    <div class="relative">
+                        <select id="filter-perbaikan-periode" onchange="window.smsrSarpras.handlePerbaikanPeriodeChange(this.value)"
+                            class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg pl-7 pr-3 py-1.5 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-none min-w-[155px]">
+                            <option value="">Semua Periode</option>
+                            <option value="bulan-ini">Bulan Ini</option>
+                            <option value="bulan-lalu">Bulan Lalu</option>
+                            <option value="tahun-ini">Tahun Ini</option>
+                            <option value="custom">Pilih Bulan...</option>
+                        </select>
+                        <i class="fa-regular fa-calendar absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                    <!-- Month Picker for custom period (hidden by default unless 'custom' is selected) -->
+                    <input type="month" id="filter-perbaikan-bulan" onchange="window.smsrSarpras.filterPerbaikan()"
+                        class="hidden text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-2.5 py-1.5 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+                    
+                    <!-- Status Penanganan -->
+                    <select id="filter-perbaikan-status" onchange="window.smsrSarpras.filterPerbaikan()" 
+                        class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg px-2.5 py-1.5 font-medium focus:ring-1 focus:ring-emerald-500 focus:outline-none min-w-[165px]">
+                        <option value="">Semua Status Penanganan</option>
+                        <option value="Menunggu">Menunggu Penanganan</option>
+                        <option value="Dalam Proses">Sedang Dalam Proses</option>
+                        <option value="Selesai">Selesai Diperbaiki</option>
+                    </select>
+
+                    <!-- Search Field -->
+                    <div class="relative flex-1 sm:flex-initial sm:w-72">
+                        <input type="text" id="search-perbaikan" oninput="window.smsrSarpras.handleSearchPerbaikanInput(this)" placeholder="Cari pelapor, lokasi atau kerusakan..."
+                            class="text-xs bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg px-3.5 pr-8 py-1.5 w-full focus:bg-white dark:focus:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all">
+                        <i class="fa-solid fa-magnifying-glass absolute right-2.5 top-2 text-slate-400 text-xs pointer-events-none"></i>
+                        <button type="button" id="btn-clear-search-perbaikan" onclick="window.smsrSarpras.clearSearch('search-perbaikan', window.smsrSarpras.filterPerbaikan)" 
+                            class="hidden absolute right-2 top-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5" title="Hapus Pencarian">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="window.smsrSarpras.resetFilterPerbaikan()" title="Reset Filter"
+                        class="px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 rounded-lg border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                        <span>Reset</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-700">
+                    <!-- Export Excel: Secondary Action (Soft Green) -->
+                    <button onclick="window.smsrSarpras.exportExcelPerbaikan()" 
+                        class="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-file-excel text-emerald-600 dark:text-emerald-400"></i> 
+                        <span>Export Excel</span>
+                    </button>
+                    <!-- + Lapor Kerusakan: Primary Action (Blue) -->
+                    
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div class="overflow-x-auto max-h-[70vh]">
+                    <table class="w-full text-left text-xs sarpras-table">
+                        <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] sticky top-0 z-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                            <tr>
+                                <th class="py-2.5 px-3 w-12 text-center">No</th>
+                                <th class="py-2.5 px-3">Tanggal Lapor</th>
+                                <th class="py-2.5 px-3">Pelapor</th>
+                                <th class="py-2.5 px-3">Lokasi / Fasilitas</th>
+                                <th class="py-2.5 px-3">Deskripsi Kerusakan</th>
+                                <th class="py-2.5 px-3 text-center">Tingkat</th>
+                                <th class="py-2.5 px-3 text-center">Status</th>
+                                <th class="py-2.5 px-3">Tindakan Penanganan</th>
+                                <th class="py-2.5 px-3 text-center w-28">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-perbaikan" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tr><td colspan="9" class="text-center py-8 text-slate-400 dark:text-slate-500">Memuat laporan kerusakan...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+<section id="tab-content-laporan" class="hidden space-y-6">
+            <div>
+                <h2 class="text-sm font-bold text-slate-800 dark:text-white mb-1">Cetak Laporan & Rekapitulasi Inventaris</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Pilih jenis dokumen untuk dicetak berkop surat resmi sekolah atau diekspor ke format Excel.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- 1. Laporan Tanah -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                <i class="fa-solid fa-map-location-dot text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Aset Tanah</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-tanah-count">0 data terdaftar</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Buku induk kepemilikan aset tanah sekolah, luas, dan lokasi sertifikat.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('tanah')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('tanah')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Laporan Bangunan -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                <i class="fa-solid fa-building text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Aset Bangunan</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-bangunan-count">0 gedung terdaftar</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Daftar gedung, tahun pendirian, luas, dan kapasitas ruangan sekolah.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('bangunan')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('bangunan')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Laporan Barang Inventaris -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Aset Barang</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-barang-count">0 item inventaris</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Register lengkap barang elektronik, meubelair, perlengkapan, dan sumber dana.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('barang')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('barang')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Laporan Pengadaan / Permintaan -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                                <i class="fa-solid fa-cart-flatbed text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Permintaan Barang</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-permintaan-count">0 usulan</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Rekap usulan barang yang diajukan warga sekolah beserta status realisasinya.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('permintaan')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('permintaan')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. Laporan Peminjaman -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                                <i class="fa-solid fa-arrow-right-arrow-left text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Peminjaman Barang</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-peminjaman-count">0 transaksi</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Sirkulasi peminjaman sarana dan alat praktik sekolah oleh guru/siswa.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('peminjaman')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('peminjaman')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 6. Laporan Pemeliharaan & Perbaikan -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+                                <i class="fa-solid fa-wrench text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm">Laporan Perbaikan Fasilitas</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400" id="rep-perbaikan-count">0 catatan servis</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Histori kerusakan gedung/alat dan tindakan perbaikan yang telah dilakukan.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex gap-2">
+                        <button onclick="window.smsrSarpras.previewPrintLaporan('perbaikan')" class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak Berkop
+                        </button>
+                        <button onclick="window.smsrSarpras.exportExcelLaporan('perbaikan')" class="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+</section>
+    </main>
+
+    <!-- ======================================================= -->
+    <!-- DIALOG MODALS (TOP-LEVEL SIBLINGS DI LUAR MAIN)         -->
+    <!-- Sesuai Aturan Mutlak: Modal Anti-Nesting Mandate       -->
+    <!-- ======================================================= -->
+
+    <!-- 1. MODAL TAMBAH / EDIT BARANG INVENTARIS -->
+    <div id="modal-item" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <!-- Modal Header -->
+            <div class="px-4 py-3 sm:px-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <h3 id="modal-item-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Tambah Aset Sarpras</h3>
+                </div>
+                <button type="button" onclick="window.closeModal?.('modal-item')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="form-item" onsubmit="window.submitItemForm?.(event)" class="p-4 sm:p-5 overflow-y-auto space-y-3.5 text-xs sm:text-sm flex-1">
+                <input type="hidden" id="form-item-id">
+
+                <!-- Ruang Penempatan & Kategori -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-door-open text-emerald-500"></i>
+                            <span>Ruang Penempatan (Wajib) *</span>
+                        </label>
+                        <select id="form-item-room" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">-- Pilih Ruangan --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-tags text-indigo-500"></i>
+                            <span>Kategori Barang *</span>
+                        </label>
+                        <select id="form-item-category" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="Perabot">Perabot / Meubeler (Meja, Kursi, Lemari)</option>
+                            <option value="Elektronik">Elektronik & Multimedia (Proyektor, AC, PC)</option>
+                            <option value="Praktikum">Alat Praktikum / Laboratorium</option>
+                            <option value="Olahraga">Alat Olahraga & Kesenian</option>
+                            <option value="Kebersihan">Perlengkapan Kebersihan & Sanitasi</option>
+                            <option value="Buku">Buku / Sumber Belajar</option>
+                            <option value="Kendaraan">Kendaraan Operasional Dinas</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Nama Barang & Kode Inventaris Manual (Opsional) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="sm:col-span-2">
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Barang / Aset *</label>
+                        <input type="text" id="form-item-name" required placeholder="Contoh: Meja Guru Kayu Jati, Proyektor Epson" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Inventaris (Opsional)</label>
+                        <input type="text" id="form-item-code" placeholder="Otomatis digenerate sistem jika kosong" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none uppercase text-xs">
+                    </div>
+                </div>
+
+                <!-- Merk/Model & Nomor Seri -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Merk / Model</label>
+                        <input type="text" id="form-item-brand" placeholder="Contoh: Epson EB-X400, Olympic, Informa" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nomor Seri Pabrik (Opsional)</label>
+                        <input type="text" id="form-item-serial" placeholder="Contoh: SN-883921932" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs">
+                    </div>
+                </div>
+
+                <!-- Spesifikasi Teknis & Ukuran/Bahan -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Spesifikasi Teknis / Ukuran & Bahan</label>
+                    <textarea id="form-item-spec" rows="2" placeholder="Contoh: Ukuran 120x60x75 cm, Bahan Kayu Jati Finishing Melamic, 3300 Lumens" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                </div>
+
+                <!-- Satuan, Tahun Perolehan, Sumber Dana, Harga -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Satuan</label>
+                        <input type="text" id="form-item-unit" value="Unit" placeholder="Unit, Buah, Set" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Perolehan *</label>
+                        <input type="number" id="form-item-year" required min="1990" max="2035" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Sumber Dana</label>
+                        <select id="form-item-funding" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="BOS Reguler">BOS Reguler</option>
+                            <option value="BOS Kinerja">BOS Kinerja</option>
+                            <option value="Komite Sekolah">Komite Sekolah</option>
+                            <option value="DAK Fisik">DAK Fisik</option>
+                            <option value="Bantuan Pemerintah">Bantuan Pemerintah</option>
+                            <option value="Hibah / Sumbangan">Hibah / Sumbangan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Harga Satuan (Rp)</label>
+                        <input type="number" id="form-item-price" min="0" step="500" value="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none font-mono">
+                    </div>
+                </div>
+
+                <!-- Distribusi Kondisi Awal -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                    <p class="font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                        <span>Distribusi Kondisi Unit Fisik *</span>
+                        <span id="form-item-total-preview" class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Total: 1 Unit</span>
+                    </p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">Baik (B)</label>
+                            <input type="number" id="form-item-qty-good" min="0" value="1" oninput="window.calcFormTotalQty?.()" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-emerald-600 focus:ring-2 focus:ring-emerald-500 outline-none text-center">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-0.5">Rusak Ringan (RR)</label>
+                            <input type="number" id="form-item-qty-minor" min="0" value="0" oninput="window.calcFormTotalQty?.()" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-amber-600 focus:ring-2 focus:ring-amber-500 outline-none text-center">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-rose-600 dark:text-rose-400 mb-0.5">Rusak Berat (RB)</label>
+                            <input type="number" id="form-item-qty-major" min="0" value="0" oninput="window.calcFormTotalQty?.()" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-rose-600 focus:ring-2 focus:ring-rose-500 outline-none text-center">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opsi Peminjaman & Catatan -->
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="form-item-loanable" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                    <label for="form-item-loanable" class="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                        Izinkan aset ini dipinjam / dibawa keluar ruangan (misal: proyektor portable, sound, kabel rol)
+                    </label>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Tambahan (Opsional)</label>
+                    <input type="text" id="form-item-notes" placeholder="Keterangan kondisi khusus, riwayat mutasi ruangan, dll." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <!-- Tombol Aksi Form -->
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+                    <button type="button" onclick="window.closeModal?.('modal-item')" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold transition active:scale-95">Batal</button>
+                    <button type="submit" id="btn-save-item" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition active:scale-95 flex items-center gap-2 shadow-xs">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Simpan Aset</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL KELOLA MASTER RUANGAN -->
+    <div id="modal-rooms" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <!-- Header -->
+            <div class="px-4 py-3 sm:px-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Master Ruangan & Fasilitas Sekolah</h3>
+                </div>
+                <button type="button" onclick="window.closeModal?.('modal-rooms')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <!-- Form Tambah Ruang Baru -->
+                <form id="form-room" onsubmit="window.submitRoomForm?.(event)" class="bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-3">
+                    <input type="hidden" id="form-room-id">
+                    <div class="flex items-center justify-between">
+                        <span id="form-room-title" class="font-bold text-slate-700 dark:text-slate-300">Tambah Ruangan Baru</span>
+                        <button type="button" id="btn-cancel-edit-room" onclick="window.resetRoomForm?.()" class="hidden text-xs text-rose-500 hover:underline">Batal Edit</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">Kode Ruang *</label>
+                            <input type="text" id="form-room-code" required placeholder="Contoh: R-X-1, AULA" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg uppercase font-bold text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">Nama Ruangan *</label>
+                            <input type="text" id="form-room-name" required placeholder="Contoh: Ruang Kelas X-1, Aula Utama" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">Kategori Ruang</label>
+                            <select id="form-room-category" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                                <option value="kelas">Ruang Kelas</option>
+                                <option value="laboratorium">Laboratorium</option>
+                                <option value="kantor">Kantor / Tata Usaha</option>
+                                <option value="perpustakaan">Perpustakaan</option>
+                                <option value="aula">Aula / Serbaguna</option>
+                                <option value="ibadah">Tempat Ibadah</option>
+                                <option value="olahraga">Sarana Olahraga</option>
+                                <option value="gudang">Gudang</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">Lokasi Gedung</label>
+                            <input type="text" id="form-room-building" placeholder="Gedung A, Lt. 2" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5">Penanggung Jawab (PJ)</label>
+                            <input type="text" id="form-room-pic" placeholder="Nama Guru / Staf PJ" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-xs focus:ring-2 focus:ring-amber-500 outline-none">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" id="btn-save-room" class="w-full px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs transition active:scale-95 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Simpan Ruang</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Daftar Ruangan -->
+                <div>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-2">Daftar Ruangan Terdaftar</h4>
+                    <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold uppercase text-[10px]">
+                                <tr>
+                                    <th class="py-2 px-3">Kode</th>
+                                    <th class="py-2 px-3">Nama Ruangan</th>
+                                    <th class="py-2 px-3">Kategori</th>
+                                    <th class="py-2 px-3">Gedung</th>
+                                    <th class="py-2 px-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rooms-list-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400">Memuat ruangan...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MODAL UBAH KONDISI FISIK ASET -->
+    <div id="modal-condition" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-wrench"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-sm">Ubah Kondisi Fisik Barang</h3>
+                </div>
+                <button type="button" onclick="window.closeModal?.('modal-condition')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="form-condition" onsubmit="window.submitConditionForm?.(event)" class="p-4 space-y-3 text-xs sm:text-sm">
+                <input type="hidden" id="form-cond-item-id">
+
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                    <p id="form-cond-item-name" class="font-bold text-slate-800 dark:text-white">Nama Barang</p>
+                    <p id="form-cond-item-code" class="text-[11px] font-mono text-slate-500">KODE-BARANG</p>
+                    <div id="form-cond-current-stocks" class="flex items-center gap-2 mt-2 text-[11px]">
+                        <span class="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 font-bold">B: 0</span>
+                        <span class="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 font-bold">RR: 0</span>
+                        <span class="px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 font-bold">RB: 0</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Dari Kondisi *</label>
+                        <select id="form-cond-from" required class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="good">Baik (B)</option>
+                            <option value="minor_damage">Rusak Ringan (RR)</option>
+                            <option value="major_damage">Rusak Berat (RB)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Menjadi Kondisi *</label>
+                        <select id="form-cond-to" required class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="minor_damage">Rusak Ringan (RR)</option>
+                            <option value="major_damage">Rusak Berat (RB)</option>
+                            <option value="good">Baik (B - Selesai Servis)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah Unit yang Berubah *</label>
+                    <input type="number" id="form-cond-qty" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-center focus:ring-2 focus:ring-indigo-500 outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Alasan / Rincian Kerusakan</label>
+                    <textarea id="form-cond-notes" rows="2" placeholder="Contoh: Kaki meja patah, proyektor mati total, lampu putus..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+                    <button type="button" onclick="window.closeModal?.('modal-condition')" class="px-4 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold transition active:scale-95">Batal</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition active:scale-95 shadow-xs">Perbarui Kondisi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MODAL DETAIL ASET & RIWAYAT KONDISI -->
+    <div id="modal-detail" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i>
+                    <span>Rincian Informasi Aset</span>
+                </h3>
+                <button type="button" onclick="window.closeModal?.('modal-detail')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <div id="detail-card-content" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i>
+                        <span>Riwayat Perubahan Kondisi Fisik</span>
+                    </h4>
+                    <div id="detail-history-list" class="space-y-2 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 max-h-48 overflow-y-auto">
+                        <p class="text-xs text-slate-400 text-center py-2">Memuat riwayat...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MODAL CETAK LEMBAR KIR RESMI A4 -->
+    <div id="modal-print-kir" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base flex items-center gap-2">
+                    <i class="fa-solid fa-print text-blue-500"></i>
+                    <span>Pratinjau Lembar Kartu Inventaris Ruangan (KIR)</span>
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.printKirArea?.()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Lembar KIR</span>
+                    </button>
+                    <button type="button" onclick="window.closeModal?.('modal-print-kir')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 dark:bg-slate-950/80">
+                <!-- Lembar Cetak KIR A4 (Format Dokumen Resmi) -->
+                <div id="printable-kir-area" class="bg-white text-slate-900 p-6 sm:p-8 rounded-xl shadow-md border border-slate-300 max-w-3xl mx-auto font-sans">
+                    <!-- Kop Surat Sekolah -->
+                    <div class="border-b-2 border-slate-900 pb-3 mb-4 text-center">
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-700">PEMERINTAH PROVINSI BALI</h4>
+                        <h4 class="text-xs uppercase font-bold tracking-wider text-slate-700">DINAS PENDIDIKAN KEPEMUDAAN DAN OLAHRAGA</h4>
+                        <h2 class="text-base sm:text-lg uppercase font-black tracking-tight text-slate-950">SMA NEGERI 1 ABANG</h2>
+                        <p class="text-[11px] text-slate-600">Jl. Ida Ketut Jelantik, Desa Tista, Kec. Abang, Kab. Karangasem - Bali (80852)</p>
+                        <p class="text-[10px] text-slate-500">NPSN: 50103632 | Website: sman1abang.sch.id | Email: smanegeri1abang@gmail.com</p>
+                    </div>
+
+                    <!-- Judul Dokumen KIR -->
+                    <div class="text-center mb-4">
+                        <h3 class="text-sm sm:text-base font-black tracking-wide uppercase text-slate-950 underline">KARTU INVENTARIS RUANGAN (KIR)</h3>
+                        <div class="grid grid-cols-2 text-xs font-semibold mt-2 text-left bg-slate-50 p-2.5 rounded border border-slate-200">
+                            <div>Ruangan: <span id="kir-print-room-name" class="font-bold text-slate-950">-</span></div>
+                            <div>Gedung / Lokasi: <span id="kir-print-building" class="font-bold text-slate-950">-</span></div>
+                            <div>Kode Ruangan: <span id="kir-print-room-code" class="font-bold text-slate-950">-</span></div>
+                            <div>Penanggung Jawab: <span id="kir-print-room-pic" class="font-bold text-slate-950">-</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Aset KIR -->
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full text-left text-[11px] border border-slate-400 border-collapse">
+                            <thead>
+                                <tr class="bg-slate-200 text-slate-900 font-bold uppercase text-center border-b border-slate-400">
+                                    <th class="border border-slate-400 py-1 px-1.5 w-8">No</th>
+                                    <th class="border border-slate-400 py-1 px-2">Nama Barang / Jenis</th>
+                                    <th class="border border-slate-400 py-1 px-2">Merk / Model / Spesifikasi</th>
+                                    <th class="border border-slate-400 py-1 px-2">No. Kode Barang</th>
+                                    <th class="border border-slate-400 py-1 px-1 w-10">Jml</th>
+                                    <th class="border border-slate-400 py-1 px-1 w-10">B</th>
+                                    <th class="border border-slate-400 py-1 px-1 w-10">RR</th>
+                                    <th class="border border-slate-400 py-1 px-1 w-10">RB</th>
+                                    <th class="border border-slate-400 py-1 px-2">Tahun / Sumber</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kir-print-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Lembar Pengesahan / Tanda Tangan -->
+                    <div class="grid grid-cols-2 text-center text-xs font-medium pt-4 mt-6 border-t border-slate-300">
+                        <div>
+                            <p class="text-slate-600">Mengetahui,</p>
+                            <p class="font-bold text-slate-950">Kepala SMA Negeri 1 Abang</p>
+                            <div class="h-16"></div>
+                            <p class="font-bold text-slate-950 underline" id="kir-print-kepsek-name">I Putu Suweta, S.Pd., M.Pd.</p>
+                            <p class="text-[11px] text-slate-600 font-mono" id="kir-print-kepsek-nip">NIP. 196812311995121024</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-600" id="kir-print-date">Abang, -</p>
+                            <p class="font-bold text-slate-950">Wakasek / Pengelola Sarpras</p>
+                            <div class="h-16"></div>
+                            <p class="font-bold text-slate-950 underline" id="kir-print-waka-name">Waka Sarana & Prasarana</p>
+                            <p class="text-[11px] text-slate-600 font-mono" id="kir-print-waka-nip">NIP. -</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. MODAL CETAK LABEL QR CODE ASET -->
+    <div id="modal-print-qr" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl">
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode text-purple-500"></i>
+                    <span>Cetak Label Barcode / QR Code Fisik Barang</span>
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.printQrArea?.()" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-xs">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Print Seluruh Label</span>
+                    </button>
+                    <button type="button" onclick="window.closeModal?.('modal-print-qr')" class="text-slate-400 hover:text-rose-500 p-1 rounded-lg transition" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 dark:bg-slate-950/80">
+                <div id="printable-qr-area" class="bg-white p-6 rounded-xl shadow-md border border-slate-300 max-w-3xl mx-auto">
+                    <p class="text-xs text-slate-500 mb-4 text-center font-medium">* Label stiker inventaris siap dipotong dan ditempel pada perabot/aset fisik ruangan.</p>
+                    <div id="qr-labels-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS MODUL -->
+    <script type="module" src="js/global.js"></script>
+    <script type="module" src="js/page-sarpras-inventaris.js"></script>
+    <script type="module" src="js/sarpras-master-assets.js"></script>
+
+    <!-- GENERIC MODAL WRAPPER -->
+    <div id="modal-container" onclick="if(event.target===this)window.smsrSarpras.closeModal()"
+        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4"
+        role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100 dark:border-slate-700 transform transition-all flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                <h3 id="modal-title" class="text-base font-bold text-slate-800 dark:text-white">Form Sarpras</h3>
+                <button onclick="window.smsrSarpras.closeModal()" aria-label="Tutup dialog modal"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto flex-1">
+                <!-- Form content injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CETAK / PREVIEW DOKUMEN BERKOP -->
+    <div id="print-modal-container" onclick="if(event.target===this)window.smsrSarpras.closePrintModal()"
+        class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6"
+        role="dialog" aria-modal="true" aria-labelledby="print-modal-title">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                <h3 id="print-modal-title" class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-emerald-600 dark:text-emerald-400"></i> Pratinjau Dokumen Cetak Berkop
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.smsrSarpras.executePrint()" aria-label="Cetak atau Simpan PDF"
+                        class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow flex items-center gap-1.5 active:scale-95 transition-all">
+                        <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                    </button>
+                    <button onclick="window.smsrSarpras.closePrintModal()" aria-label="Tutup pratinjau cetak"
+                        class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto bg-slate-100 dark:bg-slate-900 flex-1">
+                <div id="print-area" class="bg-white p-6 sm:p-8 rounded-xl shadow-sm border border-slate-200 text-xs text-slate-800 w-full mx-auto">
+                    <!-- Letterhead & Table Injected Here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

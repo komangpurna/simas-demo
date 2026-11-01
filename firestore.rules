@@ -1,0 +1,236 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // HELPER FUNCTIONS (Optimized & Single Read Guard)
+    // ===============================================================
+    
+    // Cek apakah user sudah login
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Cek apakah user adalah siswa via Anonymous Auth (Portal Siswa)
+    function isAnonymousUser() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    // Identitas siswa hanya dipercaya setelah diverifikasi Cloudflare Worker dan
+    // diikat ke Firebase custom claims.
+    function isVerifiedStudentIdentity() {
+      return isAnonymousUser()
+        && ('studentVerified' in request.auth.token)
+        && request.auth.token.studentVerified == true
+        && ('studentNis' in request.auth.token)
+        && request.auth.token.studentNis != null;
+    }
+
+    // Ambil Data User dari database (Aman dari null request.auth)
+    function getUserData() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data 
+        : {};
+    }
+
+    // Ambil Role User
+    function getRole() {
+      return getUserData().get('role', '');
+    }
+
+    // Cek Role Spesifik (Primary Role)
+    function hasRole(roleName) {
+      return isSignedIn() && getRole() == roleName;
+    }
+
+    // MULTI-ROLE SUPPORT: Cek apakah role ada di additionalRoles
+    function hasAdditionalRole(roleName) {
+      let userData = getUserData();
+      return isSignedIn() && 
+             'additionalRoles' in userData && 
+             userData.additionalRoles is list &&
+             roleName in userData.additionalRoles;
+    }
+
+    // MULTI-ROLE: Cek apakah user punya role (primary ATAU additional)
+    function hasAnyRole(roleName) {
+      return hasRole(roleName) || hasAdditionalRole(roleName);
+    }
+
+    // HIGHLY OPTIMIZED MULTI-ROLE CHECK (1 single read query limit guard)
+    function hasAnyOfRoles(roleList) {
+      let userData = getUserData();
+      let primaryRole = userData.get('role', '');
+      let additional = 'additionalRoles' in userData && userData.additionalRoles is list ? userData.additionalRoles : [];
+      return primaryRole in roleList || roleList.hasAny(additional);
+    }
+
+    // Self-service profile update yang aman pada dokumen users
+    function isUpdatingOwnUserProfile(userId) {
+      return isSignedIn()
+        && request.auth.uid == userId
+        && resource != null
+        // Sertakan field yang ditambah/dihapus agar role tidak bisa dihapus lalu ditambahkan ulang.
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'email', 'telegramChatId', 'phone', 'nik', 'nip', 'linkedTeacherId']);
+    }
+
+    // Super Admin (God Mode)
+    function isSuperAdmin() {
+      return hasRole('super_admin');
+    }
+
+    // Staff Sekolah (Guru, Wali Kelas, BK, Kesiswaan, Staff, Kepala Lab, Admin PKS, Kepala Sekolah, Wakasek Kurikulum, Admin LKS)
+    function isStaff() {
+      return isSignedIn() && hasAnyOfRoles([
+        'super_admin', 'kesiswaan', 'admin_duta', 'admin_perpus', 'admin_lks', 'guru_bk', 'wali_kelas',
+        'guru', 'admin_spp', 'admin_kelas', 'kepala_lab', 'guru_mapel',
+        'staff', 'admin_pks', 'kepala_sekolah', 'wakasek_kurikulum'
+      ]);
+    }
+
+    // Tim Keuangan (Admin SPP / Super Admin)
+    function isFinanceTeam() {
+      return isSignedIn() && (
+        hasRole('super_admin') || 
+        hasRole('admin_spp') || 
+        hasAdditionalRole('super_admin') || 
+        hasAdditionalRole('admin_spp')
+      );
+    }
+
+    // Manajer Kalender (Super Admin, Kepala Sekolah, Kepala Lab, Wakasek, Kesiswaan)
+    function isCalendarManager() {
+      return isSignedIn() && (
+        hasRole('super_admin') || 
+        hasRole('kepala_sekolah') || 
+        hasRole('kepala_lab') || 
+        hasRole('wakasek_kurikulum') || 
+        hasRole('kesiswaan') || 
+        hasAdditionalRole('super_admin') || 
+        hasAdditionalRole('kepala_sekolah') || 
+        hasAdditionalRole('kepala_lab') || 
+        hasAdditionalRole('wakasek_kurikulum') || 
+        hasAdditionalRole('kesiswaan')
+      );
+    }
+
+    // ===============================================================
+    // ACTIVE FIRESTORE COLLECTION RULES
+    // ===============================================================
+
+    // 1. DATA PENGGUNA (Users & RBAC)
+    match /users/{userId} {
+      allow get: if isStaff() || (isSignedIn() && !isAnonymousUser() && request.auth.uid == userId);
+      allow list: if isStaff();
+      allow write: if isSuperAdmin() 
+                   || isUpdatingOwnUserProfile(userId)
+                   || (
+                      hasAnyRole('kesiswaan') &&
+                      request.resource.data.role in ['admin_pks', 'admin_kelas', 'staff'] &&
+                      (resource == null || resource.data.role in ['admin_pks', 'admin_kelas', 'staff']) &&
+                      (!('additionalRoles' in request.resource.data) || !request.resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah', 'admin_spp', 'admin_perpus', 'kesiswaan', 'wakasek_kurikulum', 'kepala_lab', 'guru_bk', 'admin_sukaduka', 'admin_duta']))
+                   )
+                   || (
+                      hasAnyRole('staff') &&
+                      request.resource.data.role in ['wali_kelas', 'guru_mapel', 'admin_kelas', 'admin_pks', 'staff'] &&
+                      (resource == null || resource.data.role in ['wali_kelas', 'guru_mapel', 'admin_kelas', 'admin_pks', 'staff']) &&
+                      (
+                        resource == null
+                          ? (!('additionalRoles' in request.resource.data) || !request.resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah', 'admin_spp', 'admin_perpus', 'kesiswaan', 'wakasek_kurikulum', 'kepala_lab', 'guru_bk', 'admin_sukaduka', 'admin_duta']))
+                          : ((!('additionalRoles' in resource.data) || !resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah'])) &&
+                             (!('additionalRoles' in request.resource.data) || !request.resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah'])))
+                      )
+                   )
+                   || (
+                      hasAnyRole('wakasek_kurikulum') &&
+                      request.resource.data.role in ['wali_kelas', 'guru_mapel', 'admin_kelas', 'staff'] &&
+                      (resource == null || resource.data.role in ['wali_kelas', 'guru_mapel', 'admin_kelas', 'staff']) &&
+                      (
+                        resource == null
+                          ? (!('additionalRoles' in request.resource.data) || !request.resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah', 'admin_spp', 'admin_perpus', 'kesiswaan', 'wakasek_kurikulum', 'kepala_lab', 'guru_bk', 'admin_sukaduka', 'admin_duta']))
+                          : ((!('additionalRoles' in resource.data) || !resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah'])) &&
+                             (!('additionalRoles' in request.resource.data) || !request.resource.data.additionalRoles.hasAny(['super_admin', 'kepala_sekolah'])))
+                      )
+                   );
+    }
+
+    // 2. RAHASIA PRIBADI PENGGUNA (BYOK Gemini API Key & Passkey)
+    match /user_secrets/{userId} {
+      allow get: if isSignedIn() && !isAnonymousUser() && request.auth.uid == userId;
+      allow list: if false;
+      allow create, update: if isSignedIn()
+                            && !isAnonymousUser()
+                            && request.auth.uid == userId
+                            && request.resource.data.keys().hasOnly(['geminiApiKey', 'updatedAt'])
+                            && (
+                              request.resource.data.geminiApiKey is string
+                              || request.resource.data.geminiApiKey is list
+                            );
+      allow delete: if isSignedIn() && !isAnonymousUser() && request.auth.uid == userId;
+    }
+
+    // 3. PENGATURAN GLOBAL (Settings: system_config, wa_config)
+    match /settings/{docId} {
+      allow read: if docId == 'wa_config' ? isSuperAdmin() : (docId == 'system_config');
+      
+      allow write: if isSuperAdmin() 
+                   || (isSignedIn() && docId == 'system_config' && isCalendarManager() && (resource == null || request.resource.data.diff(resource.data).changedKeys().hasOnly(['lastAgendaUpdatedAt'])))
+                   || (isSignedIn() && docId == 'system_config' && isFinanceTeam() && (resource == null || request.resource.data.diff(resource.data).changedKeys().hasOnly(['showAlumni'])))
+                   || (isSignedIn() && docId == 'system_config' && hasAnyOfRoles(['admin_duta']) && (resource == null || request.resource.data.diff(resource.data).changedKeys().hasOnly(['dutaVoting', 'dutaWeightSiswa', 'dutaWeightGuru', 'dutaWeightRekamJejak'])));
+    }
+
+    // 4. LOG AUDIT MUTASI KELAS SISWA
+    match /class_transfers/{docId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // 5. KAPSUL WAKTU DIGITAL
+    match /kapsul_waktu/{tahun} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+    
+    match /kapsul_waktu/{tahun}/entries/{entryId} {
+      allow read: if isSuperAdmin();
+      allow create, update: if false;
+      allow delete: if isSuperAdmin();
+    }
+    
+    match /kapsul_waktu/{tahun}/public_words/{entryId} {
+      allow read: if isSuperAdmin();
+      allow create, update: if false;
+      allow delete: if isSuperAdmin();
+    }
+
+    // 6. SESI SISWA ANONIM (student_sessions)
+    match /student_sessions/{sessionId} {
+      allow read: if isSignedIn() && request.auth.uid == sessionId;
+      allow create: if isVerifiedStudentIdentity()
+                    && request.auth.uid == sessionId
+                    && string(request.resource.data.nis) == string(request.auth.token.studentNis)
+                    && request.resource.data.class == request.auth.token.studentClass
+                    && request.resource.data.keys().hasOnly(['nis', 'class', 'name', 'verified', 'verifiedAt', 'updatedAt']);
+      allow update: if isVerifiedStudentIdentity()
+                    && request.auth.uid == sessionId
+                    && string(resource.data.nis) == string(request.auth.token.studentNis)
+                    && string(request.resource.data.nis) == string(request.auth.token.studentNis)
+                    && resource.data.class == request.auth.token.studentClass
+                    && request.resource.data.class == request.auth.token.studentClass
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'verified', 'verifiedAt', 'updatedAt']);
+      allow delete: if isSuperAdmin();
+    }
+
+    // ===============================================================
+    // DEFAULT DENY CATCH-ALL
+    // Seluruh koleksi yang telah dimigrasi ke Cloudflare D1 Serverless SQL
+    // dan Supabase PostgreSQL (teachers, records, student_aggregates,
+    // bk_actions, attendance, finance_*, permisi_requests, guru_wali_*,
+    // walikelas_notes, rapor_scores, guru_presensi, feedback, fcm_tokens,
+    // serta seluruh arsip z_* / Z_*) otomatis 100% ditolak.
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false; 
+    }
+  }
+}

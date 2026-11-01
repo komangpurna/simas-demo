@@ -1,0 +1,4 @@
+# Firebase and student tokens are verified by the upstream Worker, not by Supabase Auth.
+# This applies only to the fixed Worker gateway; secure-proxy keeps its existing settings.
+[functions.worker-gateway]
+verify_jwt = false

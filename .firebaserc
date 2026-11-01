@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "simas-demo-5ead3"
+  },
+  "targets": {
+    "simas-demo-5ead3": {
+      "hosting": {
+        "simas-demo-5ead3": [
+          "simas-demo-5ead3"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

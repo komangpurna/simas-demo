@@ -1,0 +1,117 @@
+name: Build SIMAS Android (APK & AAB)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'App Version Name (e.g. 1.2.003)'
+        required: false
+        default: '1.2.003'
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-android:
+    name: Build Android TWA App
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK (Java 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # Override the default "tools platform-tools": "tools" is no longer available.
+          packages: 'platform-tools'
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Configure Bubblewrap CLI (Pre-seed non-interactive config)
+        run: |
+          echo "Configuring Bubblewrap environment..."
+          mkdir -p ~/.bubblewrap
+          cat <<EOF > ~/.bubblewrap/config.json
+          {
+            "jdkPath": "${JAVA_HOME}",
+            "androidSdkPath": "${ANDROID_HOME}"
+          }
+          EOF
+          mkdir -p ~/.bubblewrap/android_sdk/licenses
+          cp -r "${ANDROID_HOME}/licenses/"* ~/.bubblewrap/android_sdk/licenses/ || true
+          echo "Running bubblewrap doctor..."
+          bubblewrap doctor || true
+
+      - name: Prepare Signing Keystore
+        working-directory: ./android-twa
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'smagesa123!' }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD || 'smagesa123!' }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Restoring production keystore from ANDROID_KEYSTORE_BASE64 secret..."
+            echo "$KEYSTORE_BASE64" | base64 -d > android.keystore
+          elif [ ! -f "android.keystore" ]; then
+            echo "android.keystore not found. Generating signing keystore..."
+            keytool -genkeypair -v \
+              -keystore android.keystore \
+              -alias android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass "$KEYSTORE_PASS" \
+              -keypass "$KEY_PASS" \
+              -dname "CN=SMAN 1 Abang, OU=IT SIMAS, O=SMA Negeri 1 Abang, L=Abang, ST=Bali, C=ID"
+          fi
+          echo "Verifying Keystore Fingerprint:"
+          keytool -list -v -keystore android.keystore -alias android -storepass "$KEYSTORE_PASS" | grep -i "SHA256:" || true
+
+      - name: Generate Android Project & Build APK / AAB
+        working-directory: ./android-twa
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'smagesa123!' }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'smagesa123!' }}
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m"
+        run: |
+          echo "Starting TWA Build..."
+          # Update version name if provided
+          if [ -n "${{ github.event.inputs.version_name }}" ]; then
+            sed -i 's/"appVersionName": ".*"/"appVersionName": "${{ github.event.inputs.version_name }}"/' twa-manifest.json
+          fi
+          
+          # Regenerate/initialize Android project files from twa-manifest.json
+          echo "Updating Android project from manifest..."
+          bubblewrap update --skipVersionUpgrade
+
+          # Build signed APK and AAB
+          echo "Building signed APK & AAB..."
+          bubblewrap build --skipPwaValidation
+
+      - name: Upload APK & AAB Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: simas-android-build
+          path: |
+            android-twa/*.apk
+            android-twa/*.aab
+            android-twa/app/build/outputs/apk/**/*.apk
+            android-twa/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: warn
+          retention-days: 14

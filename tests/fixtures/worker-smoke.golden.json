@@ -1,0 +1,297 @@
+{
+  "preflight origin diizinkan": {
+    "request": "OPTIONS /api/agenda",
+    "status": 204,
+    "headers": {
+      "access-control-allow-origin": "http://localhost:8080",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": ""
+  },
+  "preflight origin produksi": {
+    "request": "OPTIONS /api/agenda",
+    "status": 204,
+    "headers": {
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": ""
+  },
+  "preflight origin asing": {
+    "request": "OPTIONS /api/agenda",
+    "status": 204,
+    "headers": {
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": ""
+  },
+  "endpoint tidak ada": {
+    "request": "GET /api/does-not-exist",
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Endpoint not found: GET /api/does-not-exist"
+    }
+  },
+  "endpoint tidak ada tanpa origin": {
+    "request": "GET /api/does-not-exist",
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "*",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Endpoint not found: GET /api/does-not-exist"
+    }
+  },
+  "health check": {
+    "request": "GET /api/health",
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://simas-shakti.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "status": "ok",
+      "service": "SIMAS SMAGESA Cloudflare API Gateway",
+      "engine": "Cloudflare D1 Serverless SQL",
+      "security": "OWASP & ASVS Level 2 Hardened (RS256 JWT & RBAC)",
+      "timestamp": "<timestamp>"
+    }
+  },
+  "records GET tanpa login": {
+    "request": "GET /api/records",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "records POST tanpa login": {
+    "request": "POST /api/records",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "student-aggregates tanpa login": {
+    "request": "GET /api/student-aggregates",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "rapor scores tanpa login": {
+    "request": "GET /api/rapor/scores",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "migrasi super admin tanpa login": {
+    "request": "POST /api/migrate/bk-actions",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "annual reset tanpa login": {
+    "request": "GET /api/students/annual-reset",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Unauthorized: Missing or invalid Authorization header"
+    }
+  },
+  "JWT struktur rusak": {
+    "request": "GET /api/records",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "JWT algoritma HS256 ditolak": {
+    "request": "GET /api/records",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login tidak valid. Silakan masuk kembali."
+    }
+  },
+  "kartu token terlalu pendek": {
+    "request": "GET /api/students/public-card/abc",
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Token verifikasi kartu tidak valid"
+    }
+  },
+  "system cleanup tanpa login": {
+    "request": "POST /api/system/cleanup",
+    "status": 401,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "https://smagesa.web.app",
+      "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "access-control-allow-headers": "Content-Type, Authorization, X-Requested-With, X-Simas-Client, X-Migration-Key, X-Sync-Key, X-Api-Key, X-Student-Token",
+      "access-control-max-age": "86400",
+      "vary": "Origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin"
+    },
+    "body": {
+      "success": false,
+      "error": "Sesi login Anda tidak valid atau telah berakhir"
+    }
+  }
+}

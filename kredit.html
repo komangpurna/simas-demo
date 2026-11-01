@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Master Kredit Poin - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Master Data Pelanggaran</h1>
+                <p class="text-sm text-slate-500">Atur jenis pelanggaran & bobot poin kredit.</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="document.getElementById('modal-import').classList.remove('hidden')"
+                    class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-green-700">
+                    <i class="fa-solid fa-file-excel mr-2"></i> Import
+                </button>
+                <button onclick="document.getElementById('modal-add-type').classList.remove('hidden')"
+                    class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-bold shadow hover:bg-blue-700">
+                    <i class="fa-solid fa-plus mr-2"></i> Tambah
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-xs">
+                        <tr>
+                            <th class="px-6 py-4 w-20">Kode</th>
+                            <th class="px-6 py-4">Nama Pelanggaran</th>
+                            <th class="px-6 py-4 w-32">Kategori</th>
+                            <th class="px-6 py-4 w-24 text-center">Tingkat</th>
+                            <th class="px-6 py-4 w-20 text-center">Poin</th>
+                            <th class="px-6 py-4 w-20 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="types-table-body" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-400"><i
+                                    class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-add-type"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-plus mr-2 text-blue-600"></i> Tambah Data
+                    Kredit</h3>
+                <button onclick="document.getElementById('modal-add-type').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="form-add-type" class="p-6 space-y-4">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Kode Pelanggaran</label>
+                    <input type="text" name="code" required placeholder="Contoh: V-01"
+                        class="w-full border p-2 rounded text-sm font-mono font-bold bg-slate-50 outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Nama Pelanggaran</label>
+                    <input type="text" name="title" required placeholder="Contoh: Datang Terlambat"
+                        class="w-full border p-2 rounded text-sm outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Kategori</label>
+                    <select name="category"
+                        class="w-full border p-2 rounded text-sm bg-white outline-none focus:border-blue-500">
+                        <option value="Kedisiplinan">Kedisiplinan</option>
+                        <option value="Kerapian">Kerapian & Atribut</option>
+                        <option value="Sikap">Sikap & Perilaku</option>
+                        <option value="Ketertiban">Ketertiban & Fasilitas</option>
+                        <option value="Administrasi">Administrasi</option>
+                        <option value="Akademik">Akademik</option>
+                        <option value="Non-Akademik">Non-Akademik</option>
+                        <option value="Pelanggaran Berat">Pelanggaran Berat</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Bobot Poin</label>
+                    <input type="number" inputmode="numeric" name="points" required placeholder="5"
+                        class="w-full border p-2 rounded text-sm outline-none focus:border-blue-500">
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('modal-add-type').classList.add('hidden')"
+                        class="text-slate-500 font-bold hover:bg-slate-100 px-4 py-2 rounded">Batal</button>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-lg">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-import"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-green-50">
+                <h3 class="font-bold text-green-800">Import Excel</h3>
+                <button onclick="document.getElementById('modal-import').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs text-yellow-800">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Format Excel
+                        (Copy-Paste):</p>
+                    <p class="font-mono">Kode [Tab] Nama Pelanggaran [Tab] Kategori [Tab] Poin</p>
+                    <p class="mt-1 text-slate-500">Pastikan urutan kolom sesuai sebelum di-paste.</p>
+                </div>
+                <textarea id="paste-area" rows="8"
+                    class="font-mono text-xs w-full p-3 border rounded outline-none focus:border-green-500"
+                    placeholder="Paste data di sini..."></textarea>
+                <div class="pt-4 flex justify-end gap-3"><button id="btn-process-import"
+                        class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700">Proses
+                        Data</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-type"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-orange-50">
+                <h3 class="font-bold text-orange-800"><i class="fa-solid fa-pen-to-square mr-2"></i> Edit Data Kredit
+                </h3>
+                <button onclick="document.getElementById('modal-edit-type').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="form-edit-type" class="p-6 space-y-4">
+                <input type="hidden" name="id" id="edit-id">
+
+                <div class="grid grid-cols-1 mb-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Kode Pelanggaran</label>
+                        <input type="text" name="code" id="edit-code" required
+                            class="w-full border p-2 rounded text-sm font-mono font-bold bg-slate-50 focus:border-orange-500 outline-none"
+                            placeholder="P-01">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Nama Pelanggaran / Prestasi</label>
+                    <input type="text" name="title" id="edit-title" required
+                        class="w-full border p-2 rounded text-sm outline-none focus:border-orange-500">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Kategori</label>
+                    <select name="category" id="edit-category"
+                        class="w-full border p-2 rounded text-sm bg-white outline-none focus:border-orange-500">
+                        <option value="Kedisiplinan">Kedisiplinan</option>
+                        <option value="Kerapian">Kerapian & Atribut</option>
+                        <option value="Sikap">Sikap & Perilaku</option>
+                        <option value="Ketertiban">Ketertiban & Fasilitas</option>
+                        <option value="Administrasi">Administrasi</option>
+                        <option value="Akademik">Akademik</option>
+                        <option value="Non-Akademik">Non-Akademik</option>
+                        <option value="Pelanggaran Berat">Pelanggaran Berat</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500 block mb-1">Bobot Poin</label>
+                    <input type="number" inputmode="numeric" name="points" id="edit-points" required
+                        class="w-full border p-2 rounded text-sm outline-none focus:border-orange-500">
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('modal-edit-type').classList.add('hidden')"
+                        class="text-slate-500 font-bold hover:bg-slate-100 px-4 py-2 rounded">Batal</button>
+                    <button type="submit"
+                        class="bg-orange-500 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-600 shadow-lg">Simpan
+                        Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-confirm"
+        class="hidden fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100 p-6 text-center">
+            <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-lg mb-2">Hapus Data Ini?</h3>
+            <p class="text-sm text-slate-500 mb-6">Data yang dihapus tidak bisa dikembalikan.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="document.getElementById('modal-confirm').classList.add('hidden')"
+                    class="px-5 py-2.5 rounded-lg font-medium text-slate-500 hover:bg-slate-50 border border-slate-200">Batal</button>
+                <button onclick="window.executeDelete()"
+                    class="px-5 py-2.5 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg">Ya,
+                    Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="alert-icon-bg"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600">
+                    <i id="alert-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+
+                <h3 id="alert-title" class="font-bold text-slate-800 text-lg mb-2">Berhasil!</h3>
+                <div id="alert-msg" class="text-sm text-slate-500 mb-6">Aksi berhasil dilakukan.</div>
+
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-lg transition-transform active:scale-95">
+                    OK, Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-kredit.js"></script>
+</body>
+
+</html>

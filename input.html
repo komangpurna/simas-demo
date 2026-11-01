@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Input Aktivitas - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for XLSX Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-20">
+
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Catatan Siswa</h1>
+
+            <div
+                class="bg-white dark:bg-slate-900/80 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex w-full md:w-auto backdrop-blur-sm">
+                <button onclick="switchMainTab('input')" id="btn-main-input"
+                    class="flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded bg-slate-800 dark:bg-blue-600 text-white shadow transition-all">
+                    <i class="fa-solid fa-pen-to-square mr-2"></i> Input Baru
+                </button>
+                <button onclick="switchMainTab('history')" id="btn-main-history"
+                    class="flex-1 md:flex-none px-6 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all">
+                    <i class="fa-solid fa-clock-rotate-left mr-2"></i> Data Riwayat
+                </button>
+            </div>
+        </div>
+
+        <div id="view-input" class="fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+                <div class="lg:col-span-2">
+                    <div
+                        class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 backdrop-blur-sm">
+
+                        <div id="search-container" class="mb-6">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                Cari & Pilih Siswa
+                            </label>
+                            <div class="relative">
+                                <input id="student-search" type="text"
+                                    class="w-full p-3 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    placeholder="Ketik nama atau NIS siswa..." autocomplete="off">
+                                <div id="student-dropdown"
+                                    class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-80 overflow-y-auto">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <div id="selected-student-info"
+                                class="hidden mt-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-lg p-3 flex items-start gap-3 animate-fade-in">
+                                <div
+                                    class="w-10 h-10 bg-blue-100 dark:bg-blue-800/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold shrink-0 shadow-inner">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200" id="info-name">-
+                                    </h4>
+                                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap gap-4">
+                                        <span>Kelas: <b id="info-class"
+                                                class="text-slate-700 dark:text-slate-300">-</b></span>
+                                        <span>Total Poin Pelanggaran: <b id="info-points"
+                                                class="text-red-500 dark:text-red-400">0</b></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="type-selection-container" class="mb-6">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Jenis
+                                Catatan</label>
+                            <div
+                                class="relative grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-lg border border-transparent dark:border-slate-700/50 shadow-inner">
+                                <!-- Highlight Animation (JS Controlled) -->
+                                <div id="type-highlight"
+                                    class="absolute top-1 bottom-1 w-[calc(33.33%-5px)] bg-white dark:bg-slate-700 rounded-md shadow-sm border border-slate-200 dark:border-slate-600 transition-all duration-300 ease-out z-0">
+                                </div>
+                                <button onclick="switchInputType('violation')" id="tab-violation"
+                                    class="relative z-10 py-2 text-sm font-bold rounded-md text-red-600 dark:text-red-400 transition-all">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Pelanggaran
+                                </button>
+                                <button onclick="switchInputType('permission')" id="tab-permission"
+                                    class="relative z-10 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                                    <i class="fa-solid fa-person-walking-arrow-right mr-1"></i> Permisi
+                                </button>
+                                <button onclick="switchInputType('achievement')" id="tab-achievement"
+                                    class="relative z-10 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                                    <i class="fa-solid fa-trophy mr-1"></i> Prestasi
+                                </button>
+                            </div>
+                            <input type="hidden" id="active-type" value="violation">
+                        </div>
+
+                        <form id="form-input" class="space-y-5">
+
+                            <div id="form-violation" class="space-y-4 animate-fade-in">
+                                <div id="violation-restricted-notice"
+                                    class="hidden bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 p-3.5 rounded-xl text-xs flex items-center gap-2.5 shadow-sm">
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm shrink-0"></i>
+                                    <div>
+                                        <span class="font-bold">Akses Input Pelanggaran Dinonaktifkan:</span>
+                                        <span class="block text-slate-600 dark:text-slate-400 mt-0.5">Peran Guru Mapel, Wali Kelas, dan Staff tidak memiliki wewenang untuk mencatat pelanggaran. Tombol simpan dinonaktifkan.</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Tanggal</label>
+                                    <input type="date" id="input-date-vio"
+                                        class="w-full md:w-1/2 p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500/50 outline-none transition-colors">
+                                </div>
+
+                                <!-- Container baris-baris pelanggaran -->
+                                <div id="violation-items" class="space-y-3">
+                                    <!-- Baris 1 (default, tidak bisa dihapus) -->
+                                    <div class="violation-row bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl p-4 space-y-3 shadow-sm"
+                                        data-index="0">
+                                        <div class="flex items-center justify-between">
+                                            <span
+                                                class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700/50 pb-1 w-full text-left mb-1">Pelanggaran
+                                                #1</span>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Cari
+                                                Jenis
+                                                Pelanggaran</label>
+                                            <div class="relative">
+                                                <input type="text" name="violation-search"
+                                                    class="violation-search-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/30 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm"
+                                                    placeholder="Ketik nama pelanggaran..." autocomplete="off">
+                                                <div
+                                                    class="violation-dropdown hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-80 overflow-y-auto">
+                                                    <!-- Populated by JS -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-4 gap-3">
+                                            <div class="col-span-3">
+                                                <label
+                                                    class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Keterangan
+                                                    Detail</label>
+                                                <input type="text" name="desc-violation"
+                                                    class="violation-desc-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/30 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                                    placeholder="Pilih jenis pelanggaran dulu...">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Poin</label>
+                                                <input type="number" inputmode="numeric" name="input-points"
+                                                    class="violation-points-input w-full p-2.5 border border-red-200 dark:border-red-900/50 rounded-lg font-bold text-red-600 dark:text-red-400 text-center bg-red-50 dark:bg-slate-900 transition-colors"
+                                                    value="0" min="0">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tombol Tambah + Total Poin -->
+                                <div class="flex items-center justify-between pt-1">
+                                    <button type="button" onclick="window.addViolationRow()"
+                                        class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-100 dark:border-blue-800 hover:bg-blue-100 transition-all active:scale-95">
+                                        <i class="fa-solid fa-plus"></i> Tambah Pelanggaran
+                                    </button>
+                                    <div class="text-sm font-bold text-slate-600 dark:text-slate-300">
+                                        Total: <span id="violation-total-points"
+                                            class="text-red-600 dark:text-red-400 text-lg">0</span>
+                                        <span class="text-xs text-slate-400 dark:text-slate-500">Poin</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="form-permission" class="hidden space-y-4 animate-fade-in">
+                                <div id="info-piket-box"
+                                    class="hidden bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 rounded-r shadow-sm flex items-start gap-3">
+                                    <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 text-lg"></i>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-blue-800 dark:text-blue-400">Info Guru Piket:
+                                        </h4>
+                                        <p class="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                                            Siswa ini sudah permisi <b id="piket-perm-count" class="text-lg">...</b>
+                                            kali tahun ajaran ini.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Tanggal</label>
+                                        <input type="date" id="input-date-perm"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Jam
+                                            Keluar</label>
+                                        <input type="time" id="input-time-perm"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Keperluan</label>
+                                    <textarea id="desc-permission" rows="2"
+                                        class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                        placeholder="Contoh: Mengambil obat di rumah..."></textarea>
+                                </div>
+                            </div>
+
+                            <div id="form-achievement" class="hidden space-y-4 animate-fade-in">
+                                <!-- Tanggal & Bidang Prestasi -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-calendar-day text-blue-500"></i>
+                                            <span>Tanggal</span>
+                                        </label>
+                                        <input type="date" id="input-date-ach"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-shapes text-indigo-500"></i>
+                                            <span>Bidang Prestasi</span>
+                                        </label>
+                                        <select id="input-achievement-field"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                            <option value="Akademik">Akademik (OSN, Sains, Matematika, KIR, dll.)</option>
+                                            <option value="Seni & Budaya">Seni & Budaya (FLS2N, Musik, Tari, Kriya, dll.)</option>
+                                            <option value="Olahraga">Olahraga (O2SN, Popda, Bela Diri, Atletik, dll.)</option>
+                                            <option value="Keagamaan">Keagamaan (MTQ, Cerdas Cermat Rohani, dll.)</option>
+                                            <option value="Riset & KIR">Riset & Karya Ilmiah Remaja (KIR)</option>
+                                            <option value="Kepemimpinan & Organisasi">Kepemimpinan (Pramuka, Paskibra, PMR, dll.)</option>
+                                            <option value="Literasi & Bahasa">Literasi & Bahasa (Debat, Pidato, Menulis)</option>
+                                            <option value="Teknologi & Vokasi">Teknologi & Vokasi (Robotik, IT, Desain)</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Nama Kompetisi & Penyelenggara -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-trophy text-amber-500"></i>
+                                            <span>Nama Kompetisi / Kegiatan</span>
+                                        </label>
+                                        <input type="text" id="input-achievement-title"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                            placeholder="Contoh: Juara 1 Lomba Matematika">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-building-columns text-slate-400"></i>
+                                            <span>Penyelenggara</span>
+                                        </label>
+                                        <input type="text" id="input-achievement-organizer"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                            placeholder="Contoh: Dinas Pendidikan, Universitas X...">
+                                    </div>
+                                </div>
+
+                                <!-- Tingkat & Peringkat/Juara -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-layer-group text-emerald-500"></i>
+                                            <span>Tingkat</span>
+                                        </label>
+                                        <select id="input-achievement-level"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                            <option value="Sekolah">Sekolah / Internal</option>
+                                            <option value="Kecamatan">Kecamatan</option>
+                                            <option value="Kabupaten">Kabupaten / Kota</option>
+                                            <option value="Provinsi">Provinsi</option>
+                                            <option value="Nasional">Nasional</option>
+                                            <option value="Internasional">Internasional</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-medal text-amber-500"></i>
+                                            <span>Peringkat / Capaian Juara</span>
+                                        </label>
+                                        <select id="input-achievement-rank"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500">
+                                            <option value="Juara 1">Juara 1 (Medali Emas)</option>
+                                            <option value="Juara 2">Juara 2 (Medali Perak)</option>
+                                            <option value="Juara 3">Juara 3 (Medali Perunggu)</option>
+                                            <option value="Harapan 1">Juara Harapan 1</option>
+                                            <option value="Harapan 2">Juara Harapan 2</option>
+                                            <option value="Harapan 3">Juara Harapan 3</option>
+                                            <option value="Finalis">Finalis</option>
+                                            <option value="Peserta">Peserta</option>
+                                            <option value="Penghargaan Khusus">Penghargaan Khusus / Best Award</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Jenis Kepesertaan (Individu vs Beregu) -->
+                                <div class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-users text-blue-500"></i>
+                                            <span>Jenis Kepesertaan</span>
+                                        </label>
+                                        <div class="flex items-center gap-5">
+                                            <label class="inline-flex items-center gap-2 cursor-pointer text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                                <input type="radio" name="participation_type" id="part-type-individual" value="Individu" checked
+                                                    onchange="window.toggleAchievementTeamMode(false)"
+                                                    class="text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                                <span>Individu (Perorangan)</span>
+                                            </label>
+                                            <label class="inline-flex items-center gap-2 cursor-pointer text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                                <input type="radio" name="participation_type" id="part-type-team" value="Beregu"
+                                                    onchange="window.toggleAchievementTeamMode(true)"
+                                                    class="text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                                <span>Beregu / Tim (Kelompok)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Section Anggota Tim (Hidden jika Individu) -->
+                                    <div id="team-section" class="hidden space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700/60">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                                Nama Tim / Regu
+                                            </label>
+                                            <input type="text" id="input-achievement-team-name"
+                                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm placeholder:text-slate-400"
+                                                placeholder="Contoh: Tim Debat Bahasa Inggris, Tim Basket Putra">
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                                Tambah Anggota Tim Lainnya (Siswa)
+                                            </label>
+                                            <div class="relative">
+                                                <input type="text" id="team-member-search"
+                                                    class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-sm placeholder:text-slate-400"
+                                                    placeholder="Ketik NIS atau Nama Siswa anggota tim..." autocomplete="off">
+                                                <div id="team-member-dropdown"
+                                                    class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                                                </div>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Siswa utama yang dipilih di atas sudah otomatis menjadi anggota tim. Cari dan klik siswa di atas untuk menambahkan anggota regu lainnya.</p>
+                                        </div>
+
+                                        <!-- List Anggota Tim Terpilih (Chips) -->
+                                        <div id="team-members-chips" class="flex flex-wrap gap-2 pt-1">
+                                            <!-- Injected by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Guru Pembina / Pendamping Lomba (Opsional) -->
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chalkboard-user text-blue-500"></i>
+                                        <span>Guru Pembina / Pendamping Lomba (Opsional)</span>
+                                    </label>
+                                    <input type="text" id="input-achievement-mentor" list="teachers-datalist"
+                                        class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                        placeholder="Pilih dari guru GTK atau ketik nama pembina eksternal...">
+                                    <datalist id="teachers-datalist">
+                                        <!-- Diisi otomatis dari master GTK -->
+                                    </datalist>
+                                </div>
+
+                                <!-- Bukti Piagam & Nomor SK (Opsional) -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                            <i class="fa-brands fa-google-drive text-emerald-600"></i>
+                                            <span>Tautan Bukti Piagam / Sertifikat (Opsional)</span>
+                                        </label>
+                                        <input type="url" id="input-achievement-evidence"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                            placeholder="https://drive.google.com/file/d/...">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-certificate text-amber-500"></i>
+                                            <span>Nomor Sertifikat / SK Piagam (Opsional)</span>
+                                        </label>
+                                        <input type="text" id="input-achievement-cert-no"
+                                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                            placeholder="Contoh: 014/BPTI/OSN/2026">
+                                    </div>
+                                </div>
+
+                                <!-- Keterangan Tambahan (Opsional) -->
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-align-left text-slate-400"></i>
+                                        <span>Keterangan Tambahan (Opsional)</span>
+                                    </label>
+                                    <textarea id="desc-achievement" rows="2"
+                                        class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                        placeholder="Catatan tambahan mengenai prestasi siswa..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="pt-4">
+                                <button type="button" onclick="window.confirmSaveActivity()" id="btn-save-activity"
+                                    class="w-full bg-slate-900 dark:bg-blue-600 text-white py-3 rounded-lg font-bold shadow-lg shadow-slate-200 dark:shadow-blue-900/20 hover:bg-slate-800 dark:hover:bg-blue-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Data
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1 sticky top-6 space-y-6">
+                    <!-- SECTION PERMISI MENUNGGU ACC PIKET (Two-Step Permission) -->
+                    <div id="piket-approved-section"
+                        class="hidden bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30 overflow-hidden backdrop-blur-sm">
+                        <div
+                            class="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30 flex justify-between items-center">
+                            <h3 class="font-bold text-blue-800 dark:text-blue-400 flex items-center gap-2">
+                                <i class="fa-solid fa-person-walking-arrow-right"></i> Permisi Menunggu ACC
+                                <span id="badge-piket-pending"
+                                    class="hidden bg-blue-600 dark:bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
+                            </h3>
+                            <button onclick="loadApprovedPermissionRequests()"
+                                class="text-[10px] bg-white dark:bg-slate-800 px-2 py-1 rounded-lg text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 font-bold hover:bg-blue-600 dark:hover:!bg-blue-600 hover:text-white dark:hover:text-white transition-all shadow-sm">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                            </button>
+                        </div>
+                        <div id="piket-approved-list" class="max-h-[300px] overflow-y-auto p-3 custom-scrollbar">
+                            <div class="text-center text-slate-400 dark:text-slate-500 py-4 text-xs">
+                                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Feed -->
+                    <div
+                        class="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden backdrop-blur-sm">
+                        <div
+                            class="p-4 bg-green-50 dark:bg-green-900/10 border-b border-green-100 dark:border-green-900/30 flex justify-between items-center">
+                            <h3 class="font-bold text-green-800 dark:text-green-400 flex items-center gap-2">
+                                <i class="fa-solid fa-bolt"></i> Baru Saja Diinput
+                            </h3>
+                            <span
+                                class="text-[10px] bg-white dark:bg-slate-800 px-2 py-1 rounded-lg text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 font-bold shadow-sm">10
+                                Terakhir</span>
+                        </div>
+
+                        <div class="max-h-[600px] overflow-y-auto custom-scrollbar" id="recent-activity-feed">
+                            <div class="p-6 text-center text-slate-400 dark:text-slate-500 text-sm">
+                                <i class="fa-solid fa-spinner fa-spin mb-2"></i><br>Memuat data...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-history" class="hidden fade-in">
+            <div
+                class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 backdrop-blur-sm">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg">Filter & Pencarian Data</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.exportHistoryToExcel()" id="btn-export-excel"
+                            class="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:!bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-xs sm:text-sm shadow-md shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel text-base"></i>
+                            <span>Export Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-6">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Kelas /
+                            Angkatan</label>
+                        <select id="filter-history-class"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50">
+                            <option value="">Semua Kelas</option>
+                            <!-- Kelas akan di-populate via JS, termasuk opsi angkatan -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Kategori</label>
+                        <select id="filter-history-category"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50">
+                            <option value="">Semua Kategori</option>
+                            <option value="violation" class="text-red-600 dark:text-red-400">Pelanggaran</option>
+                            <option value="permission" class="text-blue-600 dark:text-blue-400">Permisi</option>
+                            <option value="achievement" class="text-green-600 dark:text-green-400">Prestasi</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 md:col-span-2">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Dari
+                                Tanggal</label>
+                            <input type="date" id="filter-date-start"
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-500/50">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Sampai
+                                Tanggal</label>
+                            <input type="date" id="filter-date-end"
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm outline-none focus:ring-2 focus:ring-blue-500/50">
+                        </div>
+                    </div>
+                    <button onclick="window.loadHistoryByFilter()"
+                        class="bg-blue-600 dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 dark:hover:!bg-blue-500 transition-colors shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center">
+                        <i class="fa-solid fa-search mr-2"></i> Tampilkan
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead
+                            class="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold uppercase text-xs border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="p-4 text-center w-12 tracking-wider whitespace-nowrap hidden md:table-cell">No</th>
+                                <th class="p-4 w-32 tracking-wider whitespace-nowrap">Waktu</th>
+                                <th class="p-4 tracking-wider whitespace-nowrap">Siswa</th>
+                                <th class="p-4 w-32 tracking-wider whitespace-nowrap">Kategori</th>
+                                <th class="p-4 tracking-wider">Keterangan</th>
+                                <th class="p-4 text-right w-24 tracking-wider whitespace-nowrap">Poin</th>
+                                <th class="p-4 text-center w-24 tracking-wider whitespace-nowrap">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body"
+                            class="divide-y divide-slate-100 dark:divide-slate-800/50 bg-white dark:bg-slate-900/40">
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-slate-400 dark:text-slate-500">Silakan pilih
+                                    filter dan klik
+                                    Tampilkan.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-confirm-activity"
+        class="hidden fixed inset-0 z-modal bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-5 text-blue-600 dark:text-blue-400 shadow-inner">
+                    <i class="fa-solid fa-paper-plane text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-xl mb-2">Simpan Data Ini?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8">Pastikan data siswa dan keterangan sudah
+                    benar. Data yang disimpan akan tercatat di sistem.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="document.getElementById('modal-confirm-activity').classList.add('hidden')"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:!bg-slate-700 transition-colors">Batal</button>
+                    <button onclick="window.executeSaveActivity()"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:!bg-blue-500 shadow-md transition-transform active:scale-95">Ya,
+                        Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- MODAL CONFIRM DELETE -->
+    <div id="modal-confirm-delete"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800 scale-100">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-5 text-red-600 dark:text-red-500 shadow-inner">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-xl mb-2">Hapus Aktivitas?</h3>
+                <p id="delete-confirm-text" class="text-sm text-slate-500 dark:text-slate-400 mb-8">Apakah Anda yakin
+                    ingin menghapus data
+                    ini? Poin yang sudah tercatat akan dikembalikan.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="document.getElementById('modal-confirm-delete').classList.add('hidden')"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:!bg-slate-700 transition-colors">Batal</button>
+                    <button id="btn-confirm-delete-action" onclick="window.executeDeleteActivity()"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-red-600 dark:bg-red-600 hover:bg-red-700 dark:hover:!bg-red-700 shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trash"></i> Ya, Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FUNGSI SWITCH TAB UTAMA (INPUT vs RIWAYAT)
+        function switchMainTab(tabName) {
+            const btnInput = document.getElementById('btn-main-input');
+            const btnHistory = document.getElementById('btn-main-history');
+            const viewInput = document.getElementById('view-input');
+            const viewHistory = document.getElementById('view-history');
+
+            const activeClass = "flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded bg-slate-800 dark:bg-blue-600 text-white shadow transition-all";
+            const inactiveClass = "flex-1 md:flex-none px-6 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all";
+
+            if (tabName === 'input') {
+                btnInput.className = activeClass;
+                btnHistory.className = inactiveClass;
+                viewInput.classList.remove('hidden');
+                viewHistory.classList.add('hidden');
+            } else {
+                btnHistory.className = activeClass;
+                btnInput.className = inactiveClass;
+                viewHistory.classList.remove('hidden');
+                viewInput.classList.add('hidden');
+            }
+        }
+
+        // FUNGSI SWITCH SUB-TAB (JENIS INPUT)
+        function switchInputType(type) {
+            document.getElementById('active-type').value = type;
+
+            // Hide All Sub-Forms dgn animasi
+            document.getElementById('form-violation').classList.add('hidden');
+            document.getElementById('form-permission').classList.add('hidden');
+            document.getElementById('form-achievement').classList.add('hidden');
+
+            const highlight = document.getElementById('type-highlight');
+
+            // Reset Tab Styles & Setuju Posisi
+            const tabs = ['violation', 'permission', 'achievement'];
+            const colors = { violation: 'red', permission: 'blue', achievement: 'green' };
+
+            let highlightOffset = 0;
+            const tabWidthPercentage = 100 / tabs.length;
+            const containerPadding = 4; // 1 padding x 4px
+
+            tabs.forEach((t, index) => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (!btn) return;
+
+                // Simpan state hidden jika ada (karena Two-Step Permission menyembunyikan ini)
+                const isHidden = btn.classList.contains('hidden');
+
+                if (t === type) {
+                    // TAB AKTIF: Teks berwarna sesuai kategori & bold (TIDAK ADA BACKGROUND LAGI DARI SINI)
+                    btn.className = `relative z-10 py-2 text-sm font-bold rounded-md text-${colors[t]}-600 dark:text-${colors[t]}-400 transition-all duration-300`;
+                    document.getElementById(`form-${t}`).classList.remove('hidden');
+
+                    // Hitung Posisi Relatif X
+                    highlightOffset = index;
+                } else {
+                    // TAB PASIF: Teks abu-abu biasa
+                    btn.className = `relative z-10 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-300`;
+                }
+
+                if (isHidden) btn.classList.add('hidden');
+            });
+
+            // Gerakkan Highlighter
+            if (highlight) {
+                // Kalkulasi pergeseran: indeks * 100% ditambah sedikit padding dasar (4px)
+                // Width di css kita set `w-[calc(33.33%-5px)]`
+                const translation = `calc(${highlightOffset * 100}% + ${highlightOffset * 8}px + 4px)`;
+                highlight.style.transform = `translateX(${translation})`;
+
+                // Ubah Warna Garis/Bayangan jika diperlukan, tapi kita set global bg-white
+            }
+
+            // Sinkronkan status disabled tombol simpan berdasarkan peran & kategori aktif
+            updateSaveButtonState(type);
+        }
+
+        // FUNGSI SINKRONISASI TOMBOL SIMPAN (GURU MAPEL, WALI KELAS, STAFF DILARANG INPUT PELANGGARAN)
+        function updateSaveButtonState(type) {
+            const currentType = type || document.getElementById('active-type')?.value || 'violation';
+            const btnSave = document.getElementById('btn-save-activity');
+            const noticeEl = document.getElementById('violation-restricted-notice');
+            const btnAddVio = document.querySelector('button[onclick="window.addViolationRow()"]');
+            if (!btnSave) return;
+
+            let isRestricted = false;
+            if (typeof window.canInputViolation === 'function') {
+                isRestricted = !window.canInputViolation();
+            } else {
+                const primaryRole = localStorage.getItem('user_role');
+                let addRoles = [];
+                try { addRoles = JSON.parse(localStorage.getItem('user_additional_roles') || '[]'); } catch (e) {}
+                const allRoles = [primaryRole, ...addRoles].filter(Boolean);
+                const isAuthorized = allRoles.some(r => ['super_admin', 'guru_bk', 'kesiswaan', 'admin_pks'].includes(r));
+                isRestricted = !isAuthorized && allRoles.some(r => ['guru_mapel', 'wali_kelas', 'staff'].includes(r));
+            }
+
+            if (currentType === 'violation' && isRestricted) {
+                btnSave.disabled = true;
+                btnSave.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btnSave.classList.remove('active:scale-95', 'hover:bg-slate-800', 'dark:hover:bg-blue-700');
+                btnSave.setAttribute('title', 'Akses Dibatasi: Guru Mapel, Wali Kelas, dan Staff tidak memiliki akses input pelanggaran');
+                if (noticeEl) noticeEl.classList.remove('hidden');
+                if (btnAddVio) {
+                    btnAddVio.disabled = true;
+                    btnAddVio.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                }
+            } else {
+                btnSave.disabled = false;
+                btnSave.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btnSave.classList.add('active:scale-95', 'hover:bg-slate-800', 'dark:hover:bg-blue-700');
+                btnSave.removeAttribute('title');
+                if (noticeEl) noticeEl.classList.add('hidden');
+                if (btnAddVio) {
+                    btnAddVio.disabled = false;
+                    btnAddVio.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                }
+            }
+        }
+        window.updateSaveButtonState = updateSaveButtonState;
+
+        // Jalankan saat pertama kali dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inisialisasi highlight default ke 'violation'
+            setTimeout(() => switchInputType('violation'), 50);
+        });
+    </script>
+
+    <script type="module" src="js/page-input.js?v=26.11.02.1"></script>
+</body>
+
+</html>

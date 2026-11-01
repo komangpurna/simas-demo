@@ -1,0 +1,140 @@
+{
+  "kind": "identitytoolkit#DownloadAccountResponse",
+  "users": [
+    {
+      "localId": "tester-super-admin",
+      "email": "test.superadmin@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Super Admin",
+      "customAttributes": "{\"role\":\"super_admin\"}"
+    },
+    {
+      "localId": "tester-kepala-sekolah",
+      "email": "test.kepsek@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Kepala Sekolah",
+      "customAttributes": "{\"role\":\"kepala_sekolah\"}"
+    },
+    {
+      "localId": "tester-wakasek-kurikulum",
+      "email": "test.kurikulum@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Wakasek Kurikulum",
+      "customAttributes": "{\"role\":\"wakasek_kurikulum\"}"
+    },
+    {
+      "localId": "tester-kepala-lab",
+      "email": "test.lab@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Kepala Lab",
+      "customAttributes": "{\"role\":\"kepala_lab\"}"
+    },
+    {
+      "localId": "tester-kesiswaan",
+      "email": "test.kesiswaan@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Kesiswaan",
+      "customAttributes": "{\"role\":\"kesiswaan\"}"
+    },
+    {
+      "localId": "tester-admin-spp",
+      "email": "test.spp@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Admin SPP",
+      "customAttributes": "{\"role\":\"admin_spp\"}"
+    },
+    {
+      "localId": "tester-wali-kelas",
+      "email": "test.walikelas@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Wali Kelas",
+      "customAttributes": "{\"role\":\"wali_kelas\"}"
+    },
+    {
+      "localId": "tester-guru-bk",
+      "email": "test.bk@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Guru BK",
+      "customAttributes": "{\"role\":\"guru_bk\"}"
+    },
+    {
+      "localId": "tester-guru-mapel",
+      "email": "test.gurumapel@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Guru Mapel",
+      "customAttributes": "{\"role\":\"guru_mapel\"}"
+    },
+    {
+      "localId": "tester-staff",
+      "email": "test.staff@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Staff",
+      "customAttributes": "{\"role\":\"staff\"}"
+    },
+    {
+      "localId": "tester-admin-kelas",
+      "email": "test.adminkelas@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Admin Kelas",
+      "customAttributes": "{\"role\":\"admin_kelas\"}"
+    },
+    {
+      "localId": "tester-admin-pks",
+      "email": "test.adminpks@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Admin PKS",
+      "customAttributes": "{\"role\":\"admin_pks\"}"
+    },
+    {
+      "localId": "tester-siswa",
+      "email": "test.siswa@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Siswa",
+      "customAttributes": "{\"role\":\"siswa\"}"
+    },
+    {
+      "localId": "tester-admin-sukaduka",
+      "email": "test.sukaduka@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Admin Suka Duka",
+      "customAttributes": "{\"role\":\"admin_sukaduka\"}"
+    },
+    {
+      "localId": "tester-admin-duta",
+      "email": "test.duta@smagesa.sch.id",
+      "emailVerified": true,
+      "passwordHash": "UkFDQ0VDVEVOVE9SWUhBU0g=",
+      "salt": "c2FsdHNhbHRzYWx0",
+      "displayName": "Tester Admin Duta",
+      "customAttributes": "{\"role\":\"admin_duta\"}"
+    }
+  ]
+}

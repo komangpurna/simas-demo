@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Panel Admin Duta SHAKTI 2026 - SIMAS</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .tab-active {
+            color: #7c3aed;
+            border-bottom: 2px solid #7c3aed;
+        }
+
+        /* Spotlight Animation */
+        @keyframes spotlightLeft {
+            0%, 100% { transform: rotate(-35deg); opacity: 0.1; }
+            50% { transform: rotate(15deg); opacity: 0.8; }
+        }
+
+        @keyframes spotlightRight {
+            0%, 100% { transform: rotate(35deg); opacity: 0.1; }
+            50% { transform: rotate(-15deg); opacity: 0.8; }
+        }
+
+        .spotlight-left {
+            animation: spotlightLeft 5s infinite ease-in-out;
+            transform-origin: top left;
+        }
+
+        .spotlight-right {
+            animation: spotlightRight 5s infinite ease-in-out;
+            transform-origin: top right;
+        }
+
+        /* Golden glow animation */
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: 0 0 20px 2px rgba(250, 204, 21, 0.3); }
+            50% { box-shadow: 0 0 40px 8px rgba(250, 204, 21, 0.6); }
+        }
+
+        .gold-glow-card {
+            animation: goldGlow 3s infinite ease-in-out;
+            border: 2px solid #eab308;
+        }
+
+        /* Compact Form Styling Override */
+        #form-kandidat input,
+        #form-kandidat select,
+        #form-kandidat textarea {
+            font-size: 11px !important;
+            padding: 8px 10px !important;
+            height: auto !important;
+            min-height: unset !important;
+            border-radius: 10px !important;
+        }
+
+        #form-kandidat input::placeholder,
+        #form-kandidat textarea::placeholder {
+            font-size: 9.5px !important;
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind-duta.css">
+</head>
+
+<body class="bg-slate-50 min-h-screen min-h-dvh font-sans selection:bg-purple-100 selection:text-purple-900">
+
+    <div class="h-2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"></div>
+
+    <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+
+        <!-- HEADER PORTAL -->
+        <header class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm glass-panel">
+            <div class="flex items-center gap-3">
+                <img src="../assets/logo-sekolah.png" alt="Logo" class="w-10 h-10 object-contain">
+                <div>
+                    <h1 class="text-base font-extrabold text-slate-800 tracking-tight font-outfit">Panel Kontrol Duta {{schoolVisiAcronym}} 2026</h1>
+                    <p class="text-[10px] text-red-500 font-bold uppercase tracking-wider">Dashboard Kesiswaan &amp; Administrasi</p>
+                </div>
+            </div>
+
+            <!-- SSO Status, Voting Toggle & Back Button -->
+            <div class="flex items-center flex-wrap justify-end gap-3">
+                <!-- Status & Toggle Voting Duta -->
+                <div class="flex items-center gap-2 bg-purple-50 border border-purple-100/70 px-3 py-1.5 rounded-xl">
+                    <span class="text-[9px] font-bold text-purple-700 uppercase tracking-wider">Voting Duta:</span>
+                    <span id="status-duta-voting" class="text-[9px] font-black text-slate-500 uppercase">Memuat...</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-duta-voting" class="sr-only peer">
+                        <div class="w-7 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600 relative"></div>
+                    </label>
+                </div>
+
+                <span class="bg-red-50 text-red-700 text-[10px] font-extrabold px-3 py-1.5 rounded-full border border-red-100">
+                    <i class="fa-solid fa-user-shield mr-1"></i> Admin {{appName}}
+                </span>
+                <a href="../settings.html" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all active:scale-95">
+                    <i class="fa-solid fa-arrow-left"></i> Pengaturan
+                </a>
+            </div>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="flex border-b border-slate-200 mb-8 bg-white px-4 rounded-xl shadow-sm border border-slate-100/50">
+            <button onclick="switchAdminTab('nominasi')" id="tab-nominasi" class="px-5 py-4 text-xs font-bold text-slate-500 hover:text-purple-600 transition-all flex items-center gap-2 tab-active">
+                <i class="fa-solid fa-user-pen"></i> Kelola Nominasi
+            </button>
+            <button onclick="switchAdminTab('hasil')" id="tab-hasil" class="px-5 py-4 text-xs font-bold text-slate-500 hover:text-purple-600 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-square-poll-vertical"></i> Hasil Voting Real-Time
+            </button>
+            <button onclick="switchAdminTab('pemenang')" id="tab-pemenang" class="px-5 py-4 text-xs font-bold text-slate-500 hover:text-purple-600 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-trophy"></i> Panggung Pemenang (TV Style)
+            </button>
+        </nav>
+
+        <!-- MAIN LAYOUT VIEWS -->
+
+        <!-- VIEW 1: KELOLA NOMINASI -->
+        <div id="view-nominasi" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- LEFT PANEL: FORM INPUT (5 COLS) -->
+            <section class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm glass-panel">
+                <h2 id="form-title" class="text-sm font-extrabold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2 border-b pb-2">
+                    <i class="fa-solid fa-user-plus text-purple-600"></i> Tambah Nominasi Siswa
+                </h2>
+
+                <form id="form-kandidat" class="space-y-3">
+                    <input type="hidden" id="edit-id">
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Nama Lengkap Siswa</label>
+                        <input type="text" id="kandidat-nama" required placeholder="Contoh: I Gede Aditya Wiranata" 
+                            class="w-full text-[10px] placeholder:text-[9px] p-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Kategori Duta</label>
+                            <select id="kandidat-kategori" required
+                                class="w-full text-[10px] p-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none bg-white transition-all">
+                                <option value="Sehat">Duta Sehat</option>
+                                <option value="Humanis">Duta Humanis</option>
+                                <option value="Agamais">Duta Agamais</option>
+                                <option value="Kreatif">Duta Kreatif</option>
+                                <option value="Terampil">Duta Terampil</option>
+                                <option value="Inovatif">Duta Inovatif</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">URL Foto (Profil)</label>
+                            <input type="url" id="kandidat-foto" placeholder="Avatar default jika kosong" 
+                                class="w-full text-[10px] placeholder:text-[9px] p-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">URL Video Kampanye (Opsional)</label>
+                        <input type="url" id="kandidat-video" placeholder="Contoh: https://youtube.com/embed/..." 
+                            class="w-full text-[10px] placeholder:text-[9px] p-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+                    </div>
+
+                    <div class="flex gap-2 pt-1.5">
+                        <button type="button" id="btn-reset" onclick="resetNomineeForm()" class="hidden flex-1 py-2.5 px-4 rounded-xl font-bold text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+                            Batal Edit
+                        </button>
+                        <button type="submit" id="btn-submit" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all active:scale-95">
+                            Simpan Nominasi
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- RIGHT PANEL: LIST NOMINASI (7 COLS) -->
+            <section class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm glass-panel flex flex-col">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                    <h2 class="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-purple-600"></i> Daftar Nominasi Aktif
+                    </h2>
+                    <span id="nominees-count" class="text-[10px] bg-purple-50 text-purple-600 border border-purple-100 px-2.5 py-1 rounded-full font-bold">0 Siswa</span>
+                </div>
+
+                <!-- Nominies list -->
+                <div id="nominees-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                    <div class="text-center py-12 text-slate-400 italic text-xs">
+                        <i class="fa-solid fa-spinner fa-spin mr-1 text-purple-600"></i> Memuat daftar nominasi...
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW 2: HASIL VOTING REAL-TIME -->
+        <div id="view-hasil" class="hidden space-y-6">
+            <!-- TOTAL SUARA CARD -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm glass-panel flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-purple-50 text-purple-600 border border-purple-100 rounded-2xl flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-square-poll-horizontal"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-extrabold text-slate-800 leading-tight">Total Suara Diterima</h2>
+                        <p class="text-[11px] text-slate-400 mt-1">Perolehan voting yang sah dari seluruh siswa aktif {{appName}}.</p>
+                    </div>
+                </div>
+                <div class="text-center shrink-0 bg-gradient-to-br from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-2xl shadow-xl shadow-purple-100">
+                    <span id="total-votes-count" class="text-2xl font-black font-outfit">0</span>
+                    <span class="block text-[9px] uppercase font-bold tracking-widest text-purple-200 mt-0.5">Suara Sah</span>
+                </div>
+            </div>
+
+            <!-- CHART BY CATEGORIES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="voting-charts-container">
+                <!-- Javascript will generate voting charts for all 6 categories here -->
+                <div class="col-span-full text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin mr-1 text-purple-600"></i> Menghitung suara masuk secara real-time...
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: PANGGUNG PEMENANG (TV STYLE) -->
+        <div id="view-pemenang" class="hidden bg-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden border border-slate-800 shadow-2xl">
+            <!-- Decorative space stars background -->
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            
+            <div class="relative z-10 text-center max-w-xl mx-auto mb-8">
+                <span class="bg-yellow-500/10 text-yellow-400 text-[10px] font-extrabold px-3 py-1.5 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none inline-block">
+                    <i class="fa-solid fa-award mr-1"></i> Penganugerahan Duta {{schoolVisiAcronym}} 2026
+                </span>
+                <h2 class="text-xl sm:text-2xl font-black font-outfit mt-3 leading-tight text-white tracking-tight">Panggung Penghargaan Teatrikal</h2>
+                <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                    Sajikan pengumuman pemenang Duta {{schoolVisiAcronym}} secara dramatis dan megah langsung di layar proyeksi sekolah! Klik tombol di bawah untuk membakar ketegangan.
+                </p>
+            </div>
+
+            <!-- CATEGORY SELECTOR CARDS FOR WINNER REVEAL -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 relative z-10">
+                <!-- Javascript will generate elegant cards for each category with "Reveal Winner" button -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DRAMATIC TV-AWARD WINNER SCREEN (SPOTLIGHT SCREEN OVERLAY) -->
+    <div id="winner-stage" class="hidden fixed inset-0 z-[150] bg-black flex flex-col justify-between p-6 overflow-hidden">
+        
+        <!-- SPOTLIGHT BEAMS (CSS Animation) -->
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-0 left-0 w-[500px] h-[1000px] bg-gradient-to-b from-yellow-400/20 via-transparent to-transparent spotlight-left blur-[80px]"></div>
+            <div class="absolute top-0 right-0 w-[500px] h-[1000px] bg-gradient-to-b from-yellow-400/20 via-transparent to-transparent spotlight-right blur-[80px]"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-purple-950/40 via-black to-black"></div>
+        </div>
+
+        <!-- TOP BAR: SCHOOL INFO & CLOSE BUTTON -->
+        <div class="relative z-10 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="../assets/logo-sekolah.png" alt="Logo" class="w-8 h-8 object-contain">
+                <div>
+                    <h4 class="text-[10px] font-extrabold text-yellow-400 uppercase tracking-widest">Penganugerahan Duta {{schoolVisiAcronym}} 2026</h4>
+                    <p class="text-[8px] text-slate-400">{{schoolName}}</p>
+                </div>
+            </div>
+            <button onclick="closeWinnerStage()" class="px-3 py-1.5 rounded-lg text-[9px] font-bold text-slate-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-xmark mr-1"></i> Tutup Panggung
+            </button>
+        </div>
+
+        <!-- CENTER AREA: DRAMATIC DRUMROLL & GLOWING PRESENTATION -->
+        <div class="relative z-10 flex-1 flex flex-col items-center justify-center py-6">
+            <!-- 1. DRUMROLL/TENSION COUNTDOWN (Visible at start) -->
+            <div id="tension-screen" class="text-center transition-all duration-300 max-w-sm">
+                <div class="w-20 h-20 bg-yellow-500/10 text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-yellow-500/20 animate-pulse shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+                    <i class="fa-solid fa-volume-high text-3xl"></i>
+                </div>
+                <h3 id="tension-category" class="text-base uppercase tracking-widest text-slate-400 font-extrabold">Duta -</h3>
+                <h2 class="text-xl sm:text-2xl font-black font-outfit text-white mt-2 leading-tight tracking-tight">Siapakah Pemenangnya?</h2>
+                <p class="text-[10px] text-slate-500 mt-2">Dengarkan ketukan drum penghargaan, ketegangan sedang memuncak...</p>
+                
+                <button onclick="revealWinnerFinal()" id="btn-reveal-now"
+                    class="mt-8 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:to-amber-600 text-slate-900 font-black text-xs px-8 py-4 rounded-2xl shadow-xl shadow-yellow-500/20 active:scale-95 transition-all animate-bounce">
+                    <i class="fa-solid fa-envelope-open mr-1.5"></i> BUKA NOMINASI SEKARANG
+                </button>
+            </div>
+
+            <!-- 2. GOLDEN WINNER CARD (Revealed after clicking button) -->
+            <div id="winner-reveal-card" class="hidden text-center transition-all duration-700 transform scale-90 opacity-0 max-w-md w-full">
+                <!-- Trophy Icon -->
+                <div class="relative -mb-6 z-20">
+                    <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-600 text-slate-900 rounded-full flex items-center justify-center mx-auto shadow-2xl border-4 border-slate-950">
+                        <i class="fa-solid fa-trophy text-2xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Winner main content -->
+                <div class="bg-slate-950/80 rounded-[2.5rem] p-6 sm:p-8 pt-10 gold-glow-card relative overflow-hidden backdrop-blur-md">
+                    <!-- Gold shine overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-tr from-yellow-500/5 via-transparent to-yellow-500/10 pointer-events-none"></div>
+
+                    <!-- Winner Image Frame -->
+                    <div class="relative w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-6 rounded-2xl overflow-hidden border-4 border-yellow-500 shadow-2xl bg-slate-900 shrink-0">
+                        <img id="winner-img" src="" alt="Pemenang" class="w-full h-full object-cover">
+                        <!-- Spot glow -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    </div>
+
+                    <span id="winner-category-tag" class="bg-yellow-500/10 text-yellow-400 text-[10px] font-black px-3 py-1 rounded-full border border-yellow-500/20 uppercase tracking-widest leading-none inline-block mb-3">
+                        DUTA SEHAT 2026
+                    </span>
+                    <h3 id="winner-name" class="text-xl sm:text-2xl font-black font-outfit text-white tracking-tight leading-snug">Nama Pemenang</h3>
+                    <p id="winner-class" class="text-xs text-slate-400 mt-1 font-bold">Kelas -</p>
+                    
+                    <div class="mt-6 pt-4 border-t border-white/10 flex justify-center gap-8 text-center">
+                        <div>
+                            <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-wider">Perolehan Suara</span>
+                            <span id="winner-votes" class="text-lg font-black text-yellow-400 font-outfit">0 Suara</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-wider">Presentase</span>
+                            <span id="winner-percent" class="text-lg font-black text-yellow-400 font-outfit">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-center gap-2">
+                    <button onclick="sprayMoreConfetti()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all">
+                        <i class="fa-solid fa-sparkles mr-1"></i> Ledakan Lagi!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR: BRANDING -->
+        <div class="relative z-10 text-center text-[9px] text-slate-600 font-bold uppercase tracking-wider border-t border-white/5 pt-4">
+            {{appName}} Hybrid Award Presentation Engine &copy; 2026
+        </div>
+
+    </div>
+
+    <!-- JS LIBS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>

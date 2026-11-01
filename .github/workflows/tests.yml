@@ -1,0 +1,223 @@
+name: Run Intelligent Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.agents/**'
+      - 'users.csv'
+      - 'screenshot.png'
+      - 'sql/**'
+      - 'backup/**'
+      - 'cloudflare/schema.sql'
+      - 'cloudflare/seed_*.sql'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.agents/**'
+      - 'users.csv'
+      - 'screenshot.png'
+      - 'sql/**'
+      - 'backup/**'
+      - 'cloudflare/schema.sql'
+      - 'cloudflare/seed_*.sql'
+  workflow_dispatch:
+    inputs:
+      spec_path:
+        description: 'Jalur spesifik berkas Cypress yang ingin dites (contoh: cypress/e2e/home.cy.js). Kosongkan untuk menjalankan deteksi otomatis.'
+        required: false
+        default: ''
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  analyze-and-check:
+    name: Code Integrity & Change Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      run_home: ${{ steps.filter.outputs.home }}
+      run_keuangan: ${{ steps.filter.outputs.keuangan }}
+      run_presensi: ${{ steps.filter.outputs.presensi }}
+      run_siswa: ${{ steps.filter.outputs.siswa }}
+      run_duta: ${{ steps.filter.outputs.duta }}
+      run_unit: ${{ steps.filter.outputs.unit }}
+      has_e2e: ${{ steps.filter.outputs.home == 'true' || steps.filter.outputs.keuangan == 'true' || steps.filter.outputs.presensi == 'true' || steps.filter.outputs.siswa == 'true' || steps.filter.outputs.duta == 'true' || steps.filter.outputs.cypress == 'true' }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run JS Syntax Check
+        run: npm run check:syntax
+
+      - name: Filter Changed Paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            home:
+              - 'index.html'
+              - 'js/global.js'
+              - 'cypress/e2e/home.cy.js'
+            keuangan:
+              - 'keuangan.html'
+              - 'js/page-keuangan.js'
+              - 'cypress/e2e/keuangan.cy.js'
+            presensi:
+              - 'presensi.html'
+              - 'presensi-guru.html'
+              - 'js/page-presensi.js'
+              - 'cypress/e2e/presensi.cy.js'
+            siswa:
+              - 'siswa.html'
+              - 'portal-siswa.html'
+              - 'js/page-students.js'
+              - 'cypress/e2e/siswa.cy.js'
+            duta:
+              - 'duta-admin.html'
+              - 'js/page-duta-admin.js'
+              - 'cypress/e2e/duta.cy.js'
+            cypress:
+              - 'cypress/**'
+            unit:
+              - '**/*.html'
+              - 'js/**'
+              - 'tests/**'
+              - 'library/**'
+              - 'sukaduka/**'
+              - 'duta/**'
+              - 'pid/**'
+              - 'cloudflare/**'
+              - 'supabase/**'
+              - 'scripts/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/tests.yml'
+
+  test-unit:
+    name: Run Jest Unit Tests
+    needs: analyze-and-check
+    # Jalankan jika ada perubahan kode JS unit atau jika dijalankan secara manual
+    if: needs.analyze-and-check.outputs.run_unit == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Tes DOM membaca sumber HTML/JS secara dinamis; --onlyChanged tidak dapat
+      # melacak dependensi tersebut dan bisa melewatkan regresi antarmodul.
+      - name: Run All Jest Tests (Including DOM Runtime Regressions)
+        run: npm run test:unit
+
+  test-e2e:
+    name: Run Cypress E2E Tests
+    needs: analyze-and-check
+    # Hanya jalankan jika ada perubahan pada modul UI/E2E atau via trigger manual workflow_dispatch
+    if: needs.analyze-and-check.outputs.has_e2e == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up JDK 17 (Required for Firebase Emulator)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Cache Cypress Binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-binary-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            cypress-binary-${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Tentukan berkas tes yang akan dijalankan berdasarkan input manual atau hasil deteksi file yang berubah
+      - name: Determine Spec to Run
+        id: spec-selector
+        run: |
+          SPEC_TO_RUN=""
+          
+          # 1. Jika ada input manual dari workflow_dispatch
+          if [ -n "${{ github.event.inputs.spec_path }}" ]; then
+            SPEC_TO_RUN="${{ github.event.inputs.spec_path }}"
+            echo "Menjalankan tes spesifik manual: $SPEC_TO_RUN"
+          else
+            # 2. Deteksi file yang berubah secara otomatis
+            SPECS=()
+            if [ "${{ needs.analyze-and-check.outputs.run_home }}" = "true" ]; then
+              SPECS+=("cypress/e2e/home.cy.js")
+            fi
+            if [ "${{ needs.analyze-and-check.outputs.run_keuangan }}" = "true" ]; then
+              SPECS+=("cypress/e2e/keuangan.cy.js")
+            fi
+            if [ "${{ needs.analyze-and-check.outputs.run_presensi }}" = "true" ]; then
+              SPECS+=("cypress/e2e/presensi.cy.js")
+            fi
+            if [ "${{ needs.analyze-and-check.outputs.run_siswa }}" = "true" ]; then
+              SPECS+=("cypress/e2e/siswa.cy.js")
+            fi
+            if [ "${{ needs.analyze-and-check.outputs.run_duta }}" = "true" ]; then
+              SPECS+=("cypress/e2e/duta.cy.js")
+            fi
+            
+            # Gabungkan spec yang relevan dipisahkan tanda koma
+            if [ ${#SPECS[@]} -gt 0 ]; then
+              SPEC_TO_RUN=$(IFS=,; echo "${SPECS[*]}")
+              echo "Mendeteksi perubahan otomatis. Menjalankan spec: $SPEC_TO_RUN"
+            else
+              SPEC_TO_RUN="cypress/e2e/**/*.cy.js"
+              echo "Menjalankan semua spec Cypress."
+            fi
+          fi
+          echo "selected_spec=$SPEC_TO_RUN" >> $GITHUB_OUTPUT
+
+      - name: Run Cypress Tests via Firebase Emulator
+        run: |
+          npx firebase emulators:exec --only auth,firestore --import=cypress/fixtures/emulator-data --project smagesa "npx http-server . -p 8080 & npx wait-on http://localhost:8080 && npx cypress run --spec ${{ steps.spec-selector.outputs.selected_spec }}"

@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Monitoring KBM - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png" />
+    <link rel="manifest" href="manifest.json">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/data-holidays.js"></script>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+  <body class="bg-slate-50 dark:bg-slate-900 transition-colors">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in">
+      <!-- Header -->
+      <div
+        class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3"
+      >
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-table-cells text-blue-600 dark:text-blue-400"></i>
+              Monitoring KBM
+            </h1>
+            <!-- Tombol Segarkan Data (Icon-only Sinkron) -->
+            <button
+              onclick="window.refreshKbmData()"
+              class="inline-flex items-center justify-center p-1.5 rounded-lg text-xs font-bold border transition-all duration-200 bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 active:scale-95 shadow-xs"
+              title="Segarkan / Sinkronkan Data (Bypass Cache)"
+              id="btn-refresh-kbm"
+            >
+              <i class="fa-solid fa-arrows-rotate text-xs"></i>
+            </button>
+            <!-- Indikator Cache Status -->
+            <span
+              id="cache-status-indicator"
+              class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700"
+            ></span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Monitoring Komprehensif Terintegrasi
+          </p>
+        </div>
+
+        <div id="subtab-navigation-container" class="w-full lg:w-auto overflow-x-auto scrollbar-hide">
+          <!-- Sub-Tab Navigation -->
+          <div class="inline-flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl border border-slate-300/60 dark:border-slate-700/80 whitespace-nowrap">
+            <button
+              id="tab-kehadiran-siswa"
+              onclick="window.switchTab('kehadiran-siswa')"
+              class="px-3 py-1.5 rounded-lg font-bold text-xs transition-all duration-150 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-user-check"></i>
+              <span>Kehadiran Siswa</span>
+            </button>
+            <button
+              id="tab-rekap-kbm"
+              onclick="window.switchTab('rekap-kbm')"
+              class="px-3 py-1.5 rounded-lg font-bold text-xs transition-all duration-150 bg-blue-600 text-white shadow-sm flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-table-cells"></i>
+              <span>Monitoring KBM</span>
+            </button>
+            <button
+              id="tab-rekap-guru"
+              onclick="window.switchTab('rekap-guru')"
+              class="px-3 py-1.5 rounded-lg font-bold text-xs transition-all duration-150 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-users"></i>
+              <span>Rekap Guru</span>
+            </button>
+            <button
+              id="tab-detail-guru"
+              onclick="window.switchTab('detail-guru')"
+              class="px-3 py-1.5 rounded-lg font-bold text-xs transition-all duration-150 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5"
+            >
+              <i class="fa-solid fa-user-clock"></i>
+              <span>Detail Guru</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PANEL KEHADIRAN SISWA ===== -->
+      <div id="panel-kehadiran-siswa" class="hidden">
+        <!-- Filter Section -->
+        <div
+          class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl p-2.5 mb-3 shadow-sm"
+        >
+          <div class="flex flex-col sm:flex-row gap-2">
+            <!-- Filter Tipe Periode -->
+            <div class="flex-1 relative">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-clock text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+              <select
+                id="filter-tipe"
+                class="w-full !pl-9 !pr-8 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold appearance-none bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
+                onchange="window.toggleFilterPeriode()"
+              >
+                <option value="bulan">Bulanan</option>
+                <option value="semester">Semester</option>
+                <option value="tahun">Tahun Ajaran</option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+            </div>
+
+            <!-- Kontainer Input Periode -->
+            <div class="flex-1 relative" id="container-periode">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-calendar text-slate-400 dark:text-slate-500 text-xs"
+                  id="icon-periode"
+                ></i>
+              </div>
+              <!-- Mode Bulan -->
+              <input
+                type="month"
+                id="filter-bulan"
+                class="w-full !pl-9 !pr-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 [color-scheme:light] dark:[color-scheme:dark]"
+              />
+
+              <!-- Mode Semester (Hidden by default) -->
+              <select
+                id="filter-semester"
+                class="hidden w-full !pl-9 !pr-8 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold appearance-none bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
+              >
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+              </select>
+
+              <input type="hidden" id="filter-ta" />
+
+              <!-- Arrow down (hanya untuk tipe select) -->
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none hidden"
+                id="icon-chevron-periode"
+              >
+                <i
+                  class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+            </div>
+            <!-- Filter Mapel -->
+            <div class="flex-1 relative">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-book text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+              <select
+                id="filter-mapel"
+                class="w-full !pl-9 !pr-8 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold appearance-none bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
+              >
+                <option value="">-- Pilih Mapel --</option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+            </div>
+            <!-- Filter Kelas -->
+            <div class="flex-1 relative">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-chalkboard-user text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+              <select
+                id="filter-kelas"
+                class="w-full !pl-9 !pr-8 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs focus:ring-2 focus:ring-blue-500 outline-none font-semibold appearance-none bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
+              >
+                <option value="">-- Pilih Kelas --</option>
+              </select>
+              <div
+                class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+              >
+                <i
+                  class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-500 text-xs"
+                ></i>
+              </div>
+            </div>
+            <!-- Tombol Cari -->
+            <div>
+              <button
+                onclick="window.loadRekapKehadiran()"
+                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-500 px-4 py-1.5 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <i class="fa-solid fa-search"></i> Cari
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Summary Card (Hidden by default) -->
+        <div
+          id="summary-card"
+          class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg px-3.5 py-2 mb-3 text-white shadow-sm"
+        >
+          <div
+            class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"
+          >
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm font-bold truncate" id="summary-title">-</h3>
+              <p class="text-[11px] text-blue-100/90 truncate" id="summary-subtitle">-</p>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <div class="bg-white/20 rounded px-2.5 py-1 text-center flex items-center gap-1">
+                <span class="text-xs font-extrabold" id="summary-total-jurnal">0</span>
+                <span class="text-[10px] opacity-80">Jurnal</span>
+              </div>
+              <div class="bg-white/20 rounded px-2.5 py-1 text-center flex items-center gap-1">
+                <span class="text-xs font-extrabold" id="summary-total-siswa">0</span>
+                <span class="text-[10px] opacity-80">Siswa</span>
+              </div>
+              <div class="bg-white/20 rounded px-2.5 py-1 text-center flex items-center gap-1">
+                <span class="text-xs font-extrabold" id="summary-total-pertemuan">0</span>
+                <span class="text-[10px] opacity-80">Pertemuan</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Rekap -->
+        <div
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div id="rekap-container" class="overflow-x-auto">
+            <div class="text-center text-slate-400 py-12">
+              <i class="fa-solid fa-clipboard-list text-3xl mb-2"></i>
+              <p class="text-sm">
+                Pilih bulan, mapel, dan kelas, lalu klik "Cari" untuk melihat
+                rekap jurnal mengajar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jurnal Data -->
+        <div id="jurnal-container" class="mt-6 hidden"></div>
+      </div>
+
+      <!-- ===== PANEL REKAP KBM JURNAL ===== -->
+      <div id="panel-rekap-kbm" class="hidden">
+        <!-- Filter Section -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 mb-6 shadow-sm overflow-x-auto scrollbar-hide">
+          <div class="flex items-center gap-1.5 whitespace-nowrap scrollbar-hide">
+            <!-- Date Input -->
+            <div class="relative shrink-0 min-w-[135px]">
+              <input
+                type="date"
+                id="input-tanggal-rekap-jurnal"
+                onchange="window.loadRekapJurnal()"
+                class="w-full !px-2.5 !py-1 !text-xs border border-slate-300 dark:border-slate-600/80 rounded-md font-bold bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:light] dark:[color-scheme:dark]"
+              />
+            </div>
+
+            <!-- Toggle Scope KBM (Semua vs Saya) -->
+            <div id="container-toggle-kbm-mode" class="hidden flex items-center bg-slate-100 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+              <button
+                type="button"
+                id="btn-kbm-mode-all"
+                onclick="window.setKbmScopeMode('all')"
+                class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all bg-blue-600 text-white shadow-xs"
+              >
+                Semua
+              </button>
+              <button
+                type="button"
+                id="btn-kbm-mode-me"
+                onclick="window.setKbmScopeMode('me')"
+                class="px-2.5 py-1 text-[11px] font-bold rounded-md transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+              >
+                Saya
+              </button>
+            </div>
+
+            <span class="text-slate-300 dark:text-slate-600 shrink-0">|</span>
+
+            <!-- JP Checkboxes Container -->
+            <div class="flex items-center gap-1 shrink-0" id="jp-filter-container-jurnal">
+              <!-- Checkbox JP akan di-generate oleh JavaScript -->
+            </div>
+
+            <!-- Select All Button -->
+            <button
+              onclick="window.toggleAllJPJurnal(true)"
+              class="px-2 py-1 bg-slate-100 hover:bg-blue-50 dark:bg-slate-700/60 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-md text-[11px] font-bold transition-all border border-blue-200/60 dark:border-blue-800/40 shrink-0"
+              title="Pilih Semua JP"
+            >
+              Semua
+            </button>
+
+            <span class="text-slate-300 dark:text-slate-600 shrink-0">|</span>
+
+            <!-- Compact Search Button -->
+            <button
+              onclick="window.loadRekapJurnal()"
+              class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-600 dark:hover:bg-blue-500 rounded-md font-bold text-xs transition-all flex items-center gap-1 shadow-sm shrink-0"
+            >
+              <i class="fa-solid fa-search text-[11px]"></i>
+              <span>Tampilkan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabel Data -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-4">
+
+          <div class="relative">
+            <div id="rekap-jurnal-container" class="overflow-x-auto pb-4 scrollbar-hide min-h-[550px] lg:min-h-[650px] overflow-y-visible lg:overflow-y-auto" style="max-height: none;" >
+              <div class="text-center text-slate-400 py-12">
+                <i class="fa-solid fa-table-cells text-3xl mb-2"></i>
+                <p class="text-sm">Pilih tanggal dan klik "Tampilkan" untuk melihat rekap jurnal KBM</p>
+              </div>
+            </div>
+            <!-- Sticky scrollbar -->
+            <div id="rekap-jurnal-scrollbar-wrapper" class="hidden sticky bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 py-1.5 z-20 shadow-md rounded-b-xl">
+              <div id="rekap-jurnal-scrollbar" class="overflow-x-auto h-3">
+                <div id="rekap-jurnal-scrollbar-content" style="height: 1px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend Status Cross-Check KBM (Dibawah Tabel) -->
+        <div class="mb-6 bg-white dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 text-xs flex flex-wrap items-center gap-2.5 shadow-sm">
+          <span class="font-bold text-slate-700 dark:text-slate-300 mr-1 flex items-center gap-1.5 shrink-0">
+            <i class="fa-solid fa-circle-info text-blue-500"></i> Status KBM:
+          </span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-emerald-100 dark:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shrink-0" title="Terverifikasi Sempurna: Guru mengisi Jurnal KBM via scan barcode & Siswa mengisi presensi kehadiran guru dengan status Hadir">🟢 Terverifikasi (Scan Guru + Presensi Hadir Siswa)</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-indigo-100 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 shrink-0">🇮🇩 Upacara Bendera</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-purple-100 dark:bg-purple-900/80 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700 shrink-0">⚽ Ekstrakurikuler</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-amber-100 dark:bg-amber-900/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">🟡 Belum Isi Jurnal</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-rose-100 dark:bg-rose-900/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700 shrink-0">🔴 Tanpa Keterangan (TK) / Jurnal Kosong</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-yellow-100 dark:bg-yellow-900/80 text-yellow-800 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-700 shrink-0">🟡 Guru Sakit</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-blue-100 dark:bg-blue-900/80 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700 shrink-0">🔵 Guru Izin</span>
+
+          <span class="px-2 py-0.5 rounded font-extrabold bg-purple-100 dark:bg-purple-900/80 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700 shrink-0">🟣 Kegiatan</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-sky-100 dark:bg-sky-900/80 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-700 shrink-0" title="Jurnal Guru sudah terisi via scan barcode, namun siswa/admin kelas belum mengisi presensi kehadiran guru">🩵 Belum Diabsen Siswa</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-orange-100 dark:bg-orange-900/80 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700 shrink-0">🟧 Kelas Kosong</span>
+          <span class="px-2 py-0.5 rounded font-extrabold bg-slate-200 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 shrink-0">🚫 Tidak Belajar Efektif</span>
+
+        </div>
+
+      </div>
+
+      <!-- ===== PANEL REKAP GURU ===== -->
+      <div id="panel-rekap-guru" class="hidden">
+        <!-- Filter Periode -->
+        <div
+          class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 mb-3 overflow-x-auto shadow-sm"
+        >
+          <div class="flex items-center gap-2 min-w-max">
+            <select
+              id="periode-type"
+              onchange="window.togglePeriodeInputs()"
+              class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg font-bold w-[110px] bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            >
+              <option value="mingguan">Mingguan</option>
+              <option value="bulanan">Bulanan</option>
+              <option value="semester">Semester</option>
+            </select>
+
+            <div id="input-mingguan" class="flex items-center gap-1">
+              <input
+                type="date"
+                id="tanggal-mulai"
+                onchange="window.onTanggalMulaiChange()"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+              <span class="text-slate-400 text-xs">-</span>
+              <input
+                type="date"
+                id="tanggal-akhir"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+            </div>
+
+            <div id="input-bulanan" class="hidden">
+              <input
+                type="month"
+                id="bulan-rekap"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+            </div>
+
+            <div id="input-semester" class="hidden flex items-center gap-1">
+              <select
+                id="rekap-semester-select"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              >
+                <option value="1">Semester 1 (Ganjil)</option>
+                <option value="2">Semester 2 (Genap)</option>
+              </select>
+              <select
+                id="rekap-ta-select"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              >
+                <option value="2025/2026">2025/2026</option>
+                <option value="2024/2025">2024/2025</option>
+              </select>
+            </div>
+
+            <button
+              onclick="window.loadRekapGuru()"
+              class="bg-blue-600 text-white dark:bg-blue-600 dark:text-white px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-700 dark:hover:bg-blue-700 transition whitespace-nowrap shadow-sm"
+            >
+              <i class="fa-solid fa-search mr-1"></i>Cari
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabel Rekap Guru -->
+        <div
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div id="rekap-guru-container" class="overflow-x-auto">
+            <div class="text-center text-slate-400 py-12">
+              <i class="fa-solid fa-users text-3xl mb-2"></i>
+              <p class="text-sm">
+                Pilih periode dan klik "Tampilkan" untuk melihat rekap guru
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistik Guru -->
+        <div
+          class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4"
+          id="stats-guru-container"
+        >
+          <!-- Diisi JavaScript -->
+        </div>
+      </div>
+
+      <!-- ===== PANEL DETAIL GURU ===== -->
+      <div id="panel-detail-guru" class="hidden">
+        <!-- Filter -->
+        <div
+          class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 mb-3 shadow-sm"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <select
+              id="detail-guru-select"
+              class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg font-bold w-[220px] bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            >
+              <option value="">-- Pilih Guru --</option>
+            </select>
+
+            <select
+              id="detail-periode-type"
+              onchange="window.toggleDetailPeriodeInputs()"
+              class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg font-bold w-[110px] bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+            >
+              <option value="mingguan">Mingguan</option>
+              <option value="bulanan">Bulanan</option>
+              <option value="semester">Semester</option>
+            </select>
+
+            <div id="detail-input-mingguan" class="flex items-center gap-1">
+              <input
+                type="date"
+                id="detail-tanggal-mulai"
+                onchange="window.onDetailTanggalMulaiChange()"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+              <span class="text-slate-400 text-xs">-</span>
+              <input
+                type="date"
+                id="detail-tanggal-akhir"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+            </div>
+
+            <div id="detail-input-bulanan" class="hidden">
+              <input
+                type="month"
+                id="detail-bulan-rekap"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              />
+            </div>
+
+            <div id="detail-input-semester" class="hidden flex items-center gap-1">
+              <select
+                id="detail-semester-select"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              >
+                <option value="1">Semester 1 (Ganjil)</option>
+                <option value="2">Semester 2 (Genap)</option>
+              </select>
+              <select
+                id="detail-ta-select"
+                class="!p-1.5 !text-xs border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-bold"
+              >
+                <option value="2025/2026">2025/2026</option>
+                <option value="2024/2025">2024/2025</option>
+              </select>
+            </div>
+
+            <!-- Multi-Select Status -->
+            <div class="relative" id="status-filter-container">
+              <button
+                type="button"
+                onclick="window.toggleStatusDropdown()"
+                class="!p-1.5 !text-xs border border-slate-200 dark:border-slate-600 rounded-lg font-bold w-[130px] bg-white dark:bg-slate-700 text-left flex items-center justify-between dark:text-slate-200"
+              >
+                <span id="status-filter-label">Semua Status</span>
+                <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+              </button>
+              <div
+                id="status-dropdown"
+                class="hidden absolute z-50 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1"
+              >
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="H"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  H - Hadir
+                </label>
+
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="K"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  K - Kegiatan
+                </label>
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="I"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  I - Izin
+                </label>
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="S"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  S - Sakit
+                </label>
+
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="TK"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  TK - Tanpa Keterangan
+                </label>
+                <label
+                  class="flex items-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-300 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    value="TE"
+                    class="status-checkbox mr-2 bg-transparent"
+                    onchange="window.updateStatusLabel()"
+                  />
+                  TE - Tidak Efektif
+                </label>
+              </div>
+            </div>
+
+            <button
+              onclick="window.loadDetailGuru()"
+              class="bg-blue-600 text-white dark:bg-blue-600 dark:text-white px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-700 dark:hover:bg-blue-700 transition whitespace-nowrap shadow-sm"
+            >
+              <i class="fa-solid fa-search mr-1"></i>Cari
+            </button>
+            <button
+              onclick="window.printDetailGuru()"
+              id="btn-print-detail"
+              class="hidden bg-green-600 text-white dark:bg-green-600 dark:text-white px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-green-700 dark:hover:bg-green-700 transition whitespace-nowrap shadow-sm"
+            >
+              <i class="fa-solid fa-print mr-1"></i>Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- Info Guru -->
+        <div
+          id="detail-guru-info"
+          class="hidden bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 mb-6 text-white shadow-sm"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center shrink-0"
+            >
+              <i class="fa-solid fa-user text-2xl"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold" id="detail-guru-nama">-</h3>
+              <p class="text-blue-100 text-sm" id="detail-guru-periode">-</p>
+            </div>
+            <div
+              class="ml-auto grid grid-cols-4 md:grid-cols-8 gap-2 text-center"
+            >
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-h">0</div>
+                <div class="text-[10px] opacity-80">Hadir</div>
+              </div>
+
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-k">0</div>
+                <div class="text-[10px] opacity-80">Kegiatan</div>
+              </div>
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-i">0</div>
+                <div class="text-[10px] opacity-80">Izin</div>
+              </div>
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-s">0</div>
+                <div class="text-[10px] opacity-80">Sakit</div>
+              </div>
+
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-tk">0</div>
+                <div class="text-[10px] opacity-80">Tanpa Keterangan</div>
+              </div>
+              <div class="bg-white/20 rounded-lg px-2 py-1">
+                <div class="text-xl font-bold" id="detail-stat-persen">0%</div>
+                <div class="text-[10px] opacity-80">Kehadiran</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Detail -->
+        <div
+          class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden"
+        >
+          <div id="detail-guru-container" class="overflow-x-auto">
+            <div class="text-center text-slate-400 py-12">
+              <i class="fa-solid fa-user-clock text-3xl mb-2"></i>
+              <p class="text-sm">
+                Pilih guru dan periode, lalu klik "Tampilkan"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal Detail Sel Monitoring KBM (Mobile & Desktop Touch) -->
+    <!-- Modal Detail Sel Monitoring KBM (Mobile & Desktop Touch) - Compact & Informatif -->
+    <div
+      id="modal-kbm-cell-detail"
+      class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm fade-in overflow-y-auto"
+      onclick="document.getElementById('modal-kbm-cell-detail').classList.add('hidden')"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-0 overflow-hidden transform scale-100 transition-all border border-slate-200/80 dark:border-slate-800 my-auto"
+        onclick="event.stopPropagation()"
+      >
+        <!-- Modal Header: Compact -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 px-4 py-3 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm">Detail Aktivitas KBM</h3>
+          </div>
+          <button
+            type="button"
+            onclick="document.getElementById('modal-kbm-cell-detail').classList.add('hidden')"
+            class="w-7 h-7 rounded-lg bg-slate-200/60 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-xs"
+            title="Tutup"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body: Compact Spacing -->
+        <div class="p-4 space-y-3 text-xs">
+          <!-- 1. Integrated Header Card (Kelas, JP, Mapel, Status Badge) -->
+          <div class="p-3 bg-gradient-to-br from-blue-50/80 via-slate-50 to-indigo-50/40 dark:from-slate-800/90 dark:via-slate-800/60 dark:to-slate-800/90 rounded-xl border border-blue-100/80 dark:border-slate-700/80 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span id="kbm-detail-kelas" class="text-base font-extrabold text-slate-800 dark:text-white tracking-tight">-</span>
+                  <span id="kbm-detail-jp" class="px-2 py-0.5 bg-blue-600 text-white rounded-md text-[10px] font-bold shadow-2xs">-</span>
+                </div>
+                <div id="kbm-detail-mapel" class="text-xs font-bold text-blue-700 dark:text-blue-300 truncate mt-0.5">-</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div id="kbm-detail-badge" class="font-extrabold text-[10px] px-2 py-1 rounded-lg border w-fit shadow-2xs ml-auto">-</div>
+              </div>
+            </div>
+            <div id="kbm-detail-status-container" class="border-t border-slate-200/60 dark:border-slate-700/60 pt-1.5 mt-1.5">
+              <p id="kbm-detail-tooltip" class="text-[11px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed">-</p>
+            </div>
+          </div>
+
+          <!-- 2. Guru Pengampu Card (Compact) -->
+          <div class="p-2.5 bg-slate-50/80 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-3">
+            <div class="relative shrink-0">
+              <img
+                id="kbm-detail-guru-foto"
+                src=""
+                alt="Foto Guru"
+                class="hidden w-10 h-10 rounded-full object-cover border-2 border-blue-500/80 shadow-2xs transition-transform duration-200 ease-out origin-center hover:scale-[2] hover:shadow-xl hover:ring-2 hover:ring-blue-500 cursor-zoom-in hover:z-30"
+              />
+              <div
+                id="kbm-detail-guru-placeholder"
+                class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-2xs border border-blue-400/50"
+              >
+                <span id="kbm-detail-guru-initial">-</span>
+              </div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[9.5px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider block">Guru Pengampu</span>
+              <span id="kbm-detail-guru" class="font-extrabold text-slate-800 dark:text-white text-xs block truncate mt-0.5">-</span>
+              <span id="kbm-detail-guru-nip" class="text-[10.5px] text-slate-500 dark:text-slate-400 block truncate">-</span>
+            </div>
+          </div>
+
+          <!-- 3. Materi / Topik Jurnal Card (Dinamis jika jurnal terisi) -->
+          <div id="kbm-detail-materi-container" class="hidden p-2.5 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200/60 dark:border-blue-800/40">
+            <div class="flex items-center gap-1.5 text-blue-700 dark:text-blue-300 text-[10px] font-bold uppercase tracking-wider mb-0.5">
+              <i class="fa-solid fa-file-pen text-[10px]"></i>
+              <span>Materi / Topik KBM</span>
+            </div>
+            <p id="kbm-detail-materi" class="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed italic break-words">-</p>
+          </div>
+
+          <!-- 4. Catatan Guru Card (Dinamis jika ada catatan) -->
+          <div id="kbm-detail-catatan-container" class="hidden p-2.5 bg-amber-50/60 dark:bg-amber-950/20 rounded-xl border border-amber-200/70 dark:border-amber-800/50">
+            <div class="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider mb-0.5">
+              <i class="fa-solid fa-comment-dots text-[10px]"></i>
+              <span>Catatan Guru</span>
+            </div>
+            <p id="kbm-detail-catatan" class="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed break-words whitespace-pre-line">-</p>
+          </div>
+
+          <!-- 5. Presensi Siswa Card (Daftar Siswa Tidak Hadir / Terlambat atau Status 100% Hadir) -->
+          <div id="kbm-detail-presensi-container" class="p-2.5 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-700/70">
+            <div class="flex items-center justify-between gap-1.5 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+              <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                <i class="fa-solid fa-users-line text-[10px] text-blue-600 dark:text-blue-400"></i>
+                <span>Kehadiran Siswa</span>
+              </div>
+              <span id="kbm-detail-presensi-summary" class="text-[9.5px] font-extrabold text-slate-500 dark:text-slate-400">-</span>
+            </div>
+            <div id="kbm-detail-presensi-list" class="space-y-1">
+              <!-- Render daftar siswa atau status 100% hadir secara dinamis -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer: Compact -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 px-4 py-2.5 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-end">
+          <button
+            type="button"
+            onclick="document.getElementById('modal-kbm-cell-detail').classList.add('hidden')"
+            class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-all"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Detail Kehadiran Guru dari Rekap Guru -->
+    <div
+      id="modal-rekap-guru-detail"
+      class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm fade-in overflow-y-auto"
+      onclick="window.closeRekapGuruDetailModal()"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl p-0 overflow-hidden transform scale-100 transition-all border border-slate-200/80 dark:border-slate-800 my-auto max-h-[90vh] flex flex-col"
+        onclick="event.stopPropagation()"
+      >
+        <!-- Modal Header -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 px-4 py-3 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+              <i class="fa-solid fa-user-clock text-blue-600 dark:text-blue-400"></i>
+              <span>Detail Kehadiran Guru</span>
+            </h3>
+          </div>
+          <button
+            type="button"
+            onclick="window.closeRekapGuruDetailModal()"
+            class="w-7 h-7 rounded-lg bg-slate-200/60 dark:bg-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-xs"
+            title="Tutup"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Info & Filter Toolbar -->
+        <div class="p-3.5 sm:p-4 bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-700/80 space-y-3 shrink-0">
+          <!-- Guru Card & Mini Stats -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="min-w-0">
+              <h4 id="modal-guru-nama" class="text-base font-extrabold text-slate-900 dark:text-white truncate">-</h4>
+              <p id="modal-guru-periode" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">-</p>
+            </div>
+            <!-- Badges Stats -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span id="modal-stat-h" class="px-2 py-0.5 rounded text-[11px] font-bold bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800" title="Hadir">H: 0</span>
+              <span id="modal-stat-k" class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800" title="Kegiatan">K: 0</span>
+              <span id="modal-stat-i" class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800" title="Izin">I: 0</span>
+              <span id="modal-stat-s" class="px-2 py-0.5 rounded text-[11px] font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800" title="Sakit">S: 0</span>
+              <span id="modal-stat-tk" class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800" title="Tanpa Keterangan">TK: 0</span>
+              <span id="modal-stat-te" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600" title="Tidak Efektif">TE: 0</span>
+              <span id="modal-stat-persen" class="px-2.5 py-0.5 rounded text-[11px] font-black bg-blue-600 text-white shadow-2xs" title="% Kehadiran">100%</span>
+            </div>
+          </div>
+
+          <!-- Filter Status Dropdown Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-200/70 dark:border-slate-700/60">
+            <div class="flex items-center gap-2">
+              <label for="modal-status-select" class="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-filter text-blue-600 dark:text-blue-400"></i>
+                <span>Filter Status:</span>
+              </label>
+              <select
+                id="modal-status-select"
+                onchange="window.filterModalRekapGuruStatus()"
+                class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600/80 text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none shadow-2xs"
+              >
+                <option value="ALL">Semua Status</option>
+                <option value="K">Kegiatan</option>
+                <option value="S">Sakit</option>
+                <option value="I">Izin</option>
+                <option value="TK">Tanpa Keterangan</option>
+                <option value="TE">Tidak Efektif</option>
+                <option value="H">Hadir</option>
+              </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span id="modal-row-counter" class="text-xs text-slate-500 dark:text-slate-400 font-medium">0 sesi terdata</span>
+              <button
+                type="button"
+                onclick="window.printModalDetailGuru()"
+                id="btn-print-modal-detail"
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+              >
+                <i class="fa-solid fa-print"></i>
+                <span>Cetak</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Body (Scrollable) -->
+        <div class="overflow-y-auto flex-1 p-0">
+          <div id="modal-rekap-guru-table-wrapper" class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+              <thead class="bg-slate-700 dark:bg-slate-800 text-white sticky top-0 border-b border-slate-600 dark:border-slate-700 uppercase tracking-wider text-[11px] z-10">
+                <tr>
+                  <th class="px-3 py-2.5 text-center border border-slate-600 dark:border-slate-700 w-12">No</th>
+                  <th class="px-3 py-2.5 text-left border border-slate-600 dark:border-slate-700 whitespace-nowrap">Tanggal</th>
+                  <th class="px-3 py-2.5 text-left border border-slate-600 dark:border-slate-700">Hari</th>
+                  <th class="px-3 py-2.5 text-left border border-slate-600 dark:border-slate-700">Kelas</th>
+                  <th class="px-3 py-2.5 text-center border border-slate-600 dark:border-slate-700 w-16">JP</th>
+                  <th class="px-3 py-2.5 text-left border border-slate-600 dark:border-slate-700">Mapel</th>
+                  <th class="px-3 py-2.5 text-left border border-slate-600 dark:border-slate-700 min-w-[140px]">Status</th>
+                </tr>
+              </thead>
+              <tbody id="modal-rekap-guru-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/80 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+                <!-- Diisi JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 px-4 py-2.5 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-end shrink-0">
+          <button
+            type="button"
+            onclick="window.closeRekapGuruDetailModal()"
+            class="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-all"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+
+      <!-- MAIN MODULE LOGIC -->
+    <script type="module" src="js/page-monitoring-kbm.js?v=26.11.02.1"></script>
+  </body>
+</html>

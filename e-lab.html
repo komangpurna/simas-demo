@@ -1,0 +1,1992 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>E-Laboratorium - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <!-- Preconnect untuk mempercepat koneksi ke CDN -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Resources -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Styling kompak khusus form toolbar & filter E-Lab untuk mencegah teks terpotong (clipping) dan masalah padding */
+        .elab-compact-input,
+        input.elab-compact-input {
+            font-size: 13px !important;
+            padding: 7px 12px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            line-height: 1.4 !important;
+            box-sizing: border-box !important;
+        }
+
+        .elab-compact-select,
+        select.elab-compact-select {
+            font-size: 13px !important;
+            padding: 6px 28px 6px 10px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            line-height: 1.4 !important;
+            box-sizing: border-box !important;
+            background-position: right 8px center !important;
+        }
+
+        .elab-toolbar-btn {
+            height: 38px !important;
+            min-height: 38px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box !important;
+        }
+
+        .elab-toolbar-btn.hidden,
+        .elab-sched-btn.hidden,
+        #view-jadwal .elab-sched-btn.hidden {
+            display: none !important;
+        }
+
+        /* Styling Scoped khusus Tab Jadwal E-Lab untuk menyelaraskan toolbar dan kalender */
+        #view-jadwal select.elab-sched-select,
+        #view-jadwal input.elab-sched-input {
+            font-size: 13px !important;
+            padding: 6px 28px 6px 10px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            line-height: 1.4 !important;
+            box-sizing: border-box !important;
+            width: auto !important;
+            background-position: right 8px center !important;
+        }
+
+        #view-jadwal .elab-sched-btn {
+            height: 38px !important;
+            min-height: 38px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box !important;
+        }
+
+        @media (max-width: 640px) {
+            #view-jadwal select.elab-sched-select,
+            #view-jadwal input.elab-sched-input {
+                font-size: 16px !important;
+                min-height: 44px !important;
+                height: 44px !important;
+                width: 100% !important;
+            }
+            #view-jadwal .elab-sched-btn {
+                min-height: 44px !important;
+                height: 44px !important;
+            }
+        }
+
+        /* Styling kalender: table-layout fixed, sticky header & sticky time column */
+        #table-schedule {
+            table-layout: fixed !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            min-width: 860px !important;
+            width: 100% !important;
+        }
+
+        #schedule-container {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+
+        #table-schedule thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 20 !important;
+        }
+
+        #table-schedule thead th.sched-corner-header {
+            position: sticky !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 30 !important;
+        }
+
+        #table-schedule tbody td.sched-time-cell {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 10 !important;
+        }
+
+        /* Hover & focus affordance untuk slot kosong kalender */
+        .sched-empty-slot {
+            position: relative;
+            outline: none;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+        .sched-empty-slot:hover .sched-empty-action,
+        .sched-empty-slot:focus-visible .sched-empty-action {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .sched-empty-action {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+    </style>
+    <!-- SheetJS & ExcelJS for Print-Ready Styled Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="js/vendor/exceljs.min.js"></script>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-20">
+
+        <!-- HEADER -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+            <div>
+                <h1 class="text-xl font-bold text-slate-800">E-Laboratorium</h1>
+                <p class="text-xs text-slate-500">Sistem Booking & Manajemen Lab</p>
+                <p id="lab-access-summary" role="status" class="hidden mt-1 text-xs font-bold text-purple-700 dark:text-purple-300"></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="switchTab('jadwal')"
+                    class="tab-btn active px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold transition-all" data-tab="jadwal">
+                    <i class="fa-solid fa-calendar-days mr-1"></i>Jadwal
+                </button>
+                <button onclick="switchTab('inventaris')" id="btn-tab-inventaris"
+                    class="tab-btn px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-all" data-tab="inventaris">
+                    <i class="fa-solid fa-boxes-stacked mr-1"></i>Inventaris
+                </button>
+                <button onclick="switchTab('approval')" id="btn-tab-approval"
+                    class="tab-btn hidden px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-all" data-tab="approval">
+                    <i class="fa-solid fa-clipboard-check mr-1"></i>Persetujuan
+                    <span id="badge-pending"
+                        class="hidden ml-1 px-1 py-0.5 text-[10px] bg-red-500 text-white rounded-full">0</span>
+                </button>
+                <button onclick="switchTab('riwayat')"
+                    class="tab-btn px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-all" data-tab="riwayat">
+                    <i class="fa-solid fa-clock-rotate-left mr-1"></i>Riwayat
+                </button>
+                <button onclick="switchTab('pengaturan')" id="btn-tab-pengaturan"
+                    class="tab-btn hidden px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold transition-all" data-tab="pengaturan">
+                    <i class="fa-solid fa-gear mr-1"></i>Pengaturan
+                </button>
+                <!-- Tombol Booking Baru -->
+                <button onclick="openBookingModal()"
+                    class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 shadow transition-all active:scale-95">
+                    <i class="fa-solid fa-plus mr-1"></i>Booking
+                </button>
+            </div>
+        </div>
+
+        <!-- ===================== VIEW: JADWAL ===================== -->
+        <div id="view-jadwal" class="fade-in space-y-3">
+            <!-- Control Bar: Navigasi + Filter dalam Toolbar Responsif -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 p-2.5">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                    <!-- Group 1: Navigasi Minggu -->
+                    <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap shrink-0">
+                        <button type="button" onclick="changeWeek(-1)"
+                            class="elab-sched-btn px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors shrink-0"
+                            title="Minggu sebelumnya" aria-label="Minggu sebelumnya">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <div id="week-display"
+                            class="elab-sched-btn px-3 font-semibold text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 whitespace-nowrap min-w-[140px] text-center flex-1 sm:flex-initial"
+                            aria-live="polite">
+                            Memuat...
+                        </div>
+                        <button type="button" onclick="changeWeek(1)"
+                            class="elab-sched-btn px-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors shrink-0"
+                            title="Minggu berikutnya" aria-label="Minggu berikutnya">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                        <button type="button" onclick="goToCurrentWeek()"
+                            class="elab-sched-btn px-3 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 text-slate-700 dark:text-slate-200 transition-all shrink-0 flex items-center gap-1.5"
+                            title="Kembali ke minggu saat ini" aria-label="Minggu ini">
+                            <i class="fa-solid fa-calendar-day text-blue-600 dark:text-blue-400 group-hover:text-white"></i>
+                            <span>Minggu ini</span>
+                        </button>
+                        <input type="hidden" id="select-week" value="">
+                    </div>
+
+                    <!-- Group 2: Filter & Toggle View -->
+                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end shrink-0">
+                        <!-- Filter Lab -->
+                        <div class="relative flex-1 sm:flex-initial min-w-[130px]">
+                            <label for="filter-lab" class="sr-only">Filter Laboratorium</label>
+                            <select id="filter-lab" onchange="applyFilters()" aria-label="Filter Laboratorium"
+                                class="elab-sched-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                                <option value="">Semua Lab</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Status Berbahasa Indonesia -->
+                        <div class="relative flex-1 sm:flex-initial min-w-[130px]">
+                            <label for="filter-status" class="sr-only">Filter Status</label>
+                            <select id="filter-status" onchange="applyFilters()" aria-label="Filter Status"
+                                class="elab-sched-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                                <option value="">Semua Status</option>
+                                <option value="approved">✓ Disetujui</option>
+                                <option value="pending">⏳ Menunggu</option>
+                                <option value="conflict">⚠ Bentrok</option>
+                            </select>
+                        </div>
+
+                        <!-- Toggle View (Tabel / Daftar) -->
+                        <button type="button" onclick="toggleMobileView()" id="btn-toggle-view"
+                            class="elab-sched-btn px-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors shrink-0 text-xs font-semibold flex items-center gap-1.5"
+                            title="Alihkan Tampilan Tabel/Daftar" aria-label="Alihkan tampilan kalender tabel atau daftar">
+                            <i class="fa-solid fa-list text-xs" id="btn-toggle-view-icon"></i>
+                            <span id="btn-toggle-view-text">Daftar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Booking Guidance Banner (Aktif saat slot pertama dipilih) -->
+            <div id="quickbook-banner" class="hidden items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200 transition-all">
+                <div class="flex items-center gap-2 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+                    <i class="fa-solid fa-arrow-pointer text-blue-600 dark:text-blue-400"></i>
+                    <span id="quickbook-banner-text">Slot awal terpilih. Klik slot lain di hari yang sama untuk menentukan akhir JP.</span>
+                </div>
+                <button type="button" onclick="cancelSmartSelection()" class="px-2.5 py-1 rounded-lg font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-[11px] shrink-0">
+                    <i class="fa-solid fa-xmark mr-1"></i>Batalkan Pilihan
+                </button>
+            </div>
+
+            <!-- Matriks Jadwal -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <!-- State Loading Jadwal -->
+                <div id="schedule-loading" class="hidden py-16 text-center text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-blue-600 mb-2"></i>
+                    <p class="text-xs font-medium">Memuat jadwal laboratorium...</p>
+                </div>
+
+                <!-- State Error Jadwal -->
+                <div id="schedule-error" class="hidden py-12 px-4 text-center">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl text-rose-500 mb-2"></i>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Gagal memuat jadwal</p>
+                    <p class="text-xs text-slate-400 mb-3" id="schedule-error-msg">Terjadi kesalahan koneksi saat mengambil data jadwal.</p>
+                    <button type="button" onclick="loadWeeklySchedule()" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">
+                        <i class="fa-solid fa-rotate-right mr-1"></i>Coba Lagi
+                    </button>
+                </div>
+
+                <!-- State Filter Kosong Jadwal -->
+                <div id="schedule-filter-empty" class="hidden py-12 px-4 text-center">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3 text-slate-400">
+                        <i class="fa-solid fa-filter text-lg"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">Tidak Ada Jadwal yang Cocok</p>
+                    <p class="text-xs text-slate-400 mb-3">Tidak ditemukan booking yang sesuai dengan filter laboratorium atau status aktif.</p>
+                    <button type="button" onclick="window.resetScheduleFilters()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset Filter
+                    </button>
+                </div>
+
+                <div class="overflow-auto max-h-[calc(100vh-230px)] supports-[height:100svh]:max-h-[calc(100svh-230px)] min-h-[460px]" id="schedule-container">
+                    <table class="w-full text-sm border-collapse" id="table-schedule">
+                        <colgroup>
+                            <col class="w-[110px]" style="width: 110px; min-width: 110px; max-width: 110px;">
+                            <col class="w-[18%]" style="min-width: 150px;">
+                            <col class="w-[18%]" style="min-width: 150px;">
+                            <col class="w-[18%]" style="min-width: 150px;">
+                            <col class="w-[18%]" style="min-width: 150px;">
+                            <col class="w-[18%]" style="min-width: 150px;">
+                        </colgroup>
+                        <thead class="bg-slate-800 text-white select-none">
+                            <tr id="schedule-header-row">
+                                <th class="sched-corner-header p-2.5 text-center text-xs font-bold uppercase tracking-wider bg-slate-800 text-slate-200 border-b border-r border-slate-700">Waktu</th>
+                                <th class="p-2.5 text-center text-xs font-bold border-b border-r border-slate-700 bg-slate-800" data-col="0">Senin</th>
+                                <th class="p-2.5 text-center text-xs font-bold border-b border-r border-slate-700 bg-slate-800" data-col="1">Selasa</th>
+                                <th class="p-2.5 text-center text-xs font-bold border-b border-r border-slate-700 bg-slate-800" data-col="2">Rabu</th>
+                                <th class="p-2.5 text-center text-xs font-bold border-b border-r border-slate-700 bg-slate-800" data-col="3">Kamis</th>
+                                <th class="p-2.5 text-center text-xs font-bold border-b border-slate-700 bg-slate-800" data-col="4">Jumat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body" class="divide-y divide-slate-200 dark:divide-slate-700/80">
+                            <!-- Diisi oleh JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile List View -->
+                <div id="mobile-list-view" class="hidden p-3.5 space-y-3">
+                    <!-- Diisi oleh JS -->
+                </div>
+            </div>
+
+            <!-- Legenda Warna Lab & Status -->
+            <div id="lab-legend" class="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                            <i class="fa-solid fa-palette text-blue-600 dark:text-blue-400"></i>
+                            <span>Lab:</span>
+                        </span>
+                        <div id="lab-legend-items" class="flex gap-1.5 flex-wrap">
+                            <!-- Diisi oleh JS -->
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap text-[10px] font-bold border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400 uppercase tracking-wider text-[9px]">Status:</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i> Disetujui
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/50">
+                            <i class="fa-solid fa-clock text-amber-600"></i> Menunggu
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/50">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> Bentrok
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== VIEW: INVENTARIS ===================== -->
+        <div id="view-inventaris" class="hidden fade-in space-y-3">
+            <!-- 1. COMPACT METRICS STRIP (Statistik Ringkas 1 Baris) -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                <div class="flex items-center gap-3.5 flex-wrap">
+                    <div class="flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300">
+                        <span class="text-slate-400 dark:text-slate-500">Total Inventaris:</span>
+                        <span id="inv-stat-items" class="font-bold text-slate-800 dark:text-slate-100">0</span>
+                        <span class="text-slate-400">jenis</span>
+                        <span class="text-slate-300 dark:text-slate-600">/</span>
+                        <span id="inv-stat-units" class="font-bold text-blue-600 dark:text-blue-400">0</span>
+                        <span class="text-slate-400">unit</span>
+                    </div>
+                    <span class="hidden sm:inline text-slate-200 dark:text-slate-700">|</span>
+                    <div class="flex items-center gap-2 text-[11px] font-medium flex-wrap">
+                        <span class="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/50">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Baik: <b id="inv-stat-good">0</b>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-800/50">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Rusak Ringan: <b id="inv-stat-minor">0</b>
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md border border-rose-200/60 dark:border-rose-800/50">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Rusak Berat: <b id="inv-stat-major">0</b>
+                        </span>
+                    </div>
+                </div>
+                <div id="inv-scope-info" class="text-[11px] text-slate-400 italic">
+                    Cakupan: Seluruh Laboratorium
+                </div>
+            </div>
+
+            <!-- 2. TOOLBAR PENCARIAN DAN FILTER RINGKAS -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 p-3 space-y-2.5">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                    <!-- Pencarian Fleksibel (Tanpa Ikon Kaca Pembesar) -->
+                    <div class="relative flex-1 min-w-[200px]">
+                        <label for="inv-search-input" class="sr-only">Cari inventaris</label>
+                        <input type="text" id="inv-search-input" oninput="window.debounceInventorySearch()"
+                            placeholder="Cari nama, kode barang, atau spesifikasi..."
+                            class="elab-compact-input w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50/70 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 transition-all">
+                        <button type="button" id="btn-inv-search-clear" onclick="window.clearInventorySearch()"
+                            class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                            title="Bersihkan pencarian" aria-label="Bersihkan pencarian">
+                            <i class="fa-solid fa-circle-xmark text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Kontrol Aksi: Lab, Filter, Tambah Barang -->
+                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+                        <!-- Pemilihan Laboratorium dengan Label Terlihat Jelas -->
+                        <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+                            <label for="inv-filter-lab" class="text-xs font-bold text-slate-700 dark:text-slate-200 shrink-0 flex items-center gap-1">
+                                <i class="fa-solid fa-flask text-purple-600 text-xs"></i>
+                                <span>Lab:</span>
+                            </label>
+                            <select id="inv-filter-lab" onchange="window.handleInventoryLabChange()"
+                                class="elab-compact-select w-full sm:w-auto font-medium rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 min-w-[170px]">
+                                <option value="">Semua Laboratorium</option>
+                            </select>
+                        </div>
+
+                        <!-- Tombol Buka Popover Filter -->
+                        <div class="relative">
+                            <button type="button" id="btn-inv-filter-toggle" onclick="window.toggleInventoryFilterPanel()"
+                                class="elab-toolbar-btn px-3 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/60 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-filter text-slate-500 text-xs"></i>
+                                <span>Filter</span>
+                                <span id="inv-filter-badge" class="hidden px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white leading-none">0</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="inv-filter-chevron"></i>
+                            </button>
+
+                            <!-- Popover Filter Panel Desktop -->
+                            <div id="inv-filter-popover" class="hidden absolute right-0 top-11 z-30 w-72 sm:w-80 p-3.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-3 fade-in">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-sliders text-blue-600"></i> Filter Tambahan
+                                    </span>
+                                    <button type="button" onclick="window.resetInventoryFiltersOnly()" class="text-[11px] font-medium text-blue-600 hover:underline">
+                                        Reset
+                                    </button>
+                                </div>
+
+                                <!-- Filter Kategori -->
+                                <div class="space-y-1">
+                                    <label for="inv-filter-category" class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Kategori Barang</label>
+                                    <select id="inv-filter-category" onchange="window.handleInventorySubFilterChange()"
+                                        class="elab-compact-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Semua Kategori</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Lokasi Simpan -->
+                                <div class="space-y-1">
+                                    <label for="inv-filter-location" class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Lokasi Penyimpanan</label>
+                                    <select id="inv-filter-location" onchange="window.handleInventorySubFilterChange()"
+                                        class="elab-compact-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">Semua Lokasi</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Kondisi -->
+                                <div class="space-y-1">
+                                    <label for="inv-filter-condition" class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Kondisi Barang</label>
+                                    <select id="inv-filter-condition" onchange="window.handleInventorySubFilterChange()"
+                                        class="elab-compact-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="all">Semua Kondisi</option>
+                                        <option value="good">Semua Baik (100% Siap Pakai)</option>
+                                        <option value="minor_damage">Ada Rusak Ringan</option>
+                                        <option value="major_damage">Ada Rusak Berat</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Pengurutan / Sort -->
+                                <div class="space-y-1">
+                                    <label for="inv-filter-sort" class="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Urutkan Berdasarkan</label>
+                                    <select id="inv-filter-sort" onchange="window.handleInventorySubFilterChange()"
+                                        class="elab-compact-select w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="created_at_desc">Terbaru Ditambahkan</option>
+                                        <option value="name_asc">Nama Barang (A - Z)</option>
+                                        <option value="name_desc">Nama Barang (Z - A)</option>
+                                        <option value="code_asc">Kode Inventaris (A - Z)</option>
+                                        <option value="qty_desc">Total Unit (Terbanyak)</option>
+                                        <option value="qty_asc">Total Unit (Tersedikit)</option>
+                                        <option value="year_desc">Tahun Perolehan (Terbaru)</option>
+                                    </select>
+                                </div>
+
+                                <div class="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2">
+                                    <button type="button" onclick="window.closeInventoryFilterPopover()"
+                                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Tambah Barang -->
+                        <button id="btn-inv-add-item" onclick="window.openAddInventoryModal()" style="display: none;"
+                            class="hidden elab-toolbar-btn px-3 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-xs items-center gap-1.5 shrink-0"
+                            title="Tambah barang inventaris baru">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span class="hidden sm:inline">Tambah Barang</span>
+                            <span class="sm:hidden">Tambah</span>
+                        </button>
+
+                        <!-- Tombol Impor Excel (Paste) -->
+                        <button id="btn-inv-import-excel" onclick="window.openImportInventoryModal()" style="display: none;"
+                            class="hidden elab-toolbar-btn px-3 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all active:scale-95 shadow-xs items-center gap-1.5 shrink-0"
+                            title="Impor barang inventaris dari Excel (Paste)">
+                            <i class="fa-solid fa-file-excel text-xs"></i>
+                            <span class="hidden sm:inline">Impor Excel</span>
+                            <span class="sm:hidden">Impor</span>
+                        </button>
+
+                        <!-- Tombol Ekspor Excel (Siap Cetak A4 Lengkap Kop Surat) -->
+                        <button type="button" id="btn-inv-export-excel" onclick="window.exportInventoryExcel()"
+                            class="elab-toolbar-btn px-3 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 transition-all active:scale-95 shadow-xs flex items-center gap-1.5 shrink-0"
+                            title="Ekspor Laporan Inventaris ke Excel (Siap Cetak A4 Lengkap Kop Surat)">
+                            <i class="fa-solid fa-file-excel text-xs"></i>
+                            <span class="hidden sm:inline">Export Excel</span>
+                            <span class="sm:hidden">Export</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Baris Ringkasan Filter Aktif (Chips) -->
+                <div id="inv-active-chips-bar" class="hidden flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+                    <span class="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mr-1 flex items-center gap-1">
+                        <i class="fa-solid fa-filter text-[10px]"></i> Filter aktif:
+                    </span>
+                    <div id="inv-active-chips-list" class="flex flex-wrap items-center gap-1.5">
+                        <!-- Diisi secara dinamis oleh renderFilterChipsUI() -->
+                    </div>
+                    <button type="button" onclick="window.resetAllInventoryFilters()"
+                        class="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline ml-1">
+                        Reset Semua
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. CONTAINER TABEL DESKTOP & CARDS MOBILE -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div id="inv-loading-state" class="p-10 text-center text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
+                    <p class="text-xs">Memuat data inventaris...</p>
+                </div>
+
+                <!-- Empty State 1: Belum ada inventaris sama sekali di database / lab -->
+                <div id="inv-empty-initial" class="hidden p-12 text-center space-y-3">
+                    <div class="w-14 h-14 bg-slate-100 dark:bg-slate-700/60 text-slate-400 dark:text-slate-400 rounded-2xl flex items-center justify-center mx-auto text-2xl">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Belum Ada Data Inventaris</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+                            Belum ada barang inventaris yang terdaftar pada laboratorium ini.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-2">
+                        <button onclick="window.openAddInventoryModal()" class="inv-auth-add-btn hidden px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all active:scale-95 shadow">
+                            <i class="fa-solid fa-plus mr-1"></i>Tambah Barang Pertama
+                        </button>
+                        <button onclick="window.openImportInventoryModal()" class="inv-auth-add-btn hidden px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all active:scale-95 shadow">
+                            <i class="fa-solid fa-file-excel mr-1"></i>Impor dari Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Empty State 2: Filter / Pencarian tidak menemukan kecocokan -->
+                <div id="inv-empty-search" class="hidden p-12 text-center space-y-2.5">
+                    <div class="w-12 h-12 bg-slate-100 dark:bg-slate-700/60 text-slate-400 rounded-full flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Tidak Ada Hasil yang Cocok</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                        Tidak ditemukan barang inventaris dengan kata kunci atau kombinasi filter saat ini.
+                    </p>
+                    <button type="button" onclick="window.resetAllInventoryFilters()"
+                        class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all">
+                        Reset Filter & Pencarian
+                    </button>
+                </div>
+
+                <!-- Tabel Desktop -->
+                <div id="inv-table-container" class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase text-[11px] font-bold border-b border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <th class="py-3 px-3.5 whitespace-nowrap">Kode</th>
+                                <th class="py-3 px-3.5">Barang & Kategori</th>
+                                <th class="py-3 px-3.5">Penempatan</th>
+                                <th class="py-3 px-3.5 text-center whitespace-nowrap">Total</th>
+                                <th class="py-3 px-3.5 text-center whitespace-nowrap">Kondisi</th>
+                                <th class="py-3 px-3.5 text-center whitespace-nowrap">Tahun</th>
+                                <th class="py-3 px-3.5 text-center whitespace-nowrap">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inv-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                            <!-- Diisi oleh JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div id="inv-mobile-cards" class="md:hidden p-3 space-y-2.5">
+                    <!-- Diisi oleh JS -->
+                </div>
+
+                <!-- Footer Pagination & Info Counter -->
+                <div id="inv-table-footer" class="hidden px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-700/30 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="flex items-center gap-2">
+                        <span id="inv-count-info">Menampilkan 0 barang</span>
+                    </div>
+
+                    <!-- Kontrol Navigasi Halaman -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <label for="inv-limit-select" class="text-[11px] text-slate-400">Per hal:</label>
+                            <select id="inv-limit-select" onchange="window.handleInventoryLimitChange(this.value)"
+                                class="h-7 px-1.5 text-xs rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-1 pl-2 border-l border-slate-200 dark:border-slate-600">
+                            <button type="button" id="btn-inv-prev-page" onclick="window.changeInventoryPage(-1)"
+                                class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Halaman sebelumnya">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                            </button>
+                            <span id="inv-page-info" class="text-xs px-2 font-medium">Hal 1 dari 1</span>
+                            <button type="button" id="btn-inv-next-page" onclick="window.changeInventoryPage(1)"
+                                class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                title="Halaman selanjutnya">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== MODAL: BOOKING BARU ===================== -->
+        <div id="modal-booking"
+            class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+                <div class="bg-blue-600 p-4 flex justify-between items-center">
+                    <h3 class="font-bold text-white"><i class="fa-solid fa-calendar-plus mr-2"></i>Booking Laboratorium
+                    </h3>
+                    <button onclick="closeModal('modal-booking')"
+                        class="text-white hover:text-blue-200 transition-colors">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-4 space-y-3">
+                    <!-- Row 1: Lab & Tanggal -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Laboratorium *</label>
+                            <select id="booking-lab"
+                                class="w-full p-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">-- Pilih Lab --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Tanggal *</label>
+                            <input type="date" id="booking-date"
+                                class="w-full p-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: JP Mulai & Selesai -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">JP Mulai *</label>
+                            <select id="booking-start-jp"
+                                class="w-full p-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">-- Pilih --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">JP Selesai *</label>
+                            <select id="booking-end-jp"
+                                class="w-full p-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">-- Pilih --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Preview Konflik -->
+                    <div id="conflict-preview" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-3">
+                        <p class="text-xs font-bold text-orange-700 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Jadwal Bentrok - Kepala Lab akan menentukan prioritas.
+                        </p>
+                    </div>
+
+                    <!-- Row 3: Kelas -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Kelas *</label>
+                        <select id="booking-kelas" onchange="handleKelasChange()"
+                            class="w-full p-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                        <!-- Manual Input Container -->
+                        <div id="booking-kelas-manual-container" class="hidden mt-2">
+                            <input type="text" id="booking-kelas-manual"
+                                placeholder="Tulis nama kelas / keperluan (misal: Rapat Guru)"
+                                class="w-full p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-orange-500 outline-none border-orange-300">
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Kegiatan -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-bold text-slate-500 block">Kegiatan / Mata Pelajaran *</label>
+                            <span id="booking-mapel-badge" class="hidden text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Otomatis XML
+                            </span>
+                        </div>
+                        <input type="text" id="booking-kegiatan" placeholder="Misal: Praktikum Komputer"
+                            class="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <p id="booking-mapel-hint" class="hidden text-[11px] text-slate-500 mt-1"></p>
+                    </div>
+
+                    <!-- Row 5: Catatan -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Catatan (Opsional)</label>
+                        <input type="text" id="booking-catatan" placeholder="Informasi tambahan..."
+                            class="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <!-- Tombol -->
+                    <div class="flex gap-2 pt-3 border-t border-slate-100">
+                        <button onclick="closeModal('modal-booking')"
+                            class="flex-1 py-2 rounded-lg font-bold text-slate-500 hover:bg-slate-100 border border-slate-200 transition-colors text-sm">
+                            Batal
+                        </button>
+                        <button onclick="submitBooking()" id="btn-submit-booking"
+                            class="flex-1 py-2 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-all active:scale-95 text-sm">
+                            <i class="fa-solid fa-paper-plane mr-1"></i>Ajukan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== VIEW: PERSETUJUAN ===================== -->
+        <div id="view-approval" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-green-600"></i>
+                    Daftar Booking Menunggu Persetujuan
+                </h3>
+
+                <!-- Filter Lab -->
+                <div class="mb-4">
+                    <select id="approval-filter-lab" onchange="loadPendingBookings()"
+                        class="p-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none">
+                        <option value="">Semua Lab</option>
+                    </select>
+                </div>
+
+                <!-- Tabel Pending -->
+                <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase text-xs">
+                            <tr>
+                                <th class="p-3">Lab</th>
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Jam</th>
+                                <th class="p-3">Pemohon</th>
+                                <th class="p-3">Kegiatan</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-bookings-body">
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-slate-400">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== VIEW: RIWAYAT ===================== -->
+        <div id="view-riwayat" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <h3 id="riwayat-title" class="font-bold text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-600 dark:text-slate-400"></i>
+                        <span>Riwayat Booking Saya</span>
+                    </h3>
+                    <button type="button" id="btn-booking-export-excel" onclick="window.openBookingExportModal()"
+                        class="hidden px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center gap-2 self-start sm:self-auto active:scale-95"
+                        title="Export Rekapitulasi Penggunaan Laboratorium ke Excel (Siap Cetak A4)">
+                        <i class="fa-solid fa-file-excel text-sm"></i>
+                        <span>Export Excel</span>
+                    </button>
+                </div>
+
+                <!-- Filter -->
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-4">
+                    <div class="md:col-span-2">
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Minggu</label>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeRiwayatWeek(-1)"
+                                class="p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors">
+                                <i class="fa-solid fa-chevron-left text-slate-600 dark:text-slate-300"></i>
+                            </button>
+                            <div id="riwayat-week-display"
+                                class="flex-1 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-center font-medium text-slate-700 dark:text-slate-200">
+                                Memuat...
+                            </div>
+                            <button onclick="changeRiwayatWeek(1)"
+                                class="p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors">
+                                <i class="fa-solid fa-chevron-right text-slate-600 dark:text-slate-300"></i>
+                            </button>
+                            <button onclick="goToCurrentRiwayatWeek()"
+                                class="p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 hover:bg-blue-600 hover:border-blue-600 hover:text-white dark:hover:bg-blue-600 transition-colors group"
+                                title="Minggu Ini">
+                                <i class="fa-solid fa-rotate-right text-slate-600 dark:text-slate-300 group-hover:text-white"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" id="riwayat-week" value="">
+                    </div>
+                    <!-- Filter Tampilkan (untuk Kepala Lab/Admin) -->
+                    <div id="riwayat-filter-owner-container" class="hidden">
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Tampilkan</label>
+                        <select id="riwayat-filter-owner" onchange="loadMyBookingHistory()"
+                            class="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none">
+                            <option value="mine">Riwayat Saya</option>
+                            <option value="all">Semua Guru</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 block mb-1">Status</label>
+                        <select id="riwayat-status" onchange="loadMyBookingHistory()"
+                            class="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 outline-none">
+                            <option value="">Semua</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabel Riwayat -->
+                <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 uppercase text-xs">
+                            <tr>
+                                <th class="p-3">Lab</th>
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Jam</th>
+                                <th class="p-3">Pemohon</th>
+                                <th class="p-3">Kegiatan</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Diproses</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-bookings-body">
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-slate-400">Memuat data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== VIEW: PENGATURAN LAB ===================== -->
+        <div id="view-pengaturan" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-purple-500"></i>
+                            Pengaturan E-Laboratorium
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master laboratorium, kategori inventaris, dan lokasi penyimpanan.</p>
+                    </div>
+
+                    <!-- Sub-Navigasi Pengaturan: 2 Subtab (Laboratorium & Inventaris) -->
+                    <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-700/60 rounded-lg shrink-0">
+                        <button onclick="window.switchSettingsSubTab('labs')" id="btn-subtab-labs"
+                            class="settings-subtab-btn active px-3 py-1.5 text-xs font-bold rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-sm transition-all">
+                            <i class="fa-solid fa-flask mr-1.5 text-purple-600"></i>Laboratorium
+                        </button>
+                        <button onclick="window.switchSettingsSubTab('inventory')" id="btn-subtab-inventory"
+                            class="settings-subtab-btn px-3 py-1.5 text-xs font-bold rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all">
+                            <i class="fa-solid fa-boxes-stacked mr-1.5 text-emerald-600"></i>Inventaris
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 1: MASTER LABORATORIUM -->
+                <div id="subview-pengaturan-labs" class="space-y-4">
+                    <!-- Ringkasan Kepala Laboratorium Global -->
+                    <div id="kalab-summary-card" class="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-950/40 dark:via-indigo-950/30 dark:to-blue-950/30 p-4 rounded-xl border border-purple-100 dark:border-purple-900/40 shadow-sm transition-all">
+                        <!-- Diisi secara dinamis oleh renderKalabSummaryUI() di page-e-lab.js -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg font-bold shadow-sm shrink-0">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">Kepala Laboratorium</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200/70 dark:bg-purple-800/60 text-purple-800 dark:text-purple-200 font-bold">Seluruh Lab</span>
+                                </div>
+                                <h4 id="kalab-display-name" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">Memuat data Kepala Lab...</h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Membawahi seluruh laboratorium, inventaris, dan persetujuan peminjaman.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daftar Lab (Area Utama) -->
+                    <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-700 dark:text-slate-200 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-flask text-purple-500"></i> Daftar Ruang Laboratorium
+                                </span>
+                                <span id="manage-labs-count"
+                                    class="text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">0 Lab</span>
+                            </div>
+                            <button onclick="window.openAddLabModal()" id="btn-open-add-lab"
+                                class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm flex items-center justify-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-plus text-xs"></i> Tambah Laboratorium
+                            </button>
+                        </div>
+                        <div id="manage-labs-list" class="space-y-2.5">
+                            <div class="text-center text-slate-400 dark:text-slate-500 text-sm py-6">
+                                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat daftar lab...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Ringkas & Panduan Akses -->
+                    <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400 shadow-xs">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-purple-500 text-sm shrink-0"></i>
+                            <span><strong>Kepala Lab</strong> berwenang penuh atas semua lab & inventaris. <strong>Koordinator</strong> mengelola inventaris & booking lab tugasnya.</span>
+                        </div>
+                        <span class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Penyelesaian bentrok eksklusif Kepala Lab</span>
+                    </div>
+                </div>
+
+                <!-- SUB-VIEW 2: PENGATURAN INVENTARIS (KATEGORI & LOKASI BERDAMPINGAN) -->
+                <div id="subview-pengaturan-inventory" class="hidden space-y-4">
+                    <!-- Header Pengaturan Inventaris & Baris Konteks Laboratorium -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-600 shadow-xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-boxes-stacked text-emerald-600"></i>
+                                Pengaturan Inventaris
+                            </h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Kelola data pendukung inventaris (kategori barang dan lokasi simpan per laboratorium).</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <label for="setting-inventory-filter-lab" class="text-xs font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap flex items-center gap-1">
+                                <i class="fa-solid fa-flask text-purple-600 text-xs"></i>
+                                <span>Pilih Lab:</span>
+                            </label>
+                            <select id="setting-inventory-filter-lab" onchange="window.loadManageInventoryData(this.value)"
+                                class="elab-compact-select font-medium rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]">
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dua Panel Berdampingan: Kategori Barang & Lokasi Simpan -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                        <!-- PANEL 1: KATEGORI BARANG -->
+                        <div id="panel-setting-categories" class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+                            <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h5 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                                            <i class="fa-solid fa-tags text-blue-500"></i> Kategori Barang
+                                        </h5>
+                                        <span id="manage-cats-count" class="text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">0 Kategori</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Klasifikasi jenis barang (misal: Optik, Gelas, Elektronik).</p>
+                                </div>
+                                <button type="button" id="btn-open-add-cat" onclick="window.openCategoryModal()"
+                                    class="elab-toolbar-btn px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-xs flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> Tambah Kategori
+                                </button>
+                            </div>
+
+                            <!-- Search Input Kategori (Tanpa Ikon Kaca Pembesar Penutup Teks) -->
+                            <div>
+                                <label for="search-category-input" class="sr-only">Cari kategori</label>
+                                <input type="text" id="search-category-input" oninput="window.handleCategorySearch(this.value)" placeholder="Cari kategori (nama / kode)..."
+                                    class="elab-compact-input w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <!-- Daftar Kategori -->
+                            <div id="manage-cats-list" class="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                                <div class="text-center text-slate-400 dark:text-slate-500 py-6 text-xs">
+                                    <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat kategori...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PANEL 2: LOKASI PENYIMPANAN -->
+                        <div id="panel-setting-locations" class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+                            <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-700">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h5 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                                            <i class="fa-solid fa-location-dot text-emerald-500"></i> Lokasi Penyimpanan
+                                        </h5>
+                                        <span id="manage-locs-count" class="text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">0 Lokasi</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Tempat fisik peletakan (misal: Lemari A, Rak Mikroskop).</p>
+                                </div>
+                                <button type="button" id="btn-open-add-loc" onclick="window.openLocationModal()"
+                                    class="elab-toolbar-btn px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all active:scale-95 shadow-xs flex items-center gap-1.5 shrink-0">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> Tambah Lokasi
+                                </button>
+                            </div>
+
+                            <!-- Search Input Lokasi (Tanpa Ikon Kaca Pembesar Penutup Teks) -->
+                            <div>
+                                <label for="search-location-input" class="sr-only">Cari lokasi</label>
+                                <input type="text" id="search-location-input" oninput="window.handleLocationSearch(this.value)" placeholder="Cari nama lokasi penyimpanan..."
+                                    class="elab-compact-input w-full rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+
+                            <!-- Daftar Lokasi -->
+                            <div id="manage-locs-list" class="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                                <div class="text-center text-slate-400 dark:text-slate-500 py-6 text-xs">
+                                    <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat lokasi simpan...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DAFTAR BOOKING SLOT PADAT -->
+    <div id="modal-slot-bookings"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in"
+        onclick="closeModal('modal-slot-bookings')">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-slate-700"
+            onclick="event.stopPropagation()">
+            <div class="bg-slate-50 dark:bg-slate-700/50 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-blue-600 dark:text-blue-400"></i>
+                    <span id="slot-modal-title">Daftar Booking Slot</span>
+                </h3>
+                <button type="button" onclick="closeModal('modal-slot-bookings')"
+                    class="text-slate-400 hover:text-rose-500 transition-colors p-1" aria-label="Tutup modal">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto" id="slot-modal-content">
+                <!-- Diisi oleh JS -->
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+                <button type="button" onclick="closeModal('modal-slot-bookings')"
+                    class="px-4 py-1.5 rounded-lg font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL BOOKING -->
+    <div id="modal-booking-detail"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="bg-slate-50 p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-info-circle mr-2 text-blue-600"></i>Detail
+                    Booking</h3>
+                <button onclick="closeModal('modal-booking-detail')"
+                    class="text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-3" id="modal-booking-content">
+                <!-- Diisi oleh JS -->
+            </div>
+            <div class="p-4 bg-slate-50 border-t flex justify-end gap-2" id="modal-booking-actions">
+                <!-- Tombol aksi (Approve/Reject) jika Kepala Lab -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI AKSI -->
+    <div id="modal-confirm-action"
+        onclick="closeModal('modal-confirm-action')"
+        class="hidden fixed inset-0 z-[10010] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700"
+            onclick="event.stopPropagation()">
+            <div class="p-6 text-center">
+                <div id="confirm-icon-bg"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400">
+                    <i id="confirm-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+                <h3 id="confirm-title" class="font-bold text-slate-800 dark:text-white text-lg mb-2">Konfirmasi</h3>
+                <p id="confirm-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-6">Apakah Anda yakin?</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="closeModal('modal-confirm-action')"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-action"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg transition-transform active:scale-95">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: KELOLA LABORATORIUM (TAMBAH / EDIT) ===================== -->
+    <div id="modal-manage-lab"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-purple-600 p-4 flex justify-between items-center text-white">
+                <h3 id="modal-manage-lab-title" class="font-bold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-flask"></i>
+                    <span>Tambah Laboratorium Baru</span>
+                </h3>
+                <button onclick="closeModal('modal-manage-lab')" class="text-white hover:text-purple-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="form-manage-lab" onsubmit="window.submitManageLabForm(event)" class="p-5 space-y-4">
+                <input type="hidden" id="manage-lab-form-id" value="">
+                <input type="hidden" id="manage-lab-form-is-edit" value="0">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Nama Laboratorium *</label>
+                    <input type="text" id="manage-lab-form-nama" required placeholder="Misal: Laboratorium Biologi"
+                        class="w-full p-2.5 border rounded-lg text-sm bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Kode Lab (Maks 6 Karakter) *</label>
+                        <input type="text" id="manage-lab-form-kode" required maxlength="6" placeholder="BIO / TIK / FIS"
+                            class="w-full p-2.5 border rounded-lg text-sm uppercase bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 outline-none font-bold">
+                        <span class="text-[10px] text-slate-400 block mt-1">Dipakai pada penomoran kode barang</span>
+                    </div>
+                    <div class="relative" id="container-manage-lab-koordinator">
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Koordinator Laboratorium</label>
+                        <input type="hidden" id="manage-lab-form-koordinator" value="">
+                        <div class="relative">
+                            <input type="text" id="manage-lab-koordinator-search"
+                                placeholder="Cari nama guru / staf..."
+                                autocomplete="off"
+                                class="w-full px-3 pr-7 py-2.5 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 outline-none">
+                            <button type="button" id="manage-lab-koordinator-clear"
+                                onclick="window.clearLabCoordinatorSelection()"
+                                class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs transition-colors"
+                                title="Kosongkan koordinator">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block mt-1">Ketik nama guru berakun untuk memfilter pilihan</span>
+
+                        <!-- Searchable Dropdown Floating List -->
+                        <div id="manage-lab-koordinator-dropdown"
+                            class="hidden absolute z-[60] left-0 right-0 mt-1 max-h-52 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl divide-y divide-slate-100 dark:divide-slate-700/60">
+                            <!-- Diisi secara dinamis oleh renderCoordinatorDropdownOptions() -->
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Deskripsi / Lokasi Fisik (Opsional)</label>
+                    <textarea id="manage-lab-form-deskripsi" rows="2" placeholder="Gedung C Lantai 2, kapasitas 36 siswa..."
+                        class="w-full p-2.5 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+                </div>
+
+                <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('modal-manage-lab')"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-manage-lab"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md transition-all active:scale-95 text-xs">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Laboratorium
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: KATEGORI INVENTARIS (TAMBAH / EDIT) ===================== -->
+    <div id="modal-category-form"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-blue-600 p-4 flex justify-between items-center text-white">
+                <h3 id="modal-category-title" class="font-bold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Tambah Kategori Inventaris</span>
+                </h3>
+                <button onclick="closeModal('modal-category-form')" class="text-white hover:text-blue-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="form-category-manage" onsubmit="window.submitCategoryForm(event)" class="p-5 space-y-4">
+                <input type="hidden" id="category-form-id" value="">
+                <input type="hidden" id="category-form-is-edit" value="0">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Laboratorium Terkait *</label>
+                    <select id="category-form-lab" required
+                        class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">-- Pilih Laboratorium --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Nama Kategori *</label>
+                    <input type="text" id="category-form-name" required placeholder="Misal: Optik, Gelas & Reagen, Elektronik"
+                        class="w-full p-2.5 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Kode Kategori (Maks 5 Karakter) *</label>
+                    <input type="text" id="category-form-code" required maxlength="5" placeholder="Misal: OPT, GLS, ELEK"
+                        class="w-full p-2.5 border rounded-lg text-xs uppercase font-bold bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <span class="text-[10px] text-slate-400 block mt-1">Digunakan untuk pembentukan kode unik barang otomatis</span>
+                </div>
+
+                <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('modal-category-form')"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-category"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-95 text-xs">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Kategori
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: LOKASI SIMPAN (TAMBAH / EDIT) ===================== -->
+    <div id="modal-location-form"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-emerald-600 p-4 flex justify-between items-center text-white">
+                <h3 id="modal-location-title" class="font-bold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>Tambah Lokasi Penyimpanan</span>
+                </h3>
+                <button onclick="closeModal('modal-location-form')" class="text-white hover:text-emerald-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="form-location-manage" onsubmit="window.submitLocationForm(event)" class="p-5 space-y-4">
+                <input type="hidden" id="location-form-id" value="">
+                <input type="hidden" id="location-form-is-edit" value="0">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Laboratorium Terkait *</label>
+                    <select id="location-form-lab" required
+                        class="w-full p-2.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="">-- Pilih Laboratorium --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Nama Lokasi Penyimpanan *</label>
+                    <input type="text" id="location-form-name" required placeholder="Misal: Lemari Mikroskop 01, Rak Reagen A"
+                        class="w-full p-2.5 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <span class="text-[10px] text-slate-400 block mt-1">Tempat fisik penyimpanan barang di dalam ruangan lab</span>
+                </div>
+
+                <div class="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('modal-location-form')"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-location"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 text-xs">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Lokasi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: INVENTARIS (TAMBAH / EDIT) ===================== -->
+    <div id="modal-inventory-form"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xl my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-emerald-600 p-4 flex justify-between items-center text-white">
+                <h3 id="inv-form-title" class="font-bold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Tambah Barang Inventaris</span>
+                </h3>
+                <button onclick="closeModal('modal-inventory-form')" class="text-white hover:text-emerald-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="form-inventory-item" onsubmit="window.submitInventoryForm(event)" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="inv-form-id" value="">
+                <input type="hidden" id="inv-form-is-edit" value="0">
+
+                <!-- SECTION A: IDENTITAS BARANG -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-[10px] font-bold">A</span>
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-200">Identitas Barang</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Laboratorium *</label>
+                            <select id="inv-form-lab" required onchange="window.handleFormLabChange()"
+                                class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Laboratorium --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Kategori Barang *</label>
+                            <select id="inv-form-category" required
+                                class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Kategori --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Nama Barang *</label>
+                        <input type="text" id="inv-form-name" required placeholder="Misal: Mikroskop Binokuler LED 1600x"
+                            class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Merk / Model / Spesifikasi (Opsional)</label>
+                        <textarea id="inv-form-spec" rows="2" placeholder="Merk Olympus CX23, 4 lensa objektif..."
+                            class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Lokasi Simpan *</label>
+                                <button type="button" onclick="window.openQuickLocationModal()" class="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline font-medium">
+                                    + Lokasi Baru
+                                </button>
+                            </div>
+                            <select id="inv-form-location" required
+                                class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Lokasi --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Satuan *</label>
+                            <select id="inv-form-unit" required
+                                class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="Unit">Unit</option>
+                                <option value="Set">Set</option>
+                                <option value="Pcs">Pcs</option>
+                                <option value="Buah">Buah</option>
+                                <option value="Pasang">Pasang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Kode Inventaris Info (Readonly) -->
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-700/40 rounded-lg border border-slate-200 dark:border-slate-600 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-barcode text-slate-400"></i> Kode Inventaris:
+                        </span>
+                        <span id="inv-form-code-display" class="font-mono font-bold text-slate-700 dark:text-slate-200">
+                            (Otomatis dibuat sistem setelah disimpan)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- SECTION B: JUMLAH & KONDISI -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-[10px] font-bold">B</span>
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-200">Jumlah & Kondisi</h4>
+                    </div>
+
+                    <div id="inv-form-condition-section" class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 block mb-1">
+                                <i class="fa-solid fa-circle-check mr-1 text-[10px]"></i>Baik *
+                            </label>
+                            <input type="number" inputmode="numeric" id="inv-form-good" min="0" value="1" required oninput="window.calcFormTotal()"
+                                class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none text-center font-bold">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-amber-700 dark:text-amber-400 block mb-1">
+                                <i class="fa-solid fa-triangle-exclamation mr-1 text-[10px]"></i>Rusak Ringan *
+                            </label>
+                            <input type="number" inputmode="numeric" id="inv-form-minor" min="0" value="0" required oninput="window.calcFormTotal()"
+                                class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-amber-500 outline-none text-center font-bold">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-rose-700 dark:text-rose-400 block mb-1">
+                                <i class="fa-solid fa-circle-xmark mr-1 text-[10px]"></i>Rusak Berat *
+                            </label>
+                            <input type="number" inputmode="numeric" id="inv-form-major" min="0" value="0" required oninput="window.calcFormTotal()"
+                                class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-rose-500 outline-none text-center font-bold">
+                        </div>
+                    </div>
+
+                    <!-- Display Total Realtime -->
+                    <div class="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300">Jumlah Total Unit:</span>
+                        <span id="inv-form-total-badge" class="text-sm font-extrabold text-emerald-700 dark:text-emerald-400">1 Unit</span>
+                    </div>
+                    <p id="inv-form-edit-notice" class="hidden text-[11px] text-amber-600 dark:text-amber-400 italic">
+                        * Kuantitas kondisi tidak dapat diubah di form edit data. Gunakan menu <b>"Ubah Kondisi"</b> untuk memindahkan kondisi unit.
+                    </p>
+                </div>
+
+                <!-- SECTION C: INFORMASI PEROLEHAN -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100 dark:border-slate-700">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-[10px] font-bold">C</span>
+                        <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-200">Informasi Perolehan</h4>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Tahun Perolehan *</label>
+                            <input type="number" inputmode="numeric" id="inv-form-year" min="1990" max="2099" required
+                                class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Sumber Dana</label>
+                            <select id="inv-form-funding"
+                                class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="BOS Reguler">BOS Reguler</option>
+                                <option value="BOSP Kinerja">BOSP Kinerja</option>
+                                <option value="DAK">DAK</option>
+                                <option value="APBD">APBD</option>
+                                <option value="Komite Sekolah">Komite Sekolah</option>
+                                <option value="Hibah">Hibah</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Keterangan Tambahan</label>
+                        <textarea id="inv-form-notes" rows="2" placeholder="Catatan perolehan atau nomor inventaris lama..."
+                            class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- TOMBOL SIMPAN / BATAL -->
+                <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('modal-inventory-form')"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-inventory"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all active:scale-95 text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-save"></i>
+                        <span>Simpan Barang</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: IMPOR INVENTARIS DARI EXCEL ===================== -->
+    <div id="modal-inventory-import"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700 flex flex-col max-h-[92vh]">
+            <!-- Header Modal -->
+            <div class="bg-emerald-600 dark:bg-emerald-700 p-4 flex justify-between items-center text-white shrink-0">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-lg"></i>
+                    <h3 class="font-bold text-sm">Impor Barang Inventaris dari Excel (Copy - Paste)</h3>
+                </div>
+                <button type="button" onclick="closeModal('modal-inventory-import')" class="text-emerald-100 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Konten Modal (Scrollable) -->
+            <div class="p-5 space-y-4 overflow-y-auto flex-1">
+                <!-- Pilihan Laboratorium Tujuan -->
+                <div class="bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-600">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <label for="inv-import-lab" class="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+                                Laboratorium Tujuan *
+                            </label>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Pilih laboratorium tempat barang inventaris ini akan dialokasikan.</span>
+                        </div>
+                        <select id="inv-import-lab" onchange="window.handleImportLabChange()" required
+                            class="sm:w-64 p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-emerald-500 outline-none font-bold">
+                            <!-- Diisi oleh JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Panduan 9 Kolom Standar Excel -->
+                <div class="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/50 p-3.5 rounded-xl text-xs space-y-2.5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-emerald-600"></i> Panduan Urutan Kolom Salinan Excel:
+                        </span>
+                        <button type="button" onclick="window.copyInventoryExcelTemplate()"
+                            class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-95 shrink-0 self-start sm:self-auto">
+                            <i class="fa-solid fa-copy text-[10px]"></i> Salin Format Kolom Excel
+                        </button>
+                    </div>
+
+                    <!-- Strip Kolom -->
+                    <div class="overflow-x-auto pb-1">
+                        <div class="inline-flex gap-1.5 min-w-full text-[11px]">
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                1. Nama Barang <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                2. Spesifikasi / Merk <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                3. Kategori <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                4. Lokasi Simpan <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                5. Jumlah Unit <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                6. Satuan <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                7. Tahun <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-bold whitespace-nowrap">
+                                8. Sumber Dana <span class="text-rose-500">*</span>
+                            </span>
+                            <span class="px-2 py-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap">
+                                9. Keterangan <i>(Opsional)</i>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-emerald-800 dark:text-emerald-400">
+                        <i class="fa-solid fa-check mr-1"></i> Seluruh unit barang yang diimpor otomatis masuk ke <b>Kondisi Baik (100% Siap Pakai)</b>. Baris header teks akan diabaikan secara otomatis.
+                    </p>
+                </div>
+
+                <!-- Opsi Offset & Area Paste -->
+                <div class="space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label for="inv-import-paste-area" class="text-xs font-bold text-slate-700 dark:text-slate-200">
+                            Tempel (Paste) Data dari Excel / Spreadsheet:
+                        </label>
+                        <div class="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-600">
+                            <i class="fa-solid fa-arrows-split-up-and-left text-emerald-600 text-[11px]"></i>
+                            <label for="inv-import-offset-select" class="font-bold text-slate-700 dark:text-slate-300 text-[11px]">Format Kolom 1:</label>
+                            <select id="inv-import-offset-select" onchange="if(document.getElementById('inv-import-paste-area')?.value.trim()) window.previewInventoryImportData()"
+                                class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold px-2 py-0.5 rounded border border-slate-300 dark:border-slate-600 focus:ring-1 focus:ring-emerald-500 outline-none">
+                                <option value="auto" selected>Otomatis (Deteksi Kolom No)</option>
+                                <option value="0">Kolom 1 = Nama Barang (Tanpa No)</option>
+                                <option value="1">Kolom 1 = No Urut, Kolom 2 = Nama Barang</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <textarea id="inv-import-paste-area" rows="6"
+                        class="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl font-mono text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400"
+                        placeholder="Klik di sini, lalu tekan Ctrl+V (Paste dari Excel)..."></textarea>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+                        <span id="inv-import-count-info" class="text-xs text-slate-500 dark:text-slate-400">
+                            Menunggu data disalin...
+                        </span>
+                        <button type="button" id="btn-inv-import-preview" onclick="window.previewInventoryImportData()"
+                            class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-table-list"></i>
+                            <span>Cek & Validasi Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Container Pratinjau Tabel -->
+                <div id="inv-import-preview-container" class="hidden space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-magnifying-glass-chart text-emerald-600"></i> Hasil Validasi Data
+                        </h4>
+                        <div id="inv-import-summary-badges" class="flex items-center gap-2 text-xs">
+                            <!-- Diisi oleh JS -->
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 dark:border-slate-600 rounded-xl overflow-hidden max-h-64 overflow-y-auto">
+                        <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-bold uppercase text-[10px] sticky top-0 border-b border-slate-200 dark:border-slate-600">
+                                <tr>
+                                    <th class="py-2 px-2.5 text-center">Status</th>
+                                    <th class="py-2 px-2.5">Barang & Spesifikasi</th>
+                                    <th class="py-2 px-2.5">Kategori</th>
+                                    <th class="py-2 px-2.5">Lokasi</th>
+                                    <th class="py-2 px-2.5 text-center">Jumlah</th>
+                                    <th class="py-2 px-2.5 text-center">Tahun</th>
+                                    <th class="py-2 px-2.5">Sumber Dana</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inv-import-preview-body" class="divide-y divide-slate-100 dark:divide-slate-700/50 text-[11px]">
+                                <!-- Diisi oleh JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex justify-end gap-2 shrink-0">
+                <button type="button" onclick="closeModal('modal-inventory-import')"
+                    class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    Batal
+                </button>
+                <button type="button" id="btn-inv-import-save" onclick="window.submitInventoryImportData()" disabled
+                    class="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-md active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span id="btn-inv-import-save-label">Proses Impor</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: DETAIL BARANG INVENTARIS ===================== -->
+    <div id="modal-inventory-detail"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg my-8 overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-slate-800 dark:bg-slate-900 p-4 flex justify-between items-center text-white">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-400"></i>
+                    <h3 class="font-bold text-sm">Detail Inventaris</h3>
+                </div>
+                <button onclick="closeModal('modal-inventory-detail')" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <!-- Header Info -->
+                <div class="border-b border-slate-100 dark:border-slate-700 pb-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 id="detail-inv-name" class="font-bold text-base text-slate-800 dark:text-slate-100">Nama Barang</h4>
+                            <p id="detail-inv-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Lab • Kategori</p>
+                        </div>
+                        <span id="detail-inv-code" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono text-xs font-bold rounded-lg shrink-0">
+                            KODE-INV
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Kartu Status Kuantitas -->
+                <div class="bg-slate-50 dark:bg-slate-700/30 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-2.5">
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Total Stok Barang:</span>
+                        <span id="detail-inv-total" class="text-sm font-extrabold text-blue-600 dark:text-blue-400">15 Unit</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-center">
+                            <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 block">Baik</span>
+                            <span id="detail-inv-good" class="text-base font-extrabold text-emerald-700 dark:text-emerald-400">0</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 text-center">
+                            <span class="text-[10px] font-bold text-amber-700 dark:text-amber-300 block">Rusak Ringan</span>
+                            <span id="detail-inv-minor" class="text-base font-extrabold text-amber-700 dark:text-amber-400">0</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-center">
+                            <span class="text-[10px] font-bold text-rose-700 dark:text-rose-300 block">Rusak Berat</span>
+                            <span id="detail-inv-major" class="text-base font-extrabold text-rose-700 dark:text-rose-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informasi Spesifikasi & Perolehan -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Lokasi Simpan</span>
+                        <span id="detail-inv-location" class="font-bold text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Tahun Perolehan</span>
+                        <span id="detail-inv-year" class="font-bold text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Sumber Dana</span>
+                        <span id="detail-inv-funding" class="font-bold text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Satuan</span>
+                        <span id="detail-inv-unit" class="font-bold text-slate-700 dark:text-slate-200">Unit</span>
+                    </div>
+                </div>
+
+                <!-- Spesifikasi -->
+                <div id="detail-inv-spec-box" class="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700 text-xs">
+                    <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold mb-1">Merk / Model / Spesifikasi</span>
+                    <p id="detail-inv-spec" class="text-slate-700 dark:text-slate-300 whitespace-pre-line">-</p>
+                </div>
+
+                <!-- Keterangan -->
+                <div id="detail-inv-notes-box" class="p-3 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700 text-xs">
+                    <span class="text-slate-400 dark:text-slate-500 block text-[10px] uppercase font-bold mb-1">Keterangan</span>
+                    <p id="detail-inv-notes" class="text-slate-700 dark:text-slate-300 whitespace-pre-line">-</p>
+                </div>
+
+                <!-- Tombol Aksi (Edit Data, Ubah Kondisi & Hapus) -->
+                <div id="detail-inv-actions" class="flex gap-2 pt-2">
+                    <button id="btn-detail-edit" onclick="window.handleDetailEditClick()"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square text-blue-500"></i> Edit Data
+                    </button>
+                    <button id="btn-detail-condition" onclick="window.handleDetailChangeConditionClick()"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> Ubah Kondisi
+                    </button>
+                    <button id="btn-detail-delete" onclick="window.handleDetailDeleteClick()"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all flex items-center justify-center gap-1.5" title="Hapus Barang">
+                        <i class="fa-solid fa-trash"></i> Hapus
+                    </button>
+                </div>
+
+                <!-- Riwayat Perubahan Kondisi -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                    <h5 class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Riwayat Perubahan Kondisi
+                    </h5>
+                    <div id="detail-inv-history-list" class="space-y-2">
+                        <div class="text-center text-slate-400 py-3 text-xs">Belum ada riwayat mutasi kondisi.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: UBAH KONDISI BARANG ===================== -->
+    <div id="modal-inventory-condition"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-amber-500 p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Ubah Kondisi Barang</span>
+                </h3>
+                <button onclick="closeModal('modal-inventory-condition')" class="text-white hover:text-amber-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form onsubmit="window.submitChangeCondition(event)" class="p-5 space-y-4">
+                <input type="hidden" id="inv-cond-item-id" value="">
+
+                <div class="p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl border border-slate-200 dark:border-slate-600 text-xs">
+                    <span id="inv-cond-item-name" class="font-bold text-slate-800 dark:text-slate-100 block">Nama Barang</span>
+                    <span id="inv-cond-item-code" class="text-[11px] font-mono text-slate-500 dark:text-slate-400">KODE-INV</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Dari Kondisi *</label>
+                        <select id="inv-cond-from" required onchange="window.updateConditionLimits()"
+                            class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-amber-500 outline-none">
+                            <option value="good">Baik</option>
+                            <option value="minor_damage">Rusak Ringan</option>
+                            <option value="major_damage">Rusak Berat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Ke Kondisi *</label>
+                        <select id="inv-cond-to" required
+                            class="w-full p-2 border rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-amber-500 outline-none">
+                            <option value="minor_damage">Rusak Ringan</option>
+                            <option value="major_damage">Rusak Berat</option>
+                            <option value="good">Baik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Jumlah Unit *</label>
+                        <span id="inv-cond-available-hint" class="text-[11px] text-slate-500 dark:text-slate-400">Tersedia: 0</span>
+                    </div>
+                    <input type="number" inputmode="numeric" id="inv-cond-quantity" min="1" value="1" required
+                        class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-amber-500 outline-none font-bold text-center">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">Catatan / Alasan Perubahan *</label>
+                    <textarea id="inv-cond-notes" rows="2" required placeholder="Misal: Lampu mikroskop tidak menyala..."
+                        class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-inventory-condition')"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-condition"
+                        class="flex-1 py-2.5 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md transition-all active:scale-95 text-xs">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL: TAMBAH LOKASI CEPAT ===================== -->
+    <div id="modal-quick-location"
+        class="hidden fixed inset-0 z-[10000] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden transform transition-all border border-slate-100 dark:border-slate-700">
+            <div class="bg-blue-600 p-3.5 flex justify-between items-center text-white">
+                <h4 class="font-bold text-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-location-dot"></i> Tambah Lokasi Simpan
+                </h4>
+                <button onclick="closeModal('modal-quick-location')" class="text-white hover:text-blue-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-4 space-y-3">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-500 block mb-1">Nama Lokasi Simpan *</label>
+                    <input type="text" id="quick-location-name" placeholder="Misal: Lemari Mikroskop"
+                        class="w-full p-2 border rounded-lg text-xs bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeModal('modal-quick-location')"
+                        class="flex-1 py-2 rounded-lg text-xs font-bold text-slate-500 border border-slate-200 dark:border-slate-600">
+                        Batal
+                    </button>
+                    <button onclick="window.submitQuickLocation()"
+                        class="flex-1 py-2 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700">
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL EXPORT EXCEL PENGGUNAAN LAB ===================== -->
+    <div id="modal-export-booking"
+        class="hidden fixed inset-0 z-modal bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+            <!-- Header Modal -->
+            <div class="bg-emerald-700 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-800/80 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-file-excel text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm leading-tight">Export Penggunaan Laboratorium</h3>
+                        <p class="text-[11px] text-emerald-100">Format Resmi Siap Cetak A4 Berkop Kedinasan</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal('modal-export-booking')"
+                    class="text-emerald-100 hover:text-white hover:bg-emerald-800/60 w-8 h-8 rounded-lg flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body Form Modal -->
+            <form id="form-export-booking" onsubmit="window.submitExportLabUsage(event)" class="p-5 space-y-4">
+                <!-- Info Banner -->
+                <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/50 text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-info text-emerald-600 dark:text-emerald-400 mt-0.5 text-sm shrink-0"></i>
+                    <span>Hanya data booking yang berstatus <b>disetujui (ACC)</b> pada rentang tanggal terpilih yang akan disertakan dalam dokumen spreadsheet resmi.</span>
+                </div>
+
+                <!-- Rentang Tanggal (Dari s/d Sampai) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label for="export-booking-start" class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-regular fa-calendar-days text-emerald-600 dark:text-emerald-400"></i>
+                            <span>Dari Tanggal *</span>
+                        </label>
+                        <input type="date" id="export-booking-start" required
+                            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label for="export-booking-end" class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-regular fa-calendar-check text-emerald-600 dark:text-emerald-400"></i>
+                            <span>Sampai Tanggal *</span>
+                        </label>
+                        <input type="date" id="export-booking-end" required
+                            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                    </div>
+                </div>
+
+                <!-- Pilihan Laboratorium -->
+                <div>
+                    <label for="export-booking-lab" class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-flask-vial text-emerald-600 dark:text-emerald-400"></i>
+                        <span>Laboratorium *</span>
+                    </label>
+                    <select id="export-booking-lab"
+                        class="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-xs bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                        <option value="">Semua Laboratorium</option>
+                    </select>
+                </div>
+
+                <!-- Footer Aksi -->
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('modal-export-booking')"
+                        class="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-export-booking"
+                        class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span id="btn-submit-export-booking-text">Unduh Spreadsheet (.xlsx)</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOADING INDICATOR -->
+    <div id="loading-indicator"
+        class="hidden fixed bottom-6 right-6 z-[100] bg-white px-4 py-3 rounded-xl shadow-2xl border border-slate-200 flex items-center gap-3 fade-in">
+        <div class="relative">
+            <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-2xl"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-slate-800">Sinkronisasi Data...</p>
+            <p class="text-[10px] text-slate-500">Mendapatkan data terbaru</p>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching (Inline untuk performa)
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active', 'bg-blue-600', 'text-white');
+                b.classList.add('bg-slate-100', 'text-slate-600');
+            });
+            const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+                activeBtn.classList.remove('bg-slate-100', 'text-slate-600');
+            }
+
+            // Updated: 'booking' is now a modal
+            ['jadwal', 'inventaris', 'approval', 'riwayat', 'pengaturan'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const targetEl = document.getElementById(`view-${tab}`);
+            if (targetEl) targetEl.classList.remove('hidden');
+
+            if (tab === 'inventaris' && typeof window.loadInventoryData === 'function') {
+                window.loadInventoryData();
+            }
+            if (tab === 'pengaturan' && typeof window.switchSettingsSubTab === 'function') {
+                window.switchSettingsSubTab('labs');
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        }
+    </script>
+
+    <script type="module" src="js/page-e-lab.js?v=26.11.02.1"></script>
+</body>
+
+</html>

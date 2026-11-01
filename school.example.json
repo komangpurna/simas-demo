@@ -1,0 +1,53 @@
+{
+  "school": {
+    "schoolName": "ISI_NAMA_SEKOLAH",
+    "schoolShortName": "ISI_SINGKATAN",
+    "schoolNPSN": "ISI_8_DIGIT_NPSN",
+    "schoolAddress": "ISI_ALAMAT_SEKOLAH",
+    "schoolCity": "ISI_KOTA_PENANDATANGANAN_SURAT",
+    "schoolProvince": "ISI_PROVINSI",
+    "schoolPostalCode": "ISI_KODE_POS",
+    "schoolWebsite": "https://ISI_DOMAIN_SEKOLAH",
+    "emailDomain": "ISI_DOMAIN_EMAIL",
+    "primaryDomain": "ISI_SITE_FIREBASE.web.app",
+    "schoolVisiAcronym": "ISI_AKRONIM_VISI",
+    "schoolVisiDesc": "ISI_URAIAN_VISI",
+    "headmasterName": "ISI_NAMA_KEPALA_SEKOLAH",
+    "headmasterNIP": "ISI_NIP_ATAU_TANDA_MINUS",
+    "telegramBotUser": "ISI_USERNAME_BOT_TANPA_AT",
+    "schoolAccreditation": "-",
+    "defaultSuratKeteranganNo": "-"
+  },
+  "firebase": {
+    "apiKey": "ISI_FIREBASE_WEB_API_KEY",
+    "authDomain": "ISI_SITE_FIREBASE.web.app",
+    "projectId": "ISI_PROJECT_ID_FIREBASE",
+    "storageBucket": "ISI_STORAGE_BUCKET_FIREBASE",
+    "messagingSenderId": "ISI_SENDER_ID",
+    "appId": "ISI_FIREBASE_WEB_APP_ID"
+  },
+  "supabase": {
+    "url": "https://ISI_PROJECT_REF.supabase.co",
+    "anonKey": "ISI_SUPABASE_ANON_JWT_KEY"
+  },
+  "cloudflare": {
+    "workerUrl": "https://ISI_WORKER.ISI_SUBDOMAIN.workers.dev",
+    "workerName": "ISI_NAMA_WORKER",
+    "databaseName": "ISI_NAMA_DATABASE_D1",
+    "databaseId": "ISI_UUID_DATABASE_D1",
+    "studentPhotosBucket": "ISI_BUCKET_FOTO_SISWA",
+    "gtkPhotosBucket": "ISI_BUCKET_FOTO_GTK"
+  },
+  "appsScript": {
+    "jurnal": "https://script.google.com/macros/s/ISI_DEPLOYMENT_JURNAL/exec",
+    "ekinerja": "https://script.google.com/macros/s/ISI_DEPLOYMENT_EKINERJA/exec",
+    "studentDocs": "https://script.google.com/macros/s/ISI_DEPLOYMENT_DOKUMEN_SISWA/exec"
+  },
+  "hosting": {
+    "site": "ISI_SITE_PRODUKSI",
+    "stagingSite": "",
+    "aliasSites": []
+  },
+  "financeStartDate": "2026-07-01",
+  "analyticsId": ""
+}

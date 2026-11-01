@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="avatarBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+    <linearGradient id="avatarFigure" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94A3B8"/>
+      <stop offset="100%" stop-color="#64748B"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Kanvas Pasfoto -->
+  <rect width="300" height="400" fill="url(#avatarBg)"/>
+  
+  <!-- Siluet Kepala Proporsional (3:4) -->
+  <circle cx="150" cy="142" r="58" fill="url(#avatarFigure)"/>
+  
+  <!-- Siluet Leher dan Bahu Pasfoto Standar Web -->
+  <path d="M 150 224 C 108 224 72 254 46 308 C 24 352 8 384 0 400 L 300 400 C 292 384 276 352 254 308 C 228 254 192 224 150 224 Z" fill="url(#avatarFigure)"/>
+</svg>

@@ -1,0 +1,141 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.agents/**'
+      - 'cypress/**'
+      - 'users.csv'
+      - 'screenshot.png'
+      - 'backup/**'
+      - 'sql/**'
+      - 'cloudflare/schema.sql'
+      - 'cloudflare/seed_*.sql'
+
+concurrency:
+  group: deploy-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --no-audit --prefer-offline
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+
+      # Tailwind CSS di-build (bukan Play CDN) agar ringan di HP.
+      - name: Build Tailwind CSS
+        run: npm run build:css
+
+      - name: Run JS Syntax Check & Unit Tests
+        run: |
+          npm run check:syntax
+          npm run test:unit
+
+      - name: Test service worker release transitions
+        run: npm run test:sw
+
+      - name: Restore immutable Hosting asset history
+        uses: actions/cache/restore@v4
+        with:
+          path: .hosting-history
+          key: hosting-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            hosting-history-${{ github.ref_name }}-
+
+      - name: Build and verify the Hosting artifact
+        run: |
+          npm run build:hosting
+          npm run check:hosting
+
+      # Kontrak API Worker diuji di runtime workerd lokal (bundel yang sama dengan produksi)
+      # sebelum apa pun menyentuh D1/Worker produksi. Gagal = deploy dibatalkan.
+      - name: Worker smoke test (workerd lokal)
+        run: npm run test:worker:smoke
+
+      # Backend Edge harus aktif lebih dulu agar hosting/preview baru tidak
+      # memanggil endpoint yang belum tersedia.
+      - name: Apply Cloudflare D1 migrations
+        working-directory: cloudflare
+        run: npx wrangler d1 migrations apply simas-demo-db --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify required Worker secrets
+        working-directory: cloudflare
+        shell: bash
+        run: |
+          secret_names="$(npx wrangler secret list)"
+          for required_secret in GOOGLE_SERVICE_ACCOUNT_EMAIL GOOGLE_PRIVATE_KEY TELEGRAM_BOT_TOKEN TELEGRAM_WEBHOOK_SECRET; do
+            if ! grep -q "$required_secret" <<< "$secret_names"; then
+              echo "Missing required Cloudflare Worker secret: $required_secret"
+              exit 1
+            fi
+          done
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy Cloudflare Worker
+        working-directory: cloudflare
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2.1.8
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          access_token_scopes: |
+            https://www.googleapis.com/auth/cloud-platform
+            https://www.googleapis.com/auth/datastore
+
+      - name: Verify Worker gateway before publishing the frontend
+        run: node scripts/check-worker-gateway.mjs
+
+      - name: Deploy to Firebase
+        env:
+          DISABLE_HTTP2: "true"
+          FIREBASE_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: |
+          set -eo pipefail
+          rm -rf .firebase
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "🚀 Memulai deployment ke Firebase PRODUKSI (Hosting: smagesa & simas-shakti, Firestore)..."
+            if npx firebase deploy --only hosting:simas-demo-5ead3,firestore --force --non-interactive 2>&1 | tee deploy.log; then
+              echo "✅ Deploy produksi (smagesa.web.app) berhasil!"
+            else
+              if grep -q "is the current active version" deploy.log; then
+                echo "✅ Deploy produksi berhasil (versi hosting sudah aktif, tidak ada perubahan file)."
+              else
+                echo "❌ Deploy produksi gagal. Detail log di atas."
+                exit 1
+              fi
+            fi
+          fi
+
+      - name: Save immutable Hosting asset history
+        uses: actions/cache/save@v4
+        with:
+          path: .hosting-history
+          key: hosting-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}

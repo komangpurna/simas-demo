@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    /* Hide native cancel/clear button on search inputs */
+    .menu-search-input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+        appearance: none;
+        display: none;
+    }
+    .menu-search-input::-webkit-search-decoration {
+        display: none;
+    }
+    /* Highlight mark for matched search query */
+    mark.menu-search-mark {
+        background-color: rgba(251, 191, 36, 0.35);
+        color: inherit;
+        border-radius: 2px;
+        padding: 0 1px;
+    }
+}

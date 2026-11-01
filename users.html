@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Manajemen User - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Manajemen Pengguna</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Kelola akun login.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="window.syncGtkEmailVerification()" id="btn-sync-emails"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg text-sm font-bold shadow-md transition-colors flex items-center"
+                    title="Tandai seluruh email GTK sebagai terverifikasi di Firebase Auth agar aman saat pertama kali Login Google">
+                    <i class="fa-solid fa-envelope-circle-check mr-2"></i> Verifikasi Email GTK
+                </button>
+                <button id="btn-add-user" onclick="document.getElementById('modal-add-user').classList.remove('hidden')"
+                    class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-slate-800 transition-colors">
+                    <i class="fa-solid fa-user-plus mr-2"></i> Tambah User
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB NAVIGATION (Hanya untuk Super Admin, Wakasek Kurikulum, & Staff) -->
+        <div id="nav-tabs" class="hidden flex border-b border-slate-200 dark:border-slate-700 mb-6 gap-2">
+            <button id="tab-btn-users" onclick="window.switchTab('users')" 
+                class="px-4 py-2.5 border-b-2 border-slate-900 dark:border-white font-bold text-sm text-slate-900 dark:text-white transition-all">
+                <i class="fa-solid fa-users-gear mr-1.5"></i>Daftar Akun User
+            </button>
+            <button id="tab-btn-mapping" onclick="window.switchTab('mapping')" 
+                class="px-4 py-2.5 border-b-2 border-transparent font-semibold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                <i class="fa-solid fa-graduation-cap mr-1.5"></i>Pemetaan Wali Kelas
+            </button>
+        </div>
+
+        <!-- TAB CONTENT: DAFTAR USER -->
+        <div id="tab-content-users" class="space-y-6">
+            <div
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead
+                            class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 font-bold uppercase text-xs">
+                            <tr>
+                                <th class="px-6 py-4">Nama & Email</th>
+                                <th class="px-6 py-4">Role / Jabatan</th>
+                                <th class="px-6 py-4">Detail (Kelas/Mapel)</th>
+                                <th class="px-6 py-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="4" class="p-8 text-center"><i class="fa-solid fa-spinner fa-spin"></i>
+                                    Memuat...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: PEMETAAN WALI KELAS -->
+        <div id="tab-content-mapping" class="hidden space-y-6">
+
+            <!-- Tabel Pemetaan -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 font-bold uppercase text-xs">
+                            <tr>
+                                <th class="px-6 py-4 w-1/4">Kelas</th>
+                                <th class="px-6 py-4 w-1/2">Guru Wali Kelas</th>
+                                <th class="px-6 py-4 text-center w-1/4">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mapping-table-body" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tr>
+                                <td colspan="3" class="p-8 text-center text-slate-400 italic">Memuat kelas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-add-user"
+        class="hidden fixed inset-0 z-[50] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800">Tambah Akun Baru</h3>
+                <button onclick="document.getElementById('modal-add-user').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form id="form-add-user" class="p-6 space-y-4 overflow-y-auto flex-1">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Jabatan (Role)</label>
+                    <select name="role" id="role-select" required
+                        class="w-full p-2 border rounded font-bold bg-slate-50">
+                        <option value="">Pilih Jabatan...</option>
+                        <option value="super_admin">Super Admin</option>
+                        <option value="admin_sarpras">Admin Sarpras</option>
+                        <option value="admin_perpus">Admin Perpustakaan</option>
+                        <option value="admin_dapodik">Admin Dapodik</option>
+                        <option value="admin_lks">Admin LKS</option>
+                        <option value="kepala_sekolah">Kepala Sekolah</option>
+                        <option value="staff">Staff / Tata Usaha</option>
+                        <option value="guru_mapel">Guru Mapel</option>
+                        <option value="admin_pks">Admin PKS (Siswa)</option>
+                        <option value="admin_kelas">Admin Kelas (Siswa)</option>
+                    </select>
+                </div>
+
+                <div id="field-guru-ref" class="hidden bg-blue-50 p-3 rounded border border-blue-200">
+                    <label class="text-xs font-bold text-blue-700 flex justify-between">
+                        <span>Ambil Data dari Database Guru</span>
+                        <i class="fa-solid fa-database"></i>
+                    </label>
+
+                    <input list="teacher-list" id="input-teacher-search"
+                        class="w-full mt-1 p-2 border rounded text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="Ketik nama guru..." autocomplete="off">
+                    <datalist id="teacher-list">
+                    </datalist>
+
+                    <p class="text-[10px] text-blue-500 mt-1">*Ketik untuk mencari. Otomatis mengisi Nama & Email.</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Nama Lengkap</label>
+                    <input type="text" name="name" id="input-name" required placeholder="Contoh: Shakti, S.Pd."
+                        class="w-full p-2 border rounded">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-500">Email Login</label>
+                        <input type="email" name="email" id="input-email" required placeholder="nama@gmail.com"
+                            class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-500">Password Awal</label>
+                        <input type="text" name="password" required placeholder="Contoh: Simas2026"
+                            class="w-full p-2 border rounded bg-slate-50 font-mono">
+                        <p class="text-[10px] text-slate-400 mt-1">Gunakan minimal 8 karakter dengan kombinasi huruf dan angka.</p>
+                    </div>
+                </div>
+
+                <div id="field-kelas" class="hidden bg-yellow-50 p-3 rounded border border-yellow-200">
+                    <label class="text-xs font-bold text-yellow-700" id="label-kelas">Bertugas di Kelas:</label>
+                    <select name="assignedClass" id="input-assigned-class" class="mt-1 w-full p-2 border rounded">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+
+                <!-- ADDITIONAL ROLES (Multi-Role Support) -->
+                <div id="field-additional-roles" class="hidden bg-purple-50 p-3 rounded border border-purple-200">
+                    <label class="text-xs font-bold text-purple-700 flex items-center gap-2">
+                        <i class="fa-solid fa-user-tag"></i> Role Tambahan (Opsional)
+                    </label>
+                    <p class="text-[10px] text-purple-500 mb-2">Pilih role tambahan jika user memiliki peran ganda.</p>
+                    <div id="additional-roles-checkboxes" class="grid grid-cols-2 gap-2 mt-2">
+                        <!-- Checkboxes akan di-generate oleh JS -->
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t mt-2">
+                    <button type="button" onclick="document.getElementById('modal-add-user').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-500 font-medium">Batal</button>
+                    <button type="submit"
+                        class="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800">Buat
+                        Akun</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-edit-user"
+        class="hidden fixed inset-0 z-[50] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800">Edit Data Pengguna</h3>
+                <button onclick="document.getElementById('modal-edit-user').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form id="form-edit-user" class="p-6 space-y-4 overflow-y-auto flex-1">
+                <input type="hidden" name="uid" id="edit-uid">
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Email Akun / Google</label>
+                    <input type="email" id="edit-email"
+                        class="w-full p-2 border rounded bg-white font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Ubah Kata Sandi (Opsional)</label>
+                    <input type="text" id="edit-password" placeholder="Kosongkan jika tidak ingin mengubah sandi"
+                        class="w-full p-2 border rounded bg-white font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <p class="text-[10px] text-slate-400 mt-1">Isi jika pengguna lupa kata sandi atau sandi terhapus saat mencoba login Google.</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Nama Lengkap</label>
+                    <input type="text" name="name" id="edit-name" required
+                        class="w-full p-2 border rounded font-bold text-slate-700">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Jabatan (Role)</label>
+                    <select name="role" id="edit-role-select" required
+                        class="w-full p-2 border rounded font-bold bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="super_admin">Super Admin</option>
+                        <option value="admin_sarpras">Admin Sarpras</option>
+                        <option value="admin_perpus">Admin Perpustakaan</option>
+                        <option value="admin_dapodik">Admin Dapodik</option>
+                        <option value="admin_lks">Admin LKS</option>
+                        <option value="kepala_sekolah">Kepala Sekolah</option>
+                        <option value="staff">Staff / Tata Usaha</option>
+                        <option value="guru_mapel">Guru Mapel</option>
+                        <option value="admin_pks">Admin PKS (Siswa)</option>
+                        <option value="admin_kelas">Admin Kelas (Siswa)</option>
+                    </select>
+                </div>
+
+                <div id="field-edit-kelas" class="hidden bg-yellow-50 p-3 rounded border border-yellow-200">
+                    <label class="text-xs font-bold text-yellow-700" id="label-edit-kelas">Bertugas / Admin di
+                        Kelas:</label>
+                    <select name="assignedClass" id="edit-assigned-class" class="mt-1 w-full p-2 border rounded">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+
+                <!-- ADDITIONAL ROLES EDIT (Multi-Role Support) -->
+                <div id="field-edit-additional-roles" class="hidden bg-purple-50 p-3 rounded border border-purple-200">
+                    <label class="text-xs font-bold text-purple-700 flex items-center gap-2">
+                        <i class="fa-solid fa-user-tag"></i> Role Tambahan (Opsional)
+                    </label>
+                    <p class="text-[10px] text-purple-500 mb-2">Pilih role tambahan jika user memiliki peran ganda.</p>
+                    <div id="edit-additional-roles-checkboxes" class="grid grid-cols-2 gap-2 mt-2">
+                        <!-- Checkboxes akan di-generate oleh JS -->
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t mt-2">
+                    <button type="button" onclick="document.getElementById('modal-edit-user').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-500 font-medium">Batal</button>
+                    <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-lg">Simpan
+                        Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-confirm"
+        class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-lg mb-2">Hapus User?</h3>
+                <p id="confirm-msg" class="text-sm text-slate-500 mb-6">Akses dashboard user ini akan hilang permanen.
+                </p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="document.getElementById('modal-confirm').classList.add('hidden')"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 hover:bg-slate-100 border border-slate-200 transition-colors">Batal</button>
+                    <button id="btn-confirm-yes"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg transition-transform active:scale-95">Ya,
+                        Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="alert-icon-container"
+                    class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                    <i id="alert-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+                <h3 id="alert-title" class="font-bold text-slate-800 text-lg mb-2">Berhasil!</h3>
+                <div id="alert-msg" class="text-sm text-slate-500 mb-6">Aksi berhasil dilakukan.</div>
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-lg transition-transform active:scale-95">OK,
+                    Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-users.js"></script>
+</body>
+
+</html>

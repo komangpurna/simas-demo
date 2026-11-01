@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Verifikasi Kartu Siswa Digital - SIMAS SHAKTI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/card-print.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen min-h-dvh font-inter flex flex-col justify-between selection:bg-indigo-500 selection:text-white antialiased relative overflow-x-hidden">
+
+    <!-- Ornamen Latar Belakang -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Header Instansi -->
+    <header class="relative z-10 w-full border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-4 py-3 sm:py-4">
+        <div class="max-w-xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <img src="assets/logo-sekolah.png" alt="Logo SMAGESA" class="w-9 h-9 sm:w-11 sm:h-11 object-contain drop-shadow">
+                <div>
+                    <h1 class="text-xs sm:text-sm font-black tracking-tight text-white uppercase leading-none">{{schoolName}}</h1>
+                    <p class="text-[10px] sm:text-xs text-indigo-300 font-semibold tracking-wide mt-0.5">Sistem {{appName}} - {{schoolVisiAcronym}}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-xs font-bold">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Verifikasi Resmi</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="relative z-10 flex-1 max-w-xl w-full mx-auto px-4 py-6 sm:py-8 flex flex-col items-center justify-center">
+
+        <!-- Loading State -->
+        <div id="loading-box" class="w-full text-center py-16 space-y-4">
+            <div class="w-12 h-12 border-3 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs sm:text-sm text-slate-400 font-medium">Memverifikasi keabsahan kartu pelajar...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-box" class="hidden w-full bg-slate-900/80 border border-rose-500/30 rounded-2xl p-6 text-center space-y-4 shadow-xl backdrop-blur-sm">
+            <div class="w-14 h-14 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto text-2xl border border-rose-500/20">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-base font-bold text-white">Kartu Tidak Ditemukan</h3>
+                <p id="error-message" class="text-xs text-slate-400 max-w-sm mx-auto">
+                    Token verifikasi tidak valid atau data kartu siswa belum terdaftar di SIMAS SHAKTI.
+                </p>
+            </div>
+            <div class="pt-2">
+                <a href="index.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Kembali ke Beranda SIMAS
+                </a>
+            </div>
+        </div>
+
+        <!-- Success Verification Card -->
+        <div id="card-box" class="hidden w-full space-y-5 animate-fade-in">
+            
+            <!-- Banner Status Verifikasi Keaslian -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-950/60 to-slate-900/80 border border-emerald-500/30 shadow-lg backdrop-blur-md flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-400 flex items-center justify-center text-lg sm:text-xl shrink-0">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">STATUS KEABSAHAN</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </div>
+                    <h2 class="text-xs sm:text-sm font-black text-white leading-tight mt-0.5">
+                        Kartu Pelajar Sah & Terverifikasi
+                    </h2>
+                    <p class="text-[10px] sm:text-[11px] text-slate-400">
+                        Tercatat resmi di Master Data Siswa SMA Negeri 1 Abang
+                    </p>
+                </div>
+            </div>
+
+            <!-- Kartu Identitas Fisik Digital (E-KTS) -->
+            <div class="rounded-2xl p-4 sm:p-6 bg-[#FAFAF7] text-[#0F172A] border border-slate-200 shadow-xl relative overflow-hidden">
+                <!-- Ornamen Sudut Samar -->
+                <svg class="kts-bali-corner kts-bali-corner-tr" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path d="M 40 0 L 40 16 L 24 16 L 24 0 Z" opacity="0.25" fill="currentColor"/>
+                    <path d="M 40 4 L 28 4 L 28 0 M 40 10 L 20 10 L 20 0" />
+                </svg>
+                <svg class="kts-bali-corner kts-bali-corner-bl" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path d="M 40 0 L 40 16 L 24 16 L 24 0 Z" opacity="0.25" fill="currentColor"/>
+                    <path d="M 40 4 L 28 4 L 28 0 M 40 10 L 20 10 L 20 0" />
+                </svg>
+
+                <!-- Header Kartu -->
+                <div class="relative z-10 flex items-center justify-between border-b border-[#B89552]/40 pb-3 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <img src="assets/logo-sekolah.png" alt="Logo Sekolah" class="w-8 h-8 object-contain">
+                        <div>
+                            <h3 class="text-xs sm:text-sm font-black text-[#0F172A] leading-tight">SMA NEGERI 1 ABANG</h3>
+                            <p class="text-[8.5px] font-extrabold text-[#B89552] uppercase tracking-widest leading-none mt-0.5">KARTU PELAJAR</p>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-extrabold px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-check text-[9px] mr-1 text-emerald-600"></i> RESMI &bull; SMAGESA SHAKTI
+                    </span>
+                </div>
+
+                <!-- Konten Kartu: Foto & Biodata -->
+                <div class="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                    <!-- Foto Resmi (3:4) -->
+                    <div class="kts-photo-frame shadow-md shrink-0 w-24 h-32 sm:w-28 sm:h-36 border border-[#B89552] bg-slate-100 rounded-lg overflow-hidden">
+                        <img id="card-photo" src="assets/default-avatar.svg" alt="Foto Siswa" class="kts-photo-img w-full h-full object-cover">
+                    </div>
+
+                    <!-- Detail Siswa -->
+                    <div class="flex-1 w-full text-center sm:text-left space-y-2">
+                        <h4 id="card-name" class="text-base sm:text-lg font-black text-[#172B4D] leading-snug tracking-tight break-words uppercase">
+                            -
+                        </h4>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <div class="p-2 rounded-lg bg-white border border-slate-200 text-left shadow-2xs">
+                                <span class="text-[9px] text-[#64748B] block font-bold uppercase tracking-wider">NIS / NISN</span>
+                                <span id="card-nis-nisn" class="font-mono font-bold text-[#172B4D] text-[11px] sm:text-xs">- / -</span>
+                            </div>
+                            <div class="p-2 rounded-lg bg-white border border-slate-200 text-left shadow-2xs">
+                                <span class="text-[9px] text-[#64748B] block font-bold uppercase tracking-wider">Kelas / Rombel</span>
+                                <span id="card-class" class="font-bold text-[#172B4D] text-[11px] sm:text-xs">-</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 pt-1 text-xs text-left bg-white p-3 rounded-lg border border-slate-200">
+                            <div class="flex justify-between border-b border-slate-100 pb-1">
+                                <span class="text-[#64748B]">Jenis Kelamin</span>
+                                <span id="card-gender" class="font-semibold text-[#172B4D]">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 pb-1">
+                                <span class="text-[#64748B]">Tempat, Tanggal Lahir</span>
+                                <span id="card-ttl" class="font-semibold text-[#172B4D]">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 pb-1">
+                                <span class="text-[#64748B] shrink-0">Alamat Domisili</span>
+                                <span id="card-address" class="font-semibold text-[#172B4D] text-right ml-2 break-words">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 pb-1">
+                                <span class="text-[#64748B]">Status Kesiswaan</span>
+                                <span id="card-status" class="font-bold text-emerald-600">SISWA AKTIF</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-[#64748B]">Masa Berlaku</span>
+                                <span id="card-validity" class="font-semibold text-[#B89552]">Selama Menjadi Siswa Aktif</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Kartu -->
+                <div class="relative z-10 mt-4 pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-[#64748B]">
+                    <span id="card-verified-info">Diverifikasi oleh Wali Kelas SMAGESA</span>
+                    <span class="font-mono text-[9px] text-[#64748B]">ID: <span id="card-token">-</span></span>
+                </div>
+            </div>
+
+            <!-- Informasi Sekolah Penerbit Dokumen & Alamat Resmi Sekolah (SSOT SCHOOL_CONFIG) -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs space-y-2 text-slate-300">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 font-bold text-amber-300 text-xs">
+                        <i class="fa-solid fa-school"></i>
+                        <span>Sekolah Penerbit Dokumen</span>
+                    </div>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">NPSN: {{schoolNPSN}}</span>
+                </div>
+                <div class="space-y-1.5 pt-1 text-slate-300 text-[11px]">
+                    <div class="flex items-start gap-2.5">
+                        <i class="fa-solid fa-location-dot mt-0.5 text-amber-400 text-xs shrink-0"></i>
+                        <div>
+                            <span id="school-official-name" class="font-bold text-white block">{{schoolName}}</span>
+                            <span id="card-school-address" class="text-slate-400 leading-relaxed block">
+                                {{schoolAddress}}, {{schoolPostalCode}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Perlindungan Privasi & Keamanan -->
+            <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs space-y-2 text-slate-300">
+                <div class="flex items-center gap-2 font-bold text-indigo-300 text-xs">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Pernyataan Keamanan & Kepatuhan Privasi Data</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Halaman ini merupakan kanal verifikasi digital publik resmi yang memenuhi standar privasi (UU PDP No. 27/2022). Data pribadi sensitif seperti NIK, nomor kontak keluarga, nama orang tua, catatan nilai rapor, dan kedisiplinan tidak ditampilkan secara terbuka.
+                </p>
+                <div class="pt-2">
+                    <a id="btn-school-website" href="{{schoolWebsite}}" target="_blank" rel="noopener noreferrer" class="w-full text-center py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-globe"></i> Kunjungi Website Resmi {{schoolName}}
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Sekolah -->
+    <footer class="relative z-10 w-full border-t border-slate-800/80 bg-slate-900/40 py-4 px-4 text-center text-xs text-slate-500">
+        <p class="font-semibold text-slate-400">{{schoolName}} &bull; {{schoolShortName}} {{schoolVisiAcronym}}</p>
+        <p class="text-[10px] mt-0.5">{{schoolAddress}}, {{schoolPostalCode}}</p>
+    </footer>
+
+    <!-- Logic Script Verifikasi -->
+    <script type="module">
+        import { CLOUDFLARE_CONFIG } from './js/config.js';
+        import { SCHOOL_CONFIG } from './js/school-config.js';
+        import { formatStudentCardAddress } from './js/student-card-renderer.js';
+
+        async function verifyStudentCard() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('id') || urlParams.get('token');
+
+            const loadingBox = document.getElementById('loading-box');
+            const errorBox = document.getElementById('error-box');
+            const cardBox = document.getElementById('card-box');
+            const errorMessage = document.getElementById('error-message');
+
+            if (!token || token.trim().length < 8) {
+                loadingBox.classList.add('hidden');
+                errorBox.classList.remove('hidden');
+                errorMessage.textContent = 'Parameter token verifikasi tidak ditemukan pada link QR Code ini.';
+                return;
+            }
+
+            const cleanToken = token.trim();
+
+            try {
+                const workerUrl = CLOUDFLARE_CONFIG.WORKER_URL || 'https://simas-smagesa-api.komangpurna1.workers.dev';
+                const endpoint = `${workerUrl}/api/students/public-card/${encodeURIComponent(cleanToken)}`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok || !result.success || !result.card) {
+                    throw new Error(result.error || 'Kartu pelajar tidak ditemukan di sistem.');
+                }
+
+                const card = result.card;
+
+                // Render Data ke Tampilan
+                document.getElementById('card-name').textContent = card.nama || '-';
+                document.getElementById('card-nis-nisn').textContent = `${card.nis || '-'} / ${card.nisn || '-'}`;
+                document.getElementById('card-class').textContent = card.kelas || '-';
+                document.getElementById('card-gender').textContent = card.jenis_kelamin || '-';
+                document.getElementById('card-ttl').textContent = card.tempat_tanggal_lahir || '-';
+                
+                // Alamat Domisili Siswa (SSOT formatStudentCardAddress)
+                const cardAddrEl = document.getElementById('card-address');
+                if (cardAddrEl) {
+                    let studentAddress = (card.alamat_domisili && card.alamat_domisili !== '-') ? card.alamat_domisili : '';
+                    if (!studentAddress) {
+                        studentAddress = formatStudentCardAddress(card);
+                    }
+                    cardAddrEl.textContent = (studentAddress && studentAddress !== '-') ? studentAddress : 'Data Belum Dilengkapi';
+                }
+
+                // Sinkronisasi Legalitas Sekolah SSOT dari SCHOOL_CONFIG
+                const schoolAddrEl = document.getElementById('card-school-address');
+                if (schoolAddrEl) {
+                    const postal = SCHOOL_CONFIG?.schoolPostalCode ? `, ${SCHOOL_CONFIG.schoolPostalCode}` : '';
+                    schoolAddrEl.textContent = `${SCHOOL_CONFIG?.schoolAddress || 'Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang, Karangasem, Bali'}${postal}`;
+                }
+                const schoolNameEl = document.getElementById('school-official-name');
+                if (schoolNameEl) {
+                    schoolNameEl.textContent = SCHOOL_CONFIG?.schoolName || 'SMA Negeri 1 Abang';
+                }
+                const schoolWebBtn = document.getElementById('btn-school-website');
+                if (schoolWebBtn && SCHOOL_CONFIG?.schoolWebsite) {
+                    schoolWebBtn.href = SCHOOL_CONFIG.schoolWebsite;
+                }
+                
+                const isRegularClass = (className) => {
+                    if (!className || typeof className !== 'string') return false;
+                    const trimmed = className.trim();
+                    if (!trimmed || trimmed === '-' || trimmed.toLowerCase() === 'null') return false;
+                    const lower = trimmed.toLowerCase();
+                    const inactive = [/\balumni\b/, /\bmutasi\b/, /\bpindah\b/, /\bkeluar\b/, /\bnon\s*aktif\b/, /\blulus\b/, /\bdrop\s*out\b/, /^do$/];
+                    if (inactive.some(p => p.test(lower))) return false;
+                    return /^(XII|XI|X)([-.\s_]|$|[A-Za-z0-9])/i.test(trimmed);
+                };
+
+                const isRegular = isRegularClass(card.kelas);
+                const isStatusActive = card.status_siswa === 'active' || card.status_siswa === 'aktif';
+                const isActive = isRegular && isStatusActive;
+
+                const statusEl = document.getElementById('card-status');
+                const validityEl = document.getElementById('card-validity');
+                if (isActive) {
+                    statusEl.textContent = 'SISWA AKTIF';
+                    statusEl.className = 'font-bold text-emerald-600';
+                    if (validityEl) {
+                        validityEl.textContent = 'Selama Menjadi Siswa Aktif';
+                        validityEl.className = 'font-semibold text-[#B89552]';
+                    }
+                } else {
+                    statusEl.textContent = 'SISWA NONAKTIF';
+                    statusEl.className = 'font-bold text-rose-600';
+                    if (validityEl) {
+                        validityEl.textContent = 'Telah Berakhir (Nonaktif)';
+                        validityEl.className = 'font-semibold text-rose-500';
+                    }
+                }
+
+                document.getElementById('card-token').textContent = card.token ? `${card.token.substring(0, 10)}...` : '-';
+                
+                if (card.diverifikasi_pada) {
+                    const tgl = new Date(card.diverifikasi_pada).toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'long', year: 'numeric'
+                    });
+                    document.getElementById('card-verified-info').textContent = `Diverifikasi: ${tgl} oleh ${card.diverifikasi_oleh || 'Wali Kelas'}`;
+                }
+
+                // Foto Siswa
+                const photoImg = document.getElementById('card-photo');
+                if (card.foto_url) {
+                    const fullPhotoUrl = card.foto_url.startsWith('http') ? card.foto_url : `${workerUrl}${card.foto_url}`;
+                    photoImg.src = fullPhotoUrl;
+                    photoImg.onerror = () => {
+                        photoImg.src = 'assets/default-avatar.svg';
+                        photoImg.classList.remove('p-3', 'opacity-60');
+                    };
+                } else {
+                    photoImg.src = 'assets/default-avatar.svg';
+                    photoImg.classList.remove('p-3', 'opacity-60');
+                }
+
+                loadingBox.classList.add('hidden');
+                cardBox.classList.remove('hidden');
+
+            } catch (err) {
+                console.error('[Verify Card Error]:', err);
+                loadingBox.classList.add('hidden');
+                errorBox.classList.remove('hidden');
+                errorMessage.textContent = err.message || 'Terjadi kesalahan saat memverifikasi kartu siswa.';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', verifyStudentCard);
+    </script>
+</body>
+</html>

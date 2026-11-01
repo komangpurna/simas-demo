@@ -1,0 +1,11 @@
+# Set default behavior to automatically normalize line endings to LF
+* text=auto eol=lf
+
+# Force specific web files to always use LF
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.rules text eol=lf

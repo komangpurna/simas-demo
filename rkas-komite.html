@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>RKAS Komite - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=26.11.02.1">
+    <script type="module" src="js/school-config.js?v=26.11.02.1"></script>
+    <link rel="stylesheet" href="css/tailwind.css?v=26.11.02.1">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <!-- KONTAINER LAYOUT GLOBAL -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA -->
+    <main class="hidden fade-in pb-16 lg:pb-12">
+        
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600 dark:text-emerald-400"></i>
+                        <span id="page-title-text">RKAS Komite Sekolah</span>
+                    </h1>
+                    <span id="badge-version-type" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 uppercase tracking-wide">
+                        RKAS Murni
+                    </span>
+                    <span id="badge-rkas-status" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                        Draft
+                    </span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-building-columns text-slate-400"></i>
+                    <span>Sumber Dana: <strong>Dana Partisipasi Masyarakat (KOMITE)</strong></span>
+                </p>
+            </div>
+
+            <!-- Kelompok Tombol Aksi -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <button type="button" id="btn-refresh-rkas" onclick="window.refreshRkasData?.()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Segarkan Data" aria-label="Segarkan">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span>Segarkan</span>
+                </button>
+                <button type="button" id="btn-open-import-modal" onclick="window.openImportModal?.()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Import File Excel RKAS">
+                    <i class="fa-solid fa-file-import text-xs"></i>
+                    <span>Import Excel</span>
+                </button>
+                <button type="button" id="btn-export-excel" onclick="window.exportRkasExcel?.()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Ekspor ke Excel">
+                    <i class="fa-solid fa-file-excel text-xs"></i>
+                    <span>Ekspor XLSX</span>
+                </button>
+                <button type="button" id="btn-print-rkas" onclick="window.printOfficialRkas?.()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Cetak Lembar Pengesahan RKAS Resmi">
+                    <i class="fa-solid fa-print text-xs"></i>
+                    <span>Cetak Resmi</span>
+                </button>
+                <button type="button" id="btn-open-kegiatan-modal" onclick="window.openKegiatanModal?.()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" aria-label="Tambah Pos Belanja">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Tambah Kegiatan</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. BAR FILTER TAHUN ANGGARAN & VERSI RKAS -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 mb-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Dropdown Tahun Anggaran -->
+                <div class="flex items-center gap-2">
+                    <label for="filter-fiscal-year" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 whitespace-nowrap">
+                        <i class="fa-solid fa-calendar text-indigo-500"></i>
+                        <span>Tahun Anggaran:</span>
+                    </label>
+                    <select id="filter-fiscal-year" onchange="window.handleFilterChange?.()" class="px-3 py-1.5 border rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="2026" selected>2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+
+                <!-- Toggle Versi Anggaran: Murni vs Perubahan -->
+                <div class="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/70 dark:border-slate-700">
+                    <button type="button" id="btn-tab-murni" onclick="window.switchVersionTab?.('murni')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-2xs">
+                        RKAS Murni
+                    </button>
+                    <button type="button" id="btn-tab-perubahan" onclick="window.switchVersionTab?.('perubahan')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        RKAS Perubahan
+                    </button>
+                </div>
+
+                <!-- Tombol Salin dari RKAS Murni (Hanya muncul jika di RKAS Perubahan dan belum ada data) -->
+                <button type="button" id="btn-clone-murni" onclick="window.openCloneModal?.()" class="hidden px-3 py-1.5 bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95" title="Salin seluruh kegiatan & item belanja dari RKAS Murni">
+                    <i class="fa-solid fa-copy text-amber-600 dark:text-amber-400"></i>
+                    <span>Salin dari RKAS Murni</span>
+                </button>
+            </div>
+
+            <!-- Tautan Cepat ke Buku Kas Pengeluaran -->
+            <div class="flex items-center gap-2">
+                <a href="keuangan.html" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-book text-indigo-500"></i>
+                    <span>Buku Kas Komite</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- 3. WORKFLOW PENGESAHAN 3 PIHAK (Approval Bar) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 mb-4 shadow-2xs">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        <i class="fa-solid fa-signature"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                            Status Pengesahan RKAS Komite
+                        </h3>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">
+                            Alur persetujuan bertingkat: Bendahara Komite &rarr; Diketahui Kepala Sekolah &rarr; Disetujui Ketua Komite Sekolah
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Pengesahan Dinamis Sesuai Role -->
+                <div id="approval-action-container" class="flex items-center gap-2">
+                    <!-- Injeksi tombol verifikasi via controller -->
+                </div>
+            </div>
+
+            <!-- 3 Langkah Verifikasi Visual -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3">
+                <!-- Tahap 1: Bendahara Komite -->
+                <div id="step-treasurer-card" class="p-3 rounded-xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-start gap-2.5">
+                    <div id="step-treasurer-icon" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">1</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Bendahara Komite</p>
+                        <p id="step-treasurer-name" class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">-</p>
+                        <p id="step-treasurer-meta" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Belum ditandatangani</p>
+                    </div>
+                </div>
+
+                <!-- Tahap 2: Kepala Sekolah -->
+                <div id="step-principal-card" class="p-3 rounded-xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-start gap-2.5">
+                    <div id="step-principal-icon" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">2</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Diketahui Kepala Sekolah</p>
+                        <p id="step-principal-name" class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">-</p>
+                        <p id="step-principal-meta" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Menunggu telaah</p>
+                    </div>
+                </div>
+
+                <!-- Tahap 3: Ketua Komite Sekolah -->
+                <div id="step-committee-card" class="p-3 rounded-xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex items-start gap-2.5">
+                    <div id="step-committee-icon" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">3</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Disetujui Ketua Komite</p>
+                        <p id="step-committee-name" class="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">I Gede Sukasari, S.ST.</p>
+                        <p id="step-committee-meta" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Menunggu persetujuan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. GRID METRIK & KPI RINGKAS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+            <!-- Card 1: Total Pagu Penerimaan -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Penerimaan (Pagu)</p>
+                    <h3 id="kpi-total-income" class="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight font-mono">Rp 0</h3>
+                </div>
+            </div>
+
+            <!-- Card 2: Total Rencana Belanja -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Rencana Belanja</p>
+                    <h3 id="kpi-total-budget" class="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight font-mono">Rp 0</h3>
+                </div>
+            </div>
+
+            <!-- Card 3: Selisih Pagu (Penerimaan - Belanja) -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Sisa Pagu RKAS</p>
+                    <h3 id="kpi-balance-budget" class="text-sm sm:text-lg font-black text-emerald-600 dark:text-emerald-400 leading-tight font-mono">Rp 0</h3>
+                </div>
+            </div>
+
+            <!-- Card 4: Realisasi Pengeluaran Kas (Riil Buku Kas) -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Realisasi Kas Riil</p>
+                    <h3 id="kpi-total-realized" class="text-sm sm:text-lg font-black text-amber-600 dark:text-amber-400 leading-tight font-mono">Rp 0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. BAGIAN A: PENERIMA / PEMASUKAN (Sesuai Contoh Excel) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 mb-4 shadow-2xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">A</div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                            Penerima / Sumber Dana
+                        </h2>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Alokasi SILPA tahun sebelumnya dan target penerimaan iuran komite tahun berjalan</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.openIncomeModal?.()" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/80 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Ubah Pemasukan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Penerima (Persis Format Excel) -->
+            <div class="mt-3 overflow-x-auto border border-slate-200 dark:border-slate-800/80 rounded-xl">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 font-bold uppercase text-[11px] border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="px-3.5 py-2.5 w-24">No. Kode</th>
+                            <th class="px-3.5 py-2.5">Penerima / Uraian Sumber Dana</th>
+                            <th class="px-3.5 py-2.5 text-right w-44">Jumlah (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td class="px-3.5 py-2 text-slate-400 dark:text-slate-500 font-mono">-</td>
+                            <td class="px-3.5 py-2 text-slate-800 dark:text-slate-200 font-semibold">
+                                <i class="fa-solid fa-piggy-bank text-amber-500 mr-1.5"></i>
+                                <span id="label-silpa">SILPA Tahun Sebelumnya</span>
+                            </td>
+                            <td id="val-silpa" class="px-3.5 py-2 text-right font-mono font-bold text-slate-800 dark:text-slate-100">Rp 0</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                            <td class="px-3.5 py-2 text-slate-400 dark:text-slate-500 font-mono">-</td>
+                            <td class="px-3.5 py-2 text-slate-800 dark:text-slate-200 font-semibold">
+                                <i class="fa-solid fa-users text-blue-500 mr-1.5"></i>
+                                <span id="label-income">PENERIMAAN IURAN KOMITE TAHUN BERJALAN</span>
+                            </td>
+                            <td id="val-income" class="px-3.5 py-2 text-right font-mono font-bold text-slate-800 dark:text-slate-100">Rp 0</td>
+                        </tr>
+                        <tr class="bg-blue-50/60 dark:bg-blue-950/30 font-bold border-t-2 border-blue-200 dark:border-blue-900/60">
+                            <td class="px-3.5 py-2.5 text-blue-800 dark:text-blue-300 font-mono">TOTAL</td>
+                            <td class="px-3.5 py-2.5 text-blue-900 dark:text-blue-200 uppercase tracking-wide">Total Penerimaan</td>
+                            <td id="val-total-income" class="px-3.5 py-2.5 text-right font-mono font-black text-blue-900 dark:text-blue-200 text-sm sm:text-base">Rp 0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 6. BAGIAN B: BELANJA / PENGELUARAN (Tabel Hirarki Sesuai Contoh Excel) -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-2xs">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">B</div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                            Belanja / Pengeluaran RKAS
+                        </h2>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Matriks perencanaan anggaran belanja berhirarki berdasarkan 8 Standar Nasional Pendidikan (SNP)</p>
+                    </div>
+                </div>
+
+                <!-- Sub-tab Tampilan: Rencana RKAS vs Monitoring Realisasi -->
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/70 dark:border-slate-700">
+                        <button type="button" id="btn-view-matrix" onclick="window.switchViewMode?.('matrix')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-2xs">
+                            <i class="fa-solid fa-table-list mr-1"></i> Rencana RKAS
+                        </button>
+                        <button type="button" id="btn-view-realization" onclick="window.switchViewMode?.('realization')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                            <i class="fa-solid fa-chart-column mr-1"></i> Realisasi vs Pagu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legenda Warna Excel -->
+            <div class="flex items-center gap-3 flex-wrap py-2.5 px-1 text-[11px] text-slate-600 dark:text-slate-400">
+                <span class="font-bold text-slate-700 dark:text-slate-300">Panduan Warna Hirarki:</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-rose-200 dark:bg-rose-900/60 border border-rose-300"></span> Standar SNP</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-900/60 border border-emerald-300"></span> Program</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-200 dark:bg-amber-900/60 border border-amber-300"></span> Sub-Kegiatan</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-200 dark:bg-sky-900/60 border border-sky-300"></span> Kegiatan (Tahap 1 &amp; 2)</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700"></span> Rincian Item Belanja</span>
+            </div>
+
+            <!-- TABEL VIEW 1: RENCANA RKAS (Format Matriks Excel Penuh) -->
+            <div id="view-matrix-container" class="overflow-x-auto border border-slate-200 dark:border-slate-800/80 rounded-xl">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold uppercase text-[10px] sm:text-[11px] border-b border-slate-300 dark:border-slate-700 select-none">
+                        <tr>
+                            <th rowspan="2" class="px-2.5 py-2 text-center w-12 border-r border-slate-300 dark:border-slate-700">No.</th>
+                            <th rowspan="2" class="px-2.5 py-2 w-32 border-r border-slate-300 dark:border-slate-700">Kode Rekening</th>
+                            <th rowspan="2" class="px-2.5 py-2 w-24 border-r border-slate-300 dark:border-slate-700">Kode Program</th>
+                            <th rowspan="2" class="px-3.5 py-2 min-w-[240px] border-r border-slate-300 dark:border-slate-700">Uraian Program / Kegiatan / Belanja</th>
+                            <th colspan="3" class="px-2 py-1 text-center border-b border-r border-slate-300 dark:border-slate-700">Rincian Perhitungan</th>
+                            <th rowspan="2" class="px-3 py-2 text-right w-28 sm:w-32 border-r border-slate-300 dark:border-slate-700">Jumlah (Rp)</th>
+                            <th colspan="2" class="px-2 py-1 text-center border-b border-r border-slate-300 dark:border-slate-700">Tahap</th>
+                            <th rowspan="2" class="px-2 py-2 text-center w-16">Aksi</th>
+                        </tr>
+                        <tr>
+                            <th class="px-2 py-1 text-center w-14 border-r border-slate-300 dark:border-slate-700 font-semibold">Volume</th>
+                            <th class="px-2 py-1 text-center w-16 border-r border-slate-300 dark:border-slate-700 font-semibold">Satuan</th>
+                            <th class="px-2 py-1 text-right w-24 border-r border-slate-300 dark:border-slate-700 font-semibold">Tarif Harga</th>
+                            <th class="px-2 py-1 text-right w-24 border-r border-slate-300 dark:border-slate-700 font-semibold text-sky-700 dark:text-sky-300">Tahap 1</th>
+                            <th class="px-2 py-1 text-right w-24 border-r border-slate-300 dark:border-slate-700 font-semibold text-sky-700 dark:text-sky-300">Tahap 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rkas-table-tbody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="11" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500 italic">
+                                Memuat data RKAS Komite...
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-900 text-white font-bold text-xs sm:text-sm">
+                        <tr>
+                            <td colspan="7" class="px-4 py-3 text-right uppercase tracking-wider">Total Belanja RKAS:</td>
+                            <td id="tfoot-total-belanja" class="px-3 py-3 text-right font-mono font-black text-emerald-400">Rp 0</td>
+                            <td id="tfoot-total-tahap-1" class="px-2 py-3 text-right font-mono text-sky-300 text-xs">Rp 0</td>
+                            <td id="tfoot-total-tahap-2" class="px-2 py-3 text-right font-mono text-sky-300 text-xs">Rp 0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- TABEL VIEW 2: REALISASI VS PAGU (Budget vs Actual) -->
+            <div id="view-realization-container" class="hidden overflow-x-auto border border-slate-200 dark:border-slate-800/80 rounded-xl">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold uppercase text-[10px] sm:text-[11px] border-b border-slate-300 dark:border-slate-700">
+                        <tr>
+                            <th class="px-3 py-2.5 w-12 text-center">No.</th>
+                            <th class="px-3 py-2.5 w-24">Kode</th>
+                            <th class="px-3.5 py-2.5">Nama Kegiatan RKAS</th>
+                            <th class="px-3 py-2.5 text-right w-28 sm:w-32">Pagu RKAS (Rp)</th>
+                            <th class="px-2.5 py-2.5 text-right w-24">Tahap 1</th>
+                            <th class="px-2.5 py-2.5 text-right w-24">Tahap 2</th>
+                            <th class="px-3 py-2.5 text-right w-28 sm:w-32">Realisasi (Rp)</th>
+                            <th class="px-3 py-2.5 text-right w-28 sm:w-32">Sisa Pagu (Rp)</th>
+                            <th class="px-3 py-2.5 text-center w-20">% Capaian</th>
+                            <th class="px-3 py-2.5 text-center w-24">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="realization-table-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="10" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500 italic">
+                                Memuat perbandingan realisasi...
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-900 text-white font-bold text-xs">
+                        <tr>
+                            <td colspan="3" class="px-4 py-3 text-right uppercase tracking-wider">Total:</td>
+                            <td id="tfoot-real-pagu" class="px-3 py-3 text-right font-mono font-bold text-indigo-300">Rp 0</td>
+                            <td id="tfoot-real-t1" class="px-2.5 py-3 text-right font-mono text-xs">Rp 0</td>
+                            <td id="tfoot-real-t2" class="px-2.5 py-3 text-right font-mono text-xs">Rp 0</td>
+                            <td id="tfoot-real-actual" class="px-3 py-3 text-right font-mono font-bold text-amber-300">Rp 0</td>
+                            <td id="tfoot-real-remaining" class="px-3 py-3 text-right font-mono font-bold text-emerald-300">Rp 0</td>
+                            <td id="tfoot-real-percent" class="px-3 py-3 text-center font-mono">0%</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- DIALOG MODALS - WAJIB TOP-LEVEL SIBLINGS DI LUAR MAIN         -->
+    <!-- (Standar ASVS Level 1 & 2, Modal Anti-Nesting Mandate)        -->
+    <!-- ============================================================== -->
+
+    <!-- 1. MODAL: EDIT DATA PENERIMAAN / SILPA -->
+    <div id="modal-income-form" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-hand-holding-dollar text-blue-500"></i>
+                    <span>Atur Pagu Penerimaan RKAS</span>
+                </h3>
+                <button type="button" onclick="document.getElementById('modal-income-form').classList.add('hidden')" class="!bg-transparent !text-slate-400 hover:!text-red-500 dark:!text-slate-500 dark:hover:!text-red-400 transition-colors !border-none !shadow-none outline-none">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="form-income-settings" onsubmit="window.saveIncomeSettings?.(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-piggy-bank text-amber-500"></i>
+                        <span>SILPA Tahun Sebelumnya (Rp)</span>
+                    </label>
+                    <input type="text" id="input-silpa-amount" class="w-full px-3.5 py-2.5 border rounded-xl text-sm font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0,00" inputmode="decimal" oninput="window.formatCurrencyInput?.(this)" required>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Sisa Lebih Pembiayaan Anggaran tahun lalu yang dapat digunakan.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-users text-blue-500"></i>
+                        <span>Target Penerimaan Komite Tahun Berjalan (Rp)</span>
+                    </label>
+                    <input type="text" id="input-income-amount" class="w-full px-3.5 py-2.5 border rounded-xl text-sm font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0,00" inputmode="decimal" oninput="window.formatCurrencyInput?.(this)" required>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Estimasi total iuran partisipasi komite siswa yang direncanakan.</p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 text-xs flex justify-between items-center">
+                    <span class="font-bold text-slate-600 dark:text-slate-300">Total Pagu Penerimaan:</span>
+                    <span id="preview-total-income-modal" class="font-mono font-black text-blue-600 dark:text-blue-400 text-sm">Rp 0</span>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-income-form').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-md transition-transform active:scale-95 text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-save"></i>
+                        <span>Simpan Pagu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL: FORM TAMBAH/EDIT KEGIATAN OPERASIONAL (Baris Biru) -->
+    <div id="modal-kegiatan-form" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40">
+                <h3 id="modal-kegiatan-title" class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-sky-500"></i>
+                    <span>Tambah Pos Kegiatan RKAS</span>
+                </h3>
+                <button type="button" onclick="document.getElementById('modal-kegiatan-form').classList.add('hidden')" class="!bg-transparent !text-slate-400 hover:!text-red-500 dark:!text-slate-500 dark:hover:!text-red-400 transition-colors !border-none !shadow-none outline-none">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="form-kegiatan" onsubmit="window.saveKegiatan?.(event)" class="p-6 space-y-4">
+                <input type="hidden" id="input-kegiatan-id" value="">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sitemap text-indigo-500"></i>
+                        <span>Standar SNP / Kode Program</span>
+                    </label>
+                    <select id="input-kegiatan-kode-program" class="w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <option value="01.">01. Standar Kompetensi Lulusan</option>
+                        <option value="02.">02. Pengembangan Standar Isi</option>
+                        <option value="03." selected>03. Standar Proses</option>
+                        <option value="03.02">03.02 Penerimaan Peserta Didik Baru</option>
+                        <option value="03.02.01">03.02.01 Publikasi Berkala Sekolah</option>
+                        <option value="03.03">03.03 Pembelajaran &amp; Ekstrakurikuler</option>
+                        <option value="03.03.07">03.03.07 Ekstrakurikuler (di luar Kepramukaan)</option>
+                        <option value="04.">04. Standar Pendidik &amp; Tenaga Kependidikan</option>
+                        <option value="05.">05. Standar Sarana dan Prasarana</option>
+                        <option value="06.">06. Standar Pengelolaan</option>
+                        <option value="07.">07. Standar Pembiayaan</option>
+                        <option value="08.">08. Standar Penilaian Pendidikan</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen text-sky-500"></i>
+                        <span>Nama Kegiatan Operasional</span>
+                    </label>
+                    <input type="text" id="input-kegiatan-uraian" class="w-full px-3.5 py-2.5 border rounded-xl text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Pelaksanaan Ekstrakurikuler Paskibra" required>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Nama pos kegiatan ini yang akan dipilih saat mencatat pengeluaran di Buku Kas.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day text-sky-500"></i>
+                            <span>Alokasi Tahap 1 (Rp)</span>
+                        </label>
+                        <input type="text" id="input-kegiatan-tahap-1" class="w-full px-3.5 py-2.5 border rounded-xl text-xs sm:text-sm font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0,00" inputmode="decimal" oninput="window.formatCurrencyInput?.(this); window.calcKegiatanTotalModal?.()">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day text-sky-500"></i>
+                            <span>Alokasi Tahap 2 (Rp)</span>
+                        </label>
+                        <input type="text" id="input-kegiatan-tahap-2" class="w-full px-3.5 py-2.5 border rounded-xl text-xs sm:text-sm font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0,00" inputmode="decimal" oninput="window.formatCurrencyInput?.(this); window.calcKegiatanTotalModal?.()">
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200/60 dark:border-sky-800 text-xs flex justify-between items-center">
+                    <span class="font-bold text-slate-700 dark:text-slate-200">Total Pagu Kegiatan:</span>
+                    <span id="preview-total-kegiatan-modal" class="font-mono font-black text-sky-700 dark:text-sky-300 text-sm">Rp 0</span>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-kegiatan-form').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-md transition-transform active:scale-95 text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-save"></i>
+                        <span>Simpan Kegiatan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MODAL: FORM TAMBAH/EDIT RINCIAN ITEM BELANJA (Baris Putih) -->
+    <div id="modal-belanja-form" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40">
+                <h3 id="modal-belanja-title" class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-cart-plus text-emerald-500"></i>
+                    <span>Tambah Rincian Item Belanja</span>
+                </h3>
+                <button type="button" onclick="document.getElementById('modal-belanja-form').classList.add('hidden')" class="!bg-transparent !text-slate-400 hover:!text-red-500 dark:!text-slate-500 dark:hover:!text-red-400 transition-colors !border-none !shadow-none outline-none">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="form-belanja" onsubmit="window.saveBelanjaItem?.(event)" class="p-6 space-y-4">
+                <input type="hidden" id="input-belanja-id" value="">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-folder text-sky-500"></i>
+                        <span>Pos Kegiatan Induk</span>
+                    </label>
+                    <select id="input-belanja-parent-kegiatan" class="w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <option value="">-- Pilih Pos Kegiatan --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-barcode text-indigo-500"></i>
+                        <span>Kode Rekening Belanja</span>
+                    </label>
+                    <input type="text" id="input-belanja-kode-rek" list="preset-kode-rek-list" class="w-full px-3.5 py-2.5 border rounded-xl text-xs font-mono font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="5.1.02.01.01.0012" required>
+                    <datalist id="preset-kode-rek-list">
+                        <option value="5.1.02.01.01.0012">5.1.02.01.01.0012 - Belanja Bahan/Cindera Mata/Kenang-kenangan</option>
+                        <option value="5.1.02.01.01.0052">5.1.02.01.01.0052 - Belanja Makanan dan Minuman</option>
+                        <option value="5.1.02.02.01.0003">5.1.02.02.01.0003 - Belanja Jasa/Honor Narasumber</option>
+                        <option value="5.1.02.02.01.0011">5.1.02.02.01.0011 - Belanja Jasa/Honor Pelatih</option>
+                        <option value="5.1.02.01.01.0024">5.1.02.01.01.0024 - Belanja Alat Tulis Kantor (ATK)</option>
+                        <option value="5.1.02.01.01.0026">5.1.02.01.01.0026 - Belanja Cetak dan Penggandaan</option>
+                        <option value="5.1.02.02.01.0013">5.1.02.02.01.0013 - Belanja Jasa Tenaga Ahli/Instruktur</option>
+                        <option value="5.1.02.02.01.0061">5.1.02.02.01.0061 - Belanja Sewa Perlengkapan/Peralatan</option>
+                        <option value="5.1.02.04.01.0001">5.1.02.04.01.0001 - Belanja Perjalanan Dinas Biasa</option>
+                    </datalist>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check text-slate-500"></i>
+                        <span>Uraian Rincian Belanja</span>
+                    </label>
+                    <input type="text" id="input-belanja-uraian" class="w-full px-3.5 py-2.5 border rounded-xl text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Honor Pelatih, Nasi Bungkus, Air Galon..." required>
+                </div>
+
+                <!-- Rincian Perhitungan: Volume, Satuan, Tarif Harga -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Volume</label>
+                        <input type="number" step="any" min="0" id="input-belanja-volume" class="w-full px-2.5 py-2 border rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="1" oninput="window.calcBelanjaTotalModal?.()" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Satuan</label>
+                        <input type="text" id="input-belanja-satuan" class="w-full px-2.5 py-2 border rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="paket / JP / Keg..." required>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1">Tarif Satuan (Rp)</label>
+                        <input type="text" id="input-belanja-tarif" class="w-full px-2.5 py-2 border rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0,00" inputmode="decimal" oninput="window.formatCurrencyInput?.(this); window.calcBelanjaTotalModal?.()" required>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800 text-xs flex justify-between items-center">
+                    <span class="font-bold text-slate-700 dark:text-slate-200">Total Jumlah Rincian:</span>
+                    <span id="preview-total-belanja-modal" class="font-mono font-black text-emerald-700 dark:text-emerald-300 text-sm">Rp 0</span>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-belanja-form').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors text-xs">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-md transition-transform active:scale-95 text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-save"></i>
+                        <span>Simpan Rincian</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MODAL: IMPORT FILE EXCEL RKAS (.xlsx) -->
+    <div id="modal-import-excel" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-hidden flex flex-col transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/40 shrink-0">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel text-emerald-500"></i>
+                    <span>Import File Excel RKAS Komite</span>
+                </h3>
+                <button type="button" onclick="document.getElementById('modal-import-excel').classList.add('hidden')" class="!bg-transparent !text-slate-400 hover:!text-red-500 dark:!text-slate-500 dark:hover:!text-red-400 transition-colors !border-none !shadow-none outline-none">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                <div class="p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-400 bg-slate-50/50 dark:bg-slate-800/40 text-center transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 dark:text-slate-500 mb-2"></i>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200">Pilih Berkas Excel RKAS (.xlsx)</p>
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format sesuai file Excel RKAS 2026 PERUBAHAN (Sheet utama: RKAS)</p>
+                    <input type="file" id="input-import-file" accept=".xlsx,.xls" onchange="window.handleImportFileSelected?.(event)" class="mt-3 block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 dark:file:bg-emerald-950/40 dark:file:text-emerald-300 hover:file:bg-emerald-100 cursor-pointer">
+                </div>
+
+                <!-- Preview Ringkas Hasil Parse -->
+                <div id="import-preview-wrapper" class="hidden space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Pratinjau Data Ditemukan:</span>
+                        <span id="import-preview-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">0 Baris</span>
+                    </div>
+                    <div class="max-h-56 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-mono">
+                        <table class="w-full text-left divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-[10px] uppercase font-bold sticky top-0">
+                                <tr>
+                                    <th class="p-2 w-10">No</th>
+                                    <th class="p-2 w-28">Kode Rek</th>
+                                    <th class="p-2">Uraian</th>
+                                    <th class="p-2 text-right w-24">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody id="import-preview-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex justify-end gap-2 shrink-0">
+                <button type="button" onclick="document.getElementById('modal-import-excel').classList.add('hidden')" class="px-4 py-2 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-xs">
+                    Tutup
+                </button>
+                <button type="button" id="btn-confirm-import" onclick="window.commitImportExcel?.()" disabled class="px-4 py-2 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-md text-xs flex items-center gap-1.5 active:scale-95">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Terapkan ke RKAS</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MODAL: KONFIRMASI PENGESAHAN / APPROVAL BERTINGKAT -->
+    <div id="modal-approval" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <h3 id="modal-approval-title" class="font-bold text-slate-800 dark:text-slate-100 text-base">
+                    Konfirmasi Tanda Tangan
+                </h3>
+                <p id="modal-approval-desc" class="text-xs text-slate-500 dark:text-slate-400">
+                    Apakah Anda yakin ingin mengesahkan dokumen RKAS ini?
+                </p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-approval').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-xs">
+                        Batal
+                    </button>
+                    <button type="button" id="btn-submit-approval" onclick="window.executeApproval?.()" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md text-xs active:scale-95">
+                        Ya, Sahkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. MODAL: KONFIRMASI HAPUS ITEM -->
+    <div id="modal-confirm-delete" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">Hapus Item RKAS</h3>
+                <p id="modal-delete-text" class="text-xs text-slate-500 dark:text-slate-400">
+                    Apakah Anda yakin ingin menghapus item ini? Rincian belanja di dalamnya juga akan terhapus.
+                </p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-confirm-delete').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-xs">
+                        Batal
+                    </button>
+                    <button type="button" id="btn-execute-delete" onclick="window.executeDeleteItem?.()" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-md text-xs active:scale-95">
+                        Ya, Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. MODAL: SALIN DARI RKAS MURNI KE RKAS PERUBAHAN -->
+    <div id="modal-clone-rkas" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-200 dark:border-slate-800">
+            <div class="p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-copy"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">Salin dari RKAS Murni</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Sistem akan menduplikasi seluruh pos penerimaan, kegiatan, dan rincian item belanja dari <strong>RKAS Murni</strong> ke <strong>RKAS Perubahan</strong> tahun terpilih. Anda tinggal menyesuaikan nominal yang bergeser.
+                </p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('modal-clone-rkas').classList.add('hidden')" class="flex-1 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-xs">
+                        Batal
+                    </button>
+                    <button type="button" id="btn-execute-clone" onclick="window.executeCloneMurni?.()" class="flex-1 py-2.5 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-500 shadow-md text-xs active:scale-95">
+                        Ya, Salin Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS MODUL -->
+    <script type="module" src="js/global.js?v=26.11.02.1"></script>
+    <script type="module" src="js/page-rkas-komite.js?v=26.11.02.1"></script>
+</body>
+</html>

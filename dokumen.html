@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Dokumen Sekolah - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+        <!-- HEADER -->
+        <div class="premium-header mesh-gradient-bg rounded-2xl px-5 py-3.5 mb-5 text-white shadow-xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+            <div class="relative z-10 text-center md:text-left">
+                <h1 class="text-lg md:text-xl font-bold flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-solid fa-folder-open text-xl opacity-90 text-amber-300"></i> Dokumen Sekolah
+                </h1>
+                <p class="text-slate-200 text-[11px] mt-0.5 max-w-xl hidden md:block">Pusat repositori dokumen kurikulum, kalender akademik, SOP, pengumuman, dan berkas resmi sekolah.</p>
+            </div>
+            <div class="mt-3 md:mt-0 relative z-10 flex items-center gap-3">
+                <!-- Tombol Kelola Dokumen (Muncul bagi tim pengelola) -->
+                <button id="btn-manage-docs" onclick="window.openDocsManager()" class="hidden bg-white hover:bg-slate-50 text-blue-600 px-3.5 py-1.5 rounded-xl font-bold shadow transition-all hover:scale-105 hover:shadow-md flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-sliders"></i> Kelola Dokumen
+                </button>
+            </div>
+            <!-- Decorative Elements -->
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 blur-2xl rounded-full pointer-events-none"></div>
+            <div class="absolute right-24 -bottom-10 w-24 h-24 bg-amber-400/20 blur-xl rounded-full pointer-events-none"></div>
+        </div>
+
+        <!-- MAIN CONTENT AREA: DOKUMEN -->
+        <div class="space-y-4">
+            <div class="bg-white dark:bg-slate-900/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-xl border border-slate-100 dark:border-slate-800 backdrop-blur-md">
+                <!-- Top bar: Category Filters & Search -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                    <!-- Desktop Filter Pills -->
+                    <div class="hidden md:flex items-center gap-1.5 overflow-x-auto pb-1.5 md:pb-0 custom-scrollbar" id="doc-category-filters">
+                        <button onclick="window.filterDocsCategory('all')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-blue-600 text-white shadow-md shadow-blue-500/20" data-cat="all">
+                            Semua Kategori
+                        </button>
+                        <button onclick="window.filterDocsCategory('Kurikulum')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="Kurikulum">
+                            📘 Kurikulum
+                        </button>
+                        <button onclick="window.filterDocsCategory('Akademik')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="Akademik">
+                            📅 Akademik
+                        </button>
+                        <button onclick="window.filterDocsCategory('SOP')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="SOP">
+                            📑 SOP &amp; Panduan
+                        </button>
+                        <button onclick="window.filterDocsCategory('Pengumuman')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="Pengumuman">
+                            📢 Pengumuman &amp; SK
+                        </button>
+                        <button onclick="window.filterDocsCategory('Umum')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="Umum">
+                            📁 Umum
+                        </button>
+                        <button onclick="window.filterDocsCategory('archive')" class="doc-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200" data-cat="archive">
+                            📦 Arsip
+                        </button>
+                    </div>
+
+                    <!-- Mobile Filter Dropdown -->
+                    <div class="block md:hidden w-full">
+                        <select id="select-doc-category-mobile" onchange="window.filterDocsCategory(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                            <option value="all">📂 Semua Kategori Dokumen</option>
+                            <option value="Kurikulum">📘 Kurikulum &amp; Pembelajaran</option>
+                            <option value="Akademik">📅 Akademik &amp; Kalender</option>
+                            <option value="SOP">📑 SOP &amp; Panduan Resmi</option>
+                            <option value="Pengumuman">📢 Pengumuman &amp; SK</option>
+                            <option value="Umum">📁 Umum</option>
+                            <option value="archive">📦 Arsip Dokumen</option>
+                        </select>
+                    </div>
+                    
+                    <div class="relative w-full md:w-auto md:min-w-[220px]">
+                        <input type="text" id="input-search-docs" onkeyup="window.renderAgendaDocuments()" placeholder="Cari dokumen..." class="w-full px-3.5 py-1.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400">
+                    </div>
+                </div>
+
+                <!-- Grid Cards Dokumen (Compact Multi-Column) -->
+                <div id="docs-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3">
+                    <!-- Injected by JS -->
+                    <div class="col-span-full text-center py-12 opacity-50">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-blue-500"></i>
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Memuat Dokumen Sekolah...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL PENGATURAN & KELOLA DOKUMEN -->
+    <div id="modal-docs-manager" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="modal-docs-title">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="window.closeDocsManager()"></div>
+        <div class="relative w-full max-w-5xl xl:max-w-6xl bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700/80 transition-all scale-95 opacity-0 duration-300 flex flex-col h-[94dvh] max-h-[94dvh] z-10" id="modal-docs-content">
+            <!-- Modal Header -->
+            <div class="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/90 shrink-0 min-h-[56px] flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <i class="fa-solid fa-sliders text-blue-600 dark:text-blue-400 text-base shrink-0"></i>
+                    <h3 id="modal-docs-title" class="text-base sm:text-lg font-bold text-slate-800 dark:text-white truncate">Pengaturan Dokumen Sekolah</h3>
+                </div>
+                <!-- Tombol Tutup -->
+                <button type="button" onclick="window.closeDocsManager()" aria-label="Tutup modal" class="w-8 h-8 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-times text-base"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body: 2 Kolom (Form Kiri, Daftar Kanan) -->
+            <div class="p-3.5 sm:p-4 md:p-5 overflow-y-auto md:overflow-hidden custom-scrollbar flex-1 min-h-0 flex flex-col">
+                <div class="flex flex-col md:flex-row gap-3.5 sm:gap-4 md:gap-5 flex-1 min-h-0 min-w-0">
+                    <!-- Form Tambah/Edit Dokumen (Left) -->
+                    <div class="w-full md:w-[35%] md:min-w-[280px] md:max-w-[370px] flex flex-col shrink-0 min-h-0">
+                        <div class="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 sm:p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 flex flex-col flex-1 min-h-0">
+                            <div class="flex items-center justify-between mb-2.5 shrink-0">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5 truncate">
+                                    <i class="fa-solid fa-plus-circle text-emerald-500 text-xs"></i> <span id="doc-form-title" class="truncate">Tambah Dokumen Baru</span>
+                                </h4>
+                                <button type="button" onclick="window.resetAgendaDocForm()" id="btn-reset-doc-form" class="px-2 py-1 bg-slate-200/70 hover:bg-slate-300/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 shrink-0">
+                                    <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset
+                                </button>
+                            </div>
+                            <form id="form-agenda-doc" onsubmit="event.preventDefault(); window.saveAgendaDocument();" class="space-y-2.5 overflow-visible md:overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-0.5">
+                                <input type="hidden" id="input-doc-id">
+                                <div>
+                                    <label for="input-doc-title" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Judul Dokumen <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="input-doc-title" required placeholder="Contoh: Kalender Akademik TP 2025/2026" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label for="input-doc-url" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Link Google Drive / Berkas <span class="text-rose-500">*</span></label>
+                                    <input type="url" id="input-doc-url" required placeholder="https://drive.google.com/..." class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                </div>
+                                <div>
+                                    <label for="select-doc-category" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Kategori Dokumen</label>
+                                    <select id="select-doc-category" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                                        <option value="Kurikulum">📘 Kurikulum</option>
+                                        <option value="Akademik">📅 Akademik</option>
+                                        <option value="SOP">📑 SOP &amp; Panduan</option>
+                                        <option value="Pengumuman">📢 Pengumuman &amp; SK</option>
+                                        <option value="Umum">📁 Umum</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="input-doc-desc" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Keterangan Singkat</label>
+                                    <textarea id="input-doc-desc" rows="2" placeholder="Uraian ringkas berkas (opsional)..." class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
+                                </div>
+                                <button type="submit" id="btn-save-doc" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-save"></i> Simpan Dokumen
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- List Dokumen (Right) -->
+                    <div class="w-full md:flex-1 flex flex-col min-h-0 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5 shrink-0">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-list text-blue-500 text-xs"></i> Daftar Dokumen Terdaftar
+                                <span id="docs-count-label" class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300">0 berkas</span>
+                            </h4>
+                            <div class="flex items-center gap-2 min-w-0 sm:max-w-xs w-full sm:w-auto">
+                                <div class="relative w-full sm:w-48">
+                                    <input type="text" id="input-search-docs-modal" onkeyup="window.renderDocsSettingsList()" placeholder="Cari dalam daftar..." class="w-full px-3 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 rounded-lg text-xs outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 dark:text-slate-200">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="docs-settings-list" class="space-y-2.5 overflow-y-auto custom-scrollbar flex-1 min-h-0 min-w-0 pr-1">
+                            <!-- Injected by JS -->
+                            <div class="text-center py-10 opacity-30">
+                                <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+                                <p class="text-xs font-bold uppercase">Memuat Dokumen...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: KONFIRMASI GENERIK (Pengganti confirm()) -->
+    <div id="modal-generic-confirm"
+        class="hidden fixed inset-0 z-[140] bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800 scale-100">
+            <div class="p-8 text-center">
+                <div id="confirm-icon-bg"
+                    class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 dark:text-amber-400">
+                    <i id="confirm-icon" class="fa-solid fa-question text-3xl"></i>
+                </div>
+                <h3 id="confirm-title" class="font-bold text-slate-800 dark:text-white text-xl mb-2">Konfirmasi</h3>
+                <div id="confirm-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Apakah Anda yakin?</div>
+                <div class="flex gap-3 justify-center">
+                    <button id="btn-confirm-cancel"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-ok"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 dark:shadow-none transition-transform active:scale-95">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-dokumen.js?v=26.11.02.1"></script>
+</body>
+</html>

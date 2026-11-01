@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>E-Kinerja Tendik - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/data-holidays.js"></script>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-16 lg:pb-12">
+        <!-- HEADER (Dua Baris Terstruktur: Identitas & Aksi + Periode & Target) -->
+        <header class="premium-header bg-slate-900 border border-slate-800 text-white rounded-2xl p-3 sm:p-4 mb-4 shadow-sm relative overflow-hidden flex flex-col gap-3">
+            
+            <!-- BARIS ATAS (BARIS 1) — IDENTITAS DAN KONTROL SUPERVISI PIMPINAN -->
+            <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+                <!-- Kiri: Ikon, Judul Halaman & Metadata (Nama Pengguna · Tanggal) -->
+                <div class="min-w-0 flex-1">
+                    <h1 id="page-title-heading" class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-clipboard-user text-base sm:text-lg text-emerald-400 shrink-0"></i>
+                        <span id="page-title-text">E-Kinerja Tenaga Kependidikan</span>
+                    </h1>
+                    <div id="header-context-bar" class="flex items-center gap-2 text-slate-300 text-xs sm:text-sm mt-1 flex-wrap">
+                        <span id="header-user-display" class="font-medium text-emerald-300 flex items-center gap-1.5 truncate max-w-[260px] sm:max-w-none">
+                            <i class="fa-solid fa-circle-user text-xs opacity-75 shrink-0"></i>
+                            <span id="header-user-name" class="truncate">-</span>
+                        </span>
+                        <span class="opacity-40 select-none">·</span>
+                        <span id="header-date-display" class="text-slate-300 font-normal whitespace-nowrap">-</span>
+                    </div>
+                </div>
+
+                <!-- Kanan: Kelompok Kontrol Supervisi / Manajerial (Kepsek & Admin) -->
+                <div id="header-supervisor-actions" class="flex items-center gap-2 sm:gap-2.5 flex-wrap sm:flex-nowrap justify-start sm:justify-end shrink-0">
+                    <!-- Switcher Pegawai (Khusus Supervisi Pimpinan/Admin) -->
+                    <div id="employee-switcher-wrapper" class="hidden flex items-center gap-1.5 bg-slate-800/90 hover:bg-slate-800 px-2.5 py-1 rounded-xl border border-slate-700/80 shrink-0 transition-colors">
+                        <label for="select-employee-filter" class="text-xs font-bold text-emerald-300 whitespace-nowrap flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-user-check text-xs"></i>
+                        </label>
+                        <select id="select-employee-filter" onchange="window.onEmployeeFilterChange()" class="bg-slate-900 text-white text-xs font-medium rounded-lg px-2 py-1 outline-none border border-slate-700 min-w-[130px] max-w-[180px] cursor-pointer">
+                            <option value="">Saya Sendiri</option>
+                        </select>
+                    </div>
+
+                    <!-- Tombol Beralih Mode Monitoring / E-Kinerja Pribadi (Khusus Supervisi / Pimpinan) -->
+                    <button type="button" id="btn-monitoring-mode-toggle" onclick="window.toggleMonitoringModeView()" class="hidden px-3 py-1.5 bg-slate-800/90 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer" title="Beralih antara E-Kinerja Pribadi dan Mode Monitoring Tendik" aria-label="Mode Monitoring">
+                        <i id="btn-monitoring-mode-icon" class="fa-solid fa-chart-line text-amber-400 text-xs"></i>
+                        <span id="btn-monitoring-mode-text">Mode Monitoring</span>
+                    </button>
+
+                    <!-- Tombol Rekap Realisasi Bulanan (VIP - Desktop Only: hidden md:flex) -->
+                    <button type="button" id="btn-employee-monthly-recap-toggle" onclick="window.openEmployeeMonthlyRecapModal()" class="hidden md:flex px-3 py-1.5 bg-gradient-to-r from-amber-500/20 via-emerald-500/15 to-amber-500/20 hover:from-amber-500/30 hover:to-amber-500/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 rounded-xl text-xs font-bold shadow-xs transition-all items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer" title="Rekapitulasi Realisasi Kinerja Bulanan Tendik (SIMAS VIP)" aria-label="Rekap Realisasi VIP">
+                        <i class="fa-solid fa-crown text-amber-400 text-xs"></i>
+                        <span>Rekap Realisasi</span>
+                        <span class="text-[9px] font-black tracking-widest text-amber-400 uppercase bg-amber-950/80 px-1.5 py-0.5 rounded-md border border-amber-500/50">VIP</span>
+                    </button>
+
+                    <!-- Tombol Kelola Penugasan (Khusus Supervisi) -->
+                    <button type="button" id="btn-manage-assignments" onclick="window.openManageAssignmentsModal()" class="hidden px-3 py-1.5 bg-indigo-950/70 hover:bg-indigo-900/80 text-indigo-300 hover:text-indigo-200 border border-indigo-800/70 rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer" title="Kelola Penugasan SK Tendik" aria-label="Kelola Penugasan">
+                        <i class="fa-solid fa-list-check text-xs"></i> <span>Kelola Penugasan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PEMISAH HALUS ANTAR BARIS -->
+            <div class="relative z-10 border-t border-slate-800/80"></div>
+
+            <!-- BARIS BAWAH (BARIS 2) — PERIODE & AKSI KERJA TENDIK -->
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 min-w-0">
+                <!-- Sisi Kiri: Navigasi Pekan & Badge Target Kinerja Mingguan -->
+                <div class="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
+                    <!-- Toolbar Navigasi Pekan Terstruktur -->
+                    <div class="flex items-center gap-1.5 bg-black/25 dark:bg-black/40 p-1 rounded-xl border border-slate-800 shrink-0 w-fit">
+                        <!-- Tombol Pekan Sebelumnya -->
+                        <button type="button" id="btn-agenda-prev" onclick="window.navigateEmployeeWeek(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 shrink-0" title="Pekan Sebelumnya" aria-label="Pekan sebelumnya">
+                            <i class="fa-solid fa-chevron-left text-[11px]"></i>
+                        </button>
+
+                        <!-- Label Rentang Pekan & Trigger Kalender -->
+                        <div onclick="try { document.getElementById('input-agenda-date')?.showPicker?.(); } catch (e) {}" class="relative flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer group" title="Pilih tanggal dalam pekan melalui kalender">
+                            <i class="fa-solid fa-calendar-week text-xs text-emerald-400 shrink-0 pointer-events-none"></i>
+                            <span id="header-week-label" class="text-xs font-semibold text-white select-none whitespace-nowrap pointer-events-none">Memuat pekan...</span>
+                            <i class="fa-solid fa-calendar-day text-[10px] text-slate-400 group-hover:text-emerald-400 transition-colors ml-0.5 shrink-0 pointer-events-none"></i>
+                            
+                            <!-- Input Date Asli Transparan untuk Picker Kalender -->
+                            <input type="date" id="input-agenda-date" onclick="try { this.showPicker?.(); } catch (e) {}" onchange="window.onEmployeeDateChange()" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer [color-scheme:dark]" title="Pilih tanggal dalam pekan" aria-label="Pilih tanggal dalam pekan">
+                        </div>
+
+                        <!-- Tombol Pekan Berikutnya -->
+                        <button type="button" id="btn-agenda-next" onclick="window.navigateEmployeeWeek(1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 shrink-0" title="Pekan Berikutnya" aria-label="Pekan berikutnya">
+                            <i class="fa-solid fa-chevron-right text-[11px]"></i>
+                        </button>
+
+                        <!-- Tombol Cepat Pekan Ini -->
+                        <button type="button" id="btn-agenda-today" onclick="window.setEmployeeToday()" class="ml-1 px-2.5 py-1 bg-white/15 hover:bg-white/25 text-white rounded-lg text-xs font-semibold transition-all whitespace-nowrap shrink-0 active:scale-95" title="Kembali ke Pekan Ini">
+                            Pekan Ini
+                        </button>
+                    </div>
+
+                    <!-- Badge Target Mingguan Berdampingan di Kiri -->
+                    <span id="header-weekly-target-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 whitespace-nowrap shrink-0" title="Target Kinerja: 37,5 Jam Efektif per Pekan (Disesuaikan Hari Libur Kalender Agenda)">
+                        <i class="fa-solid fa-bullseye text-[11px] text-emerald-400"></i>
+                        <span id="header-weekly-target-text">Target 37,5 Jam/Minggu</span>
+                    </span>
+                </div>
+
+                <!-- Sisi Kanan: Kelompok Tombol Aksi Umum (Saran & Catat Aktivitas) -->
+                <div id="header-primary-actions" class="flex items-center gap-2 sm:gap-2.5 justify-start md:justify-end shrink-0">
+                    <!-- Tombol Saran (Secondary Action) -->
+                    <button type="button" id="btn-global-chat-feedback" onclick="window.openGlobalFeedbackModal()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer" title="Kirim saran atau masukan" aria-label="Saran">
+                        <i class="fa-solid fa-comment-dots text-xs"></i>
+                        <span>Saran</span>
+                    </button>
+
+                    <!-- Tombol Utama Catat Aktivitas (Primary Action Paling Kanan) -->
+                    <button type="button" id="btn-open-activity-modal" onclick="window.openActivityModal()" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all hover:scale-102 active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer" aria-label="Catat Aktivitas Baru">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Catat Aktivitas</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTAINER TAB-CONTENT-EMPLOYEE (Kompatibel dengan spesifikasi & test) -->
+        <div id="tab-content-employee" class="space-y-4 sm:space-y-5">
+            <!-- 1. PANEL SUPERVISI KEPALA SEKOLAH (Toggleable saat Mode Monitoring Aktif) -->
+            <div id="section-employee-summary-view" class="hidden bg-white dark:bg-slate-900/90 rounded-2xl p-3.5 sm:p-4.5 shadow-sm border border-emerald-100 dark:border-emerald-950/60 backdrop-blur-md transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs text-base shrink-0">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white text-sm">Rekapitulasi Pelaporan Agenda Tendik</h3>
+                            <p class="text-slate-400 text-[11px]">Monitoring ketercapaian jam kerja tenaga kependidikan</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Mode Switcher: Harian vs Mingguan -->
+                        <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                            <button type="button" id="btn-summary-mode-daily" onclick="window.setSummaryMode('daily')" class="px-2.5 py-1 rounded-md font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all cursor-pointer">
+                                <i class="fa-regular fa-calendar text-[10px] mr-1"></i>Harian
+                            </button>
+                            <button type="button" id="btn-summary-mode-weekly" onclick="window.setSummaryMode('weekly')" class="px-2.5 py-1 rounded-md font-bold bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-xs transition-all cursor-pointer">
+                                <i class="fa-solid fa-calendar-week text-[10px] mr-1"></i>Mingguan
+                            </button>
+                        </div>
+                        <span id="summary-reported-counter" class="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-[11px] font-bold border border-emerald-200/60 dark:border-emerald-800/40">
+                            Memuat rekap...
+                        </span>
+                        <button type="button" id="btn-collapse-summary-panel" onclick="window.toggleEmployeeSummary(false)" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 border border-slate-200 dark:border-slate-700 cursor-pointer active:scale-95" title="Tutup / Sembunyikan Panel Rekap Supervisi">
+                            <i class="fa-solid fa-chevron-up text-[10px]"></i> <span>Sembunyikan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bilah Navigasi Pekan Supervisi (Hanya tampil saat mode Mingguan aktif) -->
+                <div id="weekly-nav-bar" class="hidden mb-2 p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between border border-slate-200/60 dark:border-slate-700/60 text-xs">
+                    <button type="button" id="btn-summary-prev-week" onclick="window.navigateSummaryWeek(-1)" class="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 font-bold text-slate-700 dark:text-slate-200 shadow-xs flex items-center gap-1.5 transition-all active:scale-95 text-xs cursor-pointer">
+                        <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Pekan Lalu</span>
+                    </button>
+                    <div class="text-center font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-days text-emerald-500 text-xs"></i>
+                        <span id="weekly-nav-label" class="text-xs font-bold">Pekan: Memuat...</span>
+                    </div>
+                    <button type="button" id="btn-summary-next-week" onclick="window.navigateSummaryWeek(1)" class="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 font-bold text-slate-700 dark:text-slate-200 shadow-xs flex items-center gap-1.5 transition-all active:scale-95 text-xs cursor-pointer">
+                        <span>Pekan Depan</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
+
+                <!-- Kontainer Kartu Ringkasan KPI Eksekutif Mingguan (Mode Mingguan) -->
+                <div id="weekly-kpi-container" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2 text-xs">
+                    <div class="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl py-1.5 px-2.5 flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <span class="block text-[10px] text-slate-400 font-bold">Ketercapaian Target Pekanan</span>
+                            <span id="weekly-kpi-percent" class="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">0% (≥ 37,5 Jam)</span>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 rounded-xl py-1.5 px-2.5 flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <span class="block text-[10px] text-slate-400 font-bold">Pegawai Melapor</span>
+                            <span id="weekly-kpi-reported" class="text-xs font-extrabold text-blue-700 dark:text-blue-300">0 / 0 Tendik</span>
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/40 rounded-xl py-1.5 px-2.5 flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <span class="block text-[10px] text-slate-400 font-bold">Total Akumulasi Jam Pekan Ini</span>
+                            <span id="weekly-kpi-total-hours" class="text-xs font-extrabold text-indigo-700 dark:text-indigo-300">0 Jam 0 Mnt</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bilah Alat Filter Supervisi & Pencarian Tendik -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-2 bg-slate-50 dark:bg-slate-800/50 p-1.5 sm:p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2 flex-1">
+                        <div class="relative flex-1 max-w-xs">
+                            <input type="text" id="search-supervisor-employee" oninput="window.filterSupervisorEmployees()" placeholder="Cari nama pegawai..." class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1.5 focus:ring-emerald-500">
+                        </div>
+                        <select id="filter-supervisor-status" onchange="window.filterSupervisorEmployees()" class="text-xs px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:ring-1.5 focus:ring-emerald-500 cursor-pointer">
+                            <option value="all">Semua Status</option>
+                            <option value="reported">Sudah Melapor</option>
+                            <option value="unreported">Belum Melapor</option>
+                            <option value="fulfilled">Memenuhi Target</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-1.5 justify-end">
+                        <button type="button" onclick="window.refreshSupervisorSummary()" class="px-2 py-1 text-xs font-semibold text-slate-600 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1 cursor-pointer" title="Muat Ulang Data">
+                            <i class="fa-solid fa-arrows-rotate text-[11px]"></i> <span>Segarkan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Banner Informasi Hari Libur Akhir Pekan (Sabtu/Minggu) -->
+                <div id="weekend-holiday-banner" class="hidden mb-2.5 p-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl flex items-start gap-2.5 text-xs text-blue-800 dark:text-blue-300">
+                    <i class="fa-solid fa-calendar-day text-blue-500 mt-0.5 text-sm shrink-0"></i>
+                    <div class="flex-1" id="weekend-holiday-banner-text">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Banner Informasi Penugasan Belum Tertaut (Dinamis dari JS) -->
+                <div id="unlinked-assignments-banner" class="hidden mb-2.5 p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 text-sm shrink-0"></i>
+                    <div class="flex-1" id="unlinked-assignments-banner-text">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Tabel Rekapitulasi Matriks Supervisi -->
+                <div class="overflow-x-auto custom-scrollbar border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs">
+                    <table class="w-full text-left border-collapse text-xs" id="table-supervisor-summary">
+                        <thead id="table-employee-summary-head">
+                            <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[9px] tracking-wider">
+                                <th class="py-1.5 px-2.5 min-w-[170px] sm:min-w-[200px]">Pegawai Tendik</th>
+                                <th class="py-1.5 px-2 text-center min-w-[240px] sm:min-w-[300px]">Visual Timeline Pita Jam Kerja (07:30 – 15:30)</th>
+                                <th class="py-1.5 px-2 text-center w-24">Rentang Jam</th>
+                                <th class="py-1.5 px-2 text-center w-28">Total Jam Harian</th>
+                                <th class="py-1.5 px-2 text-center min-w-[110px]">Status Acuan</th>
+                                <th class="py-1.5 px-2 text-center w-20">Dinas Luar</th>
+                                <th class="py-1.5 px-2.5 text-right w-20">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-employee-summary-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                            <!-- Injected by JS -->
+                            <tr>
+                                <td colspan="7" class="text-center py-6 text-slate-400 italic">Memuat ringkasan pegawai...</td>
+                            </tr>
+                        </tbody>
+                        <tfoot id="table-employee-summary-foot" class="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50/75 dark:bg-slate-800/50 font-bold text-slate-700 dark:text-slate-200"></tfoot>
+                    </table>
+                </div>
+
+                <!-- Catatan Edukatif Netral & Non-Punitif -->
+                <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-start gap-2 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0"></i>
+                    <p>
+                        <span class="font-bold text-slate-700 dark:text-slate-300">Catatan Edukatif:</span>
+                        Acuan 450 menit (7,5 jam) adalah standar perhitungan jam kerja efektif harian saat ini, belum disesuaikan dengan kalender hari libur atau izin/cuti resmi, dan bukan merupakan ukuran kualitas kinerja pegawai.
+                    </p>
+                </div>
+            </div>
+            <!-- Banner Informasi Hari Libur Resmi Kalender Agenda (POV Tendik) -->
+            <div id="employee-holiday-banner" class="hidden p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-2xl flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-300 shadow-2xs">
+                <i class="fa-solid fa-umbrella-beach text-rose-500 mt-0.5 text-sm shrink-0"></i>
+                <div class="flex-1" id="employee-holiday-banner-text">
+                    <!-- Diinjeksi oleh JS -->
+                </div>
+            </div>
+
+            <!-- WRAPPER TAMPILAN INDIVIDUAL PEGAWAI (Disembunyikan saat Tampilan Awal Mode Monitoring Kepsek) -->
+            <div id="employee-individual-view-wrapper" class="space-y-4 sm:space-y-5">
+                <!-- 2. KARTU RINGKASAN TERPADU: PENUGASAN SK & KINERJA PEKANAN (COMPACT & MINIMALIS) -->
+                <div class="bg-white dark:bg-slate-900/80 rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 dark:border-slate-800 backdrop-blur-md">
+                
+                <!-- Baris Penugasan SK Tendik (Terintegrasi Ramping) -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800/80">
+                    <div class="flex flex-wrap items-center gap-2 min-w-0">
+                        <span id="sk-assignment-icon-wrapper" class="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs shrink-0">
+                            <i id="sk-assignment-icon" class="fa-solid fa-file-contract text-[11px]"></i>
+                        </span>
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
+                            <span id="sk-assignment-label-text" class="text-slate-400 font-normal">Penugasan SK:</span>
+                            <span id="sk-assignment-employee-name" class="text-blue-600 dark:text-blue-400 font-extrabold">-</span>
+                        </div>
+                        <!-- Badges Kelompok Tugas SK Tendik -->
+                        <div id="sk-assignment-badges" class="inline-flex flex-wrap items-center gap-1.5">
+                            <span class="text-[11px] text-slate-400 italic">Memuat data penugasan SK...</span>
+                        </div>
+                    </div>
+
+                    <button type="button" onclick="window.toggleSkDetails()" id="btn-toggle-sk-details" class="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors w-fit self-start sm:self-auto" title="Lihat detail penugasan SK">
+                        <span>Detail SK</span>
+                        <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200" id="icon-sk-details"></i>
+                    </button>
+                </div>
+
+                <!-- Detail Nomor SK (Collapsible) -->
+                <div id="section-sk-details" class="hidden my-2 p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-[11px] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 leading-relaxed">
+                    <div class="font-bold text-slate-700 dark:text-slate-200">Surat Keputusan Resmi:</div>
+                    <div class="text-slate-500 dark:text-slate-400 mt-0.5">SK Nomor B.10.400.3.8./64/SMAN 1 ABANG/DIKPORA Tahun 2026</div>
+                </div>
+
+                <!-- 4. Strip Akumulasi Kinerja Pekan Ini (POV Tendik - Interaktif 5 Hari) -->
+                <div id="weekly-employee-strip" class="pt-2.5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                            <i class="fa-solid fa-calendar-week text-emerald-500"></i>
+                            <span>Akumulasi Kinerja Pekan Ini:</span>
+                            <span id="weekly-strip-range-label" class="text-[10px] font-normal text-slate-400 font-mono">-</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="weekly-strip-hours-text" class="text-xs font-black text-emerald-600 dark:text-emerald-400">0 / 37,5 Jam (0%)</span>
+                            <span id="weekly-strip-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Memuat...</span>
+                        </div>
+                    </div>
+                    <!-- Mini Progress Bar -->
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2.5">
+                        <div id="weekly-strip-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    </div>
+                    <!-- 5 Kotak Hari Interaktif (Senin s.d. Jumat) -->
+                    <div class="grid grid-cols-5 gap-1.5 sm:gap-2" id="weekly-strip-days-container">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- 5. Matriks Kinerja Mingguan (POV Tendik - Interaktif Hari & Waktu) -->
+                <div id="section-employee-weekly-matrix" class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs shrink-0">
+                                <i class="fa-solid fa-table-cells text-[11px]"></i>
+                            </span>
+                            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white">
+                                <span>Matriks Kinerja Mingguan</span>
+                                <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">(Hari & Waktu Kerja Efektif)</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.toggleEmployeeWeeklyMatrix()" id="btn-toggle-weekly-matrix" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg bg-emerald-50/90 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-700 shadow-xs transition-all active:scale-95 ml-1 btn-pulse-attention animate-pulse" title="Sembunyikan / Tampilkan Matriks Kinerja Mingguan">
+                            <span id="indicator-toggle-weekly-matrix" class="relative flex h-2 w-2 shrink-0">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span id="text-toggle-weekly-matrix">Tampilkan</span>
+                            <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200" id="icon-toggle-weekly-matrix"></i>
+                        </button>
+                    </div>
+
+                    <!-- Kontainer Tabel Matriks Mingguan (Collapsed by default) -->
+                    <div id="container-employee-weekly-matrix" class="hidden overflow-x-auto custom-scrollbar transition-all">
+                        <table class="w-full text-left border-collapse text-xs" id="table-employee-weekly-matrix">
+                            <thead>
+                                <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                                    <th class="py-2 px-3 w-[140px] sm:w-[160px] align-bottom pb-2">Hari & Tanggal</th>
+                                    <th class="py-2 px-3 min-w-[340px] sm:min-w-[440px]">
+                                        <div class="flex items-center justify-between gap-1 mb-1">
+                                            <span>Rentang Waktu & Uraian Kegiatan (Timeline)</span>
+                                            <span class="text-[9px] font-normal text-slate-400 lowercase italic hidden sm:inline">(hover untuk detail)</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-500 font-mono px-0.5 select-none font-semibold">
+                                            <span>07:30</span>
+                                            <span>09:30</span>
+                                            <span>11:30</span>
+                                            <span class="text-amber-500 font-bold">12:30</span>
+                                            <span>13:30</span>
+                                            <span>15:30</span>
+                                        </div>
+                                    </th>
+                                    <th class="py-2 px-3 text-center w-[110px] align-bottom pb-2">Total Harian</th>
+                                    <th class="py-2 px-3 text-center w-[130px] align-bottom pb-2">Status Acuan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-employee-weekly-matrix-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-slate-400 italic">
+                                        <i class="fa-solid fa-spinner fa-spin mr-1.5 text-emerald-500"></i>Memuat matriks mingguan...
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot id="table-employee-weekly-matrix-foot" class="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 font-bold">
+                                <!-- Injected by JS: Baris Total Akumulasi Seminggu -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. VISUAL TIMELINE JAM KERJA LEBAR (07:30 - 15:30) -->
+            <div class="bg-white dark:bg-slate-900/80 rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 dark:border-slate-800 backdrop-blur-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs shrink-0">
+                            <i class="fa-solid fa-timeline"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <span>Visual Timeline Jam Kerja</span>
+                                <span class="text-[10px] font-bold text-slate-400 font-mono">(07:30 – 15:30 WITA)</span>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- Legenda Terbaca Ringkas -->
+                    <div class="flex flex-wrap items-center gap-2.5 text-[10px] text-slate-500 dark:text-slate-400">
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-emerald-500 shadow-xs"></span> Tercatat (Klik untuk edit)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-amber-400 shadow-xs"></span> Istirahat (12:30–13:00)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded bg-slate-200 dark:bg-slate-700"></span> Belum tercatat</span>
+                    </div>
+                </div>
+
+                <!-- Ribbon Bar Container (Lebar & overflow-visible agar hover popover tidak terpotong) -->
+                <div class="relative pt-1 pb-1">
+                    <div id="timeline-work-ribbon" class="w-full h-9 bg-slate-100 dark:bg-slate-800/90 rounded-xl overflow-visible flex relative my-1 border border-slate-200/60 dark:border-slate-700/60 shadow-inner">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <!-- Skala Jam Proporsional (Posisi Persentase Matematika Presisi dari 07:30 hingga 15:30 = 480 menit) -->
+                    <div class="relative w-full h-5 text-[10px] font-semibold text-slate-400 select-none mt-1">
+                        <div class="absolute left-0 -top-1 flex flex-col items-center">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>07:30</span>
+                        </div>
+                        <div class="absolute left-[12.5%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>08:30</span>
+                        </div>
+                        <div class="absolute left-[25%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>09:30</span>
+                        </div>
+                        <div class="absolute left-[37.5%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>10:30</span>
+                        </div>
+                        <div class="absolute left-[50%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>11:30</span>
+                        </div>
+                        <div class="absolute left-[62.5%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>12:30</span>
+                        </div>
+                        <div class="absolute left-[75%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>13:30</span>
+                        </div>
+                        <div class="absolute left-[87.5%] -top-1 flex flex-col items-center -translate-x-1/2">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>14:30</span>
+                        </div>
+                        <div class="absolute right-0 -top-1 flex flex-col items-center">
+                            <span class="w-0.5 h-1.5 bg-slate-300 dark:bg-slate-600 mb-0.5"></span>
+                            <span>15:30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rentang Jam Belum Tercatat (Bahasa Netral) -->
+                <div class="mt-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-500 dark:text-slate-400 text-[11px] flex items-center gap-1.5">
+                            <i class="fa-regular fa-clock text-slate-400"></i> Rentang belum tercatat:
+                        </span>
+                        <span id="stat-gap-summary" class="font-bold text-slate-700 dark:text-slate-200 text-xs break-words">-</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 italic">
+                        * Klik balok pada timeline untuk mengedit aktivitas
+                    </div>
+                </div>
+
+                <!-- Panel Interaktif Status Ketidakhadiran Harian (Sakit / Cuti / Izin) -->
+                <div id="employee-absence-action-panel" class="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                    <!-- Kondisi A: Belum Ada Catatan Ketidakhadiran -->
+                    <div id="panel-absence-empty" class="flex items-center justify-between gap-2 flex-wrap text-xs">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hospital-user text-amber-500"></i>
+                            <span>Berhalangan hadir atau sedang izin / cuti hari ini?</span>
+                        </span>
+                        <button type="button" id="btn-open-absence-modal" onclick="window.openEmployeeAbsenceModal()" class="px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/50 dark:hover:bg-amber-900/60 rounded-xl transition-all border border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95">
+                            <i class="fa-solid fa-calendar-xmark text-amber-500"></i>
+                            <span>Tandai Tidak Hadir (Sakit / Cuti / Izin)</span>
+                        </button>
+                    </div>
+
+                    <!-- Kondisi B: Sudah Ada Catatan Ketidakhadiran -->
+                    <div id="panel-absence-active" class="hidden p-2.5 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-center justify-between gap-2.5 text-xs">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div id="absence-active-icon-wrapper" class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 text-xs">
+                                <i id="absence-active-icon" class="fa-solid fa-hospital-user"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span id="absence-active-title" class="font-extrabold text-amber-900 dark:text-amber-200">Tidak Melaksanakan Tugas: Sakit</span>
+                                    <span id="absence-active-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-100 uppercase tracking-wider">Sah</span>
+                                </div>
+                                <p id="absence-active-notes" class="text-[11px] text-amber-800/90 dark:text-amber-300/90 truncate mt-0.5">-</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.openEmployeeAbsenceModal()" class="px-2.5 py-1 text-xs font-bold text-amber-800 dark:text-amber-200 hover:bg-amber-200/50 dark:hover:bg-amber-900/50 rounded-lg transition-colors shrink-0 flex items-center gap-1 cursor-pointer border border-amber-300/60 dark:border-amber-700/60">
+                            <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                            <span>Kelola Status</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BANNER MODE INSPEKSI PEGAWAI (POV KEPALA SEKOLAH) -->
+            <div id="banner-inspecting-employee" class="hidden mb-3 p-3 sm:p-4 bg-emerald-950/80 border border-emerald-500/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 text-base">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-emerald-300 font-semibold flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Sedang Menginspeksi Log Aktivitas Pegawai:</span>
+                        </div>
+                        <div id="banner-inspecting-employee-name" class="text-sm sm:text-base font-bold text-white">Nama Pegawai</div>
+                    </div>
+                </div>
+                <button type="button" onclick="window.exitEmployeeInspection()" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold border border-white/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer active:scale-95 shadow-xs">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> <span>Kembali ke Monitoring</span>
+                </button>
+            </div>
+
+            <!-- 5. DAFTAR LOG AKTIVITAS HARIAN TENDIK (LEBAR & BERSIH) -->
+            <div class="bg-white dark:bg-slate-900/80 rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 dark:border-slate-800 backdrop-blur-md">
+                <!-- Toolbar Daftar Aktivitas -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm shrink-0">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <h2 id="activity-list-title" class="text-sm sm:text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <span id="activity-list-title-text">Aktivitas Hari Ini</span>
+                                <span id="badge-activity-count" class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0</span>
+                            </h2>
+                            <p class="text-[11px] text-slate-400">Log rincian aktivitas dan uraian tugas yang telah dikerjakan</p>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Pencarian Aktivitas -->
+                    <div class="relative w-full sm:w-72">
+                        <label for="search-employee-activities" class="sr-only">Cari aktivitas atau tugas</label>
+                        <input type="text" id="search-employee-activities" onkeyup="window.renderEmployeeActivities()" placeholder="Cari aktivitas atau tugas..." class="w-full px-3.5 pr-8 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400">
+                        <button type="button" id="btn-clear-search" onclick="window.clearActivitySearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1" title="Bersihkan pencarian" aria-label="Bersihkan pencarian">
+                            <i class="fa-solid fa-times-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kontainer Kartu Aktivitas (2 Grid per Baris pada Layar Menengah & Lebar) -->
+                <div id="employee-activities-container" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+                    <!-- Injected by JS -->
+                    <div class="col-span-full text-center py-12 opacity-40">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-emerald-500"></i>
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-500">Memuat Log Aktivitas...</p>
+                    </div>
+                </div>
+            </div>
+
+            </div> <!-- End of #employee-individual-view-wrapper -->
+
+        </div>
+    </main>
+
+    <!-- Tombol Sticky Floating Action Button (FAB) untuk Mobile Smartphone -->
+    <div id="fab-open-activity-modal-wrapper" class="fixed bottom-20 right-4 z-40 lg:hidden">
+        <button type="button" id="fab-open-activity-modal" onclick="window.openActivityModal()" class="h-12 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-full shadow-2xl shadow-emerald-950/40 flex items-center gap-2 text-xs active:scale-95 transition-all border border-white/20" aria-label="Catat Aktivitas Baru">
+            <i class="fa-solid fa-plus-circle text-base"></i>
+            <span>Catat Aktivitas</span>
+        </button>
+    </div>
+
+    <!-- MODAL: INPUT / EDIT AKTIVITAS TENDIK -->
+    <div id="modal-employee-activity" class="fixed inset-0 z-[110] hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="window.closeActivityModal()"></div>
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-4">
+            <div class="relative w-full max-w-lg sm:max-w-xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all scale-95 opacity-0 duration-300 max-h-[92vh] flex flex-col" id="modal-activity-content">
+                
+                <!-- Modal Header (Compact & Clean) -->
+                <div class="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
+                    <div class="flex items-center gap-2.5 sm:gap-3">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs shrink-0">
+                            <i class="fa-solid fa-pen-nib text-sm sm:text-base"></i>
+                        </div>
+                        <div>
+                            <h3 id="modal-activity-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Catat Realisasi Aktivitas Harian</h3>
+                            <p id="modal-activity-subtitle" class="text-slate-400 text-[11px] sm:text-xs">Pilih butir rincian tugas pokok dan input uraian kegiatan konkret</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.closeActivityModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all flex items-center justify-center shrink-0" aria-label="Tutup modal">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body / Form (Scrollable on small mobile screens) -->
+                <form id="form-employee-activity" onsubmit="event.preventDefault(); window.saveEmployeeActivity();" class="p-4 sm:p-5 space-y-2.5 sm:space-y-3 overflow-y-auto custom-scrollbar flex-1">
+                    <input type="hidden" id="form-activity-id">
+
+                    <!-- Baris Tanggal & Waktu: Responsif Mobile (Tanggal di atas, Jam Mulai & Selesai berdampingan) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="form-activity-date" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Tanggal <span class="text-rose-500">*</span></label>
+                            <input type="date" id="form-activity-date" required onchange="window.onActivityDateChange()" class="w-full px-2.5 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
+                        </div>
+                        <div>
+                            <label for="form-activity-start" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Jam Mulai <span class="text-rose-500">*</span></label>
+                            <input type="time" id="form-activity-start" required min="07:30" value="07:30" onchange="window.onActivityTimeChange()" oninput="window.onActivityTimeChange()" class="w-full px-2.5 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
+                        </div>
+                        <div>
+                            <label for="form-activity-end" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Jam Selesai <span class="text-rose-500">*</span></label>
+                            <input type="time" id="form-activity-end" required value="08:30" onchange="window.onActivityTimeChange()" oninput="window.onActivityTimeChange()" class="w-full px-2.5 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
+                        </div>
+                    </div>
+
+                    <!-- Tombol Cepat Durasi (30 Menit, 1 Jam, 1,5 Jam, 2 Jam) -->
+                    <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap pt-0.5">
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 mr-0.5 flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-bolt text-amber-500"></i> Durasi:
+                        </span>
+                        <button type="button" onclick="window.applyQuickDuration(30)" data-minutes="30" class="btn-quick-dur px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">30 Menit</button>
+                        <button type="button" onclick="window.applyQuickDuration(60)" data-minutes="60" class="btn-quick-dur px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">1 Jam</button>
+                        <button type="button" onclick="window.applyQuickDuration(90)" data-minutes="90" class="btn-quick-dur px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">1,5 Jam</button>
+                        <button type="button" onclick="window.applyQuickDuration(120)" data-minutes="120" class="btn-quick-dur px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">2 Jam</button>
+                    </div>
+
+                    <!-- Live Preview Menit Efektif (Compact Pill) -->
+                    <div class="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/40 px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl flex items-center justify-between text-[11px] sm:text-xs">
+                        <span class="text-emerald-800 dark:text-emerald-300 font-semibold flex items-center gap-1.5">
+                            <i class="fa-solid fa-calculator text-xs"></i> Estimasi Durasi Efektif:
+                        </span>
+                        <span id="preview-effective-val" class="font-extrabold text-emerald-700 dark:text-emerald-200">60 Menit (1.0 Jam)</span>
+                    </div>
+
+                    <!-- Peringatan Waktu Tumpang Tindih (Live Overlap Warning) -->
+                    <div id="modal-activity-overlap-warning" class="hidden p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5 shrink-0 text-sm"></i>
+                        <div class="flex-1">
+                            <span id="modal-activity-overlap-title" class="font-bold block text-rose-800 dark:text-rose-200">Waktu Bentrok / Tumpang Tindih</span>
+                            <span id="modal-activity-overlap-text" class="text-[11px] block mt-0.5 leading-relaxed text-rose-700 dark:text-rose-300"></span>
+                        </div>
+                    </div>
+
+                    <!-- Dropdown Berjenjang: Kelompok Penugasan & Butir Tugas -->
+                    <div class="space-y-2.5">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="form-activity-group" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                    Kelompok Penugasan <span class="text-rose-500">*</span>
+                                </label>
+                                <span id="label-principal-task-badge" class="hidden text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800/60 flex items-center gap-1">
+                                    <i class="fa-solid fa-graduation-cap text-[10px]"></i> Tugas Kepala Sekolah
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <select id="form-activity-group" required onchange="window.onActivityGroupChange()" class="w-full px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                                    <option value="">-- Pilih Kelompok Penugasan --</option>
+                                </select>
+                                <button type="button" id="btn-quick-manage-principal-tasks" onclick="window.openPrincipalTasksModal()" class="hidden" style="display: none !important;" title="Kelola Butir Tugas Pokok Kepala Sekolah">
+                                    <i class="fa-solid fa-sliders text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Kotak Panduan Uraian Butir Tugas Pokok Kepala Sekolah -->
+                            <div id="container-principal-task-description" class="hidden mt-2 p-3 sm:p-3.5 rounded-xl bg-amber-50/95 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 transition-all space-y-1.5 shadow-xs">
+                                <div class="flex items-center gap-1.5 font-bold text-amber-900 dark:text-amber-300 text-xs sm:text-[13px]">
+                                    <i class="fa-solid fa-circle-info text-amber-600 dark:text-amber-400"></i>
+                                    <span>Uraian Butir Tugas Pokok:</span>
+                                </div>
+                                <p id="text-principal-task-description" class="text-slate-800 dark:text-slate-200 text-xs sm:text-sm font-medium leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- Informasi Peran Tendik (Disembunyikan agar form lebih ringkas) -->
+                        <div id="container-form-activity-role" class="hidden">
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="form-activity-role" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                    Peran Tendik <span class="text-[10px] font-normal text-slate-400">(Sesuai SK Penugasan)</span>
+                                </label>
+                                <span id="form-activity-role-badge" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check text-[10px]"></i> Sesuai SK
+                                </span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="form-activity-role" placeholder="Tugas Pokok Umum (Tanpa Peran Khusus)" class="w-full pl-3 pr-8 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">
+                                <i class="fa-solid fa-id-badge absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div id="container-form-activity-task-item">
+                            <label for="form-activity-task-item" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Butir Rincian Tugas <span class="text-rose-500">*</span></label>
+                            <select id="form-activity-task-item" required class="w-full px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                                <option value="">-- Pilih Butir Rincian Tugas --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Uraian Aktivitas Konkret -->
+                    <div>
+                        <label for="form-activity-desc" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Uraian Kegiatan Konkret <span class="text-rose-500">*</span></label>
+                        <textarea id="form-activity-desc" rows="2" required placeholder="Jelaskan secara spesifik apa yang dikerjakan (contoh: Menginput data presensi siswa kelas XII dan mencetak rekap bulanan)..." class="w-full px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none resize-none"></textarea>
+                    </div>
+
+                    <!-- Lokasi & Output (Compact 2 Kolom) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                        <div>
+                            <label for="form-activity-location" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Lokasi Pelaksanaan</label>
+                            <input type="text" id="form-activity-location" placeholder="Misal: Ruang Kerja / Ruang Rapat / Aula / Dinas Luar" class="w-full px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div>
+                            <label for="form-activity-output" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Hasil / Output Kegiatan</label>
+                            <input type="text" id="form-activity-output" placeholder="Misal: Dokumen rekapitulasi tercetak" class="w-full px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Toggle Dinas Luar -->
+                    <div class="flex items-center gap-2 pt-0.5">
+                        <input type="checkbox" id="form-activity-outside" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                        <label for="form-activity-outside" class="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                            Tugas Dinas Luar Kantor / Sekolah
+                        </label>
+                    </div>
+
+                    <!-- Bagian Foto Bukti Kegiatan (Wajib minimal 1 foto, Maks. 2 Foto, Rapi & Elegan) -->
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-camera text-emerald-600 dark:text-emerald-400"></i>
+                                <span>Foto Bukti Kegiatan <span class="text-rose-500">*</span></span>
+                                <span class="text-[10px] font-semibold text-rose-500 dark:text-rose-400">(Wajib min. 1 foto)</span>
+                            </label>
+                            <span id="form-activity-photos-count" class="text-[10px] font-bold text-slate-400">0 / 2 Foto</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <input type="file" id="form-activity-photo-camera" class="hidden" accept="image/*" capture="environment" onchange="window.handleActivityPhotoFilesSelected(this.files)">
+                            <input type="file" id="form-activity-photo-input" class="hidden" accept="image/*" multiple onchange="window.handleActivityPhotoFilesSelected(this.files)">
+                            <button type="button" id="btn-camera-activity-photo" onclick="document.getElementById('form-activity-photo-camera').click()" class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[10px] sm:text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shadow-2xs shadow-emerald-500/20" title="Ambil foto langsung menggunakan kamera perangkat">
+                                <i class="fa-solid fa-camera text-[10px]"></i>
+                                <span>Ambil Foto</span>
+                            </button>
+                            <button type="button" id="btn-add-activity-photo" onclick="document.getElementById('form-activity-photo-input').click()" class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 text-[10px] sm:text-[11px] font-bold border border-emerald-200 dark:border-emerald-800 transition-all flex items-center gap-1 active:scale-95 cursor-pointer" title="Pilih foto dari galeri atau berkas perangkat (maksimal 2 foto)">
+                                <i class="fa-regular fa-images text-[10px]"></i>
+                                <span>Pilih Galeri</span>
+                            </button>
+                            <span class="text-[10px] text-slate-400">Tersimpan otomatis</span>
+                        </div>
+
+                        <!-- Grid Pratinjau Foto Bukti (Maksimal 2 Foto, Touch-friendly, Tanpa Input Caption) -->
+                        <div id="form-activity-photos-grid" class="grid grid-cols-2 gap-2 sm:gap-2.5">
+                            <div class="col-span-full py-3.5 px-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-1 bg-slate-50/50 dark:bg-slate-900/30">
+                                <i class="fa-regular fa-images text-xl text-slate-300 dark:text-slate-600"></i>
+                                <span class="text-[11px]">Belum ada foto bukti diunggah (wajib min. 1 foto, maks. 2 foto)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indikator Dinamis Status Penyimpanan (Draf vs Realisasi) -->
+                    <div id="modal-activity-status-indicator" class="p-2 sm:p-2.5 rounded-xl text-xs flex items-center justify-between gap-2 border bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 transition-all">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i id="modal-activity-status-icon" class="fa-solid fa-hourglass-half text-amber-500 shrink-0"></i>
+                            <span id="modal-activity-status-text" class="text-[11px] font-medium leading-tight">Waktu kegiatan belum selesai. Aktivitas akan disimpan sebagai Draf (belum terhitung realisasi).</span>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi (Shrink-0 Footer) -->
+                    <div class="flex items-center justify-between gap-2 pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                        <div>
+                            <button type="button" id="btn-delete-activity-modal" onclick="window.deleteActivityFromModal()" class="hidden px-3 py-1.5 sm:py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all flex items-center gap-1.5 border border-rose-200/70 dark:border-rose-900/60" title="Hapus aktivitas ini">
+                                <i class="fa-solid fa-trash-can text-xs"></i> Hapus
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="window.closeActivityModal()" class="px-3.5 py-1.5 sm:py-2 text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors">
+                                Batal
+                            </button>
+                            <button type="button" id="btn-save-draft-alt" onclick="window.saveEmployeeActivity('draft')" class="hidden px-3 py-1.5 sm:py-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer" title="Simpan sebagai Draf sementara">
+                                <i class="fa-solid fa-file-pen text-xs"></i> <span>Simpan Draf</span>
+                            </button>
+                            <button type="submit" id="btn-save-activity" class="px-4 py-2 sm:py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2">
+                                <i id="btn-save-activity-icon" class="fa-solid fa-floppy-disk"></i> <span id="btn-save-activity-label">Simpan Draf</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: KELOLA MASTER PENUGASAN TENDIK (Super Admin & Kepala Sekolah) -->
+    <div id="modal-manage-assignments" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-5">
+            <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all scale-95 opacity-0 duration-300" id="modal-manage-assignments-content">
+                
+                <!-- Modal Header (Minimalis & Compact) -->
+                <div class="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/70">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-list-check text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Kelola Master Penugasan Tendik</h3>
+                                <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 border border-indigo-200/50 dark:border-indigo-800/50">SSOT D1</span>
+                            </div>
+                            <p class="text-slate-400 text-[11px] leading-tight mt-0.5">Penugasan GTK, kelompok tugas, dan butir rincian tugas pokok</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.closeManageAssignmentsModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all flex items-center justify-center" aria-label="Tutup modal kelola penugasan">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Tab Navigation Buttons (Compact) -->
+                <div class="px-4 sm:px-5 pt-1 bg-slate-50/40 dark:bg-slate-800/30 border-b border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto">
+                    <button type="button" id="btn-tab-manage-assignments" onclick="window.switchManageTab('assignments')" class="px-3.5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-user-gear text-xs"></i> Penugasan Staf
+                        <span id="badge-count-assignments" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-manage-groups" onclick="window.switchManageTab('groups')" class="px-3.5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-layer-group text-xs"></i> Kelompok Tugas
+                        <span id="badge-count-groups" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-manage-items" onclick="window.switchManageTab('items')" class="px-3.5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-list-ol text-xs"></i> Butir Rincian Tugas
+                        <span id="badge-count-items" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-manage-principal" onclick="window.switchManageTab('principal')" class="px-3.5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-user-tie text-xs text-amber-500"></i> Butir Tugas Kepsek
+                        <span id="badge-count-principal" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-manage-vip" onclick="window.switchManageTab('vip')" class="hidden px-3.5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white flex items-center gap-1.5 transition-all">
+                        <i class="fa-solid fa-crown text-xs text-amber-500"></i> Hak Akses VIP
+                        <span id="badge-count-vip" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-mono">0</span>
+                    </button>
+                </div>
+
+                <!-- Tab Panes Container -->
+                <div class="p-4 sm:p-5 max-h-[75vh] overflow-y-auto custom-scrollbar space-y-4">
+
+                    <!-- TAB 1: PENUGASAN STAF -->
+                    <div id="pane-manage-assignments" class="space-y-3.5">
+                        <!-- Toolbar Baris Atas: Judul, Search, & Tombol Toggle Form -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-indigo-500"></i> Daftar Penugasan Aktif
+                                </h4>
+                                <span id="label-assignment-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">0 Data</span>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <div class="relative flex-1 sm:w-60">
+                                    <input type="text" id="input-search-assignments" oninput="window.filterAssignmentsList()" placeholder="Cari nama tendik / tugas..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400">
+                                </div>
+                                <button type="button" id="btn-toggle-assignment-form" onclick="window.toggleAssignmentForm()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" title="Buka / Tutup Form Input">
+                                    <i id="icon-toggle-assignment-form" class="fa-solid fa-plus-circle text-xs"></i>
+                                    <span id="text-toggle-assignment-form">Tambah Penugasan</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Tambah / Ubah Penugasan (Collapsible Container) -->
+                        <div id="container-form-assignment" class="hidden transition-all duration-300">
+                            <form id="form-manage-assignment" onsubmit="event.preventDefault(); window.saveAssignmentForm();" class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-indigo-100 dark:border-slate-700/80 shadow-xs space-y-3.5">
+                                <input type="hidden" id="assign-form-id">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                                    <h4 id="assign-form-heading" class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-user-plus text-indigo-500"></i> Form Tambah / Ubah Penugasan Tendik
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="btn-reset-assignment" onclick="window.resetAssignmentForm()" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            Reset Form
+                                        </button>
+                                        <span class="text-slate-300 dark:text-slate-700">|</span>
+                                        <button type="button" onclick="window.toggleAssignmentForm(false)" class="text-[11px] text-slate-400 hover:text-rose-500 transition-colors">
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    <div id="container-assign-gtk" class="relative">
+                                        <label for="assign-gtk-search" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Pilih Tendik / Pegawai (GTK) <span class="text-rose-500">*</span>
+                                        </label>
+                                        <div class="relative flex items-center">
+                                            <input type="text" id="assign-gtk-search"
+                                                role="combobox"
+                                                aria-expanded="false"
+                                                aria-autocomplete="list"
+                                                aria-controls="assign-gtk-dropdown"
+                                                placeholder="Cari nama tendik / NIP..."
+                                                autocomplete="off"
+                                                class="w-full px-3 pr-14 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-800 dark:text-slate-100">
+                                            <div class="absolute right-2 flex items-center gap-1">
+                                                <button type="button" id="btn-clear-assign-gtk"
+                                                    onclick="window.clearAssignGtkSelection()"
+                                                    class="hidden w-5 h-5 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs transition-colors"
+                                                    title="Kosongkan pilihan">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                                <button type="button" id="btn-toggle-assign-gtk"
+                                                    onclick="window.toggleAssignGtkDropdown(event)"
+                                                    class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                    title="Buka daftar tendik">
+                                                    <i id="icon-assign-gtk-chevron" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- Hidden select untuk form submit & backward compatibility -->
+                                        <select id="assign-form-gtk" required onchange="window.onAssignGtkSelect()" class="hidden">
+                                            <option value="">-- Pilih Pegawai --</option>
+                                        </select>
+                                        <!-- Floating Dropdown List -->
+                                        <div id="assign-gtk-dropdown"
+                                            class="hidden absolute z-[80] left-0 right-0 mt-1 max-h-56 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl divide-y divide-slate-100 dark:divide-slate-700/60">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="assign-form-group" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Kelompok Tugas <span class="text-rose-500">*</span>
+                                        </label>
+                                        <select id="assign-form-group" required class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                            <option value="">-- Pilih Kelompok Tugas --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="assign-form-role" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Peran / Jabatan Penugasan <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="assign-form-role" required list="roles-suggestions" placeholder="Misal: Koordinator / Anggota" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                        <datalist id="roles-suggestions">
+                                            <option value="Koordinator">
+                                            <option value="Anggota">
+                                            <option value="Pengelola">
+                                            <option value="Pelaksana">
+                                            <option value="Staf Administrasi">
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                                    <div class="sm:col-span-2">
+                                        <label for="assign-form-scope" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Ruang Lingkup / Catatan Khusus
+                                        </label>
+                                        <input type="text" id="assign-form-scope" placeholder="Misal: Penanggung jawab arsip Ijazah & Buku Induk" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                                    </div>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <input type="checkbox" id="assign-form-is-assistant" class="w-4 h-4 text-indigo-600 rounded border-slate-300">
+                                            <label for="assign-form-is-assistant" class="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                                                Staf Pembantu
+                                            </label>
+                                        </div>
+                                        <button type="submit" id="btn-save-assignment" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
+                                            <i class="fa-solid fa-check"></i> <span>Simpan</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tabel Daftar Penugasan (Langsung Fokus ke Data yang Sudah Diinput) -->
+                        <div class="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xs">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-2.5 px-3">Pegawai (Tendik)</th>
+                                        <th class="py-2.5 px-3">Kelompok Tugas</th>
+                                        <th class="py-2.5 px-3">Peran / Jabatan</th>
+                                        <th class="py-2.5 px-3">Catatan / Scope</th>
+                                        <th class="py-2.5 px-3 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-manage-assignments-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-6 text-slate-400 italic">Memuat daftar penugasan...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: KELOMPOK TUGAS -->
+                    <div id="pane-manage-groups" class="hidden space-y-3.5">
+                        <!-- Toolbar Baris Atas: Judul & Tombol Toggle Form -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-indigo-500"></i> Kelompok Tugas Resmi
+                                </h4>
+                                <span id="label-group-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">0 Kelompok</span>
+                            </div>
+                            <button type="button" id="btn-toggle-group-form" onclick="window.toggleGroupForm()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap self-start sm:self-auto" title="Buka / Tutup Form Kelompok">
+                                <i id="icon-toggle-group-form" class="fa-solid fa-plus-circle text-xs"></i>
+                                <span id="text-toggle-group-form">Tambah Kelompok</span>
+                            </button>
+                        </div>
+
+                        <!-- Form Tambah / Edit Kelompok (Collapsible Container) -->
+                        <div id="container-form-group" class="hidden transition-all duration-300">
+                            <form id="form-manage-group" onsubmit="event.preventDefault(); window.saveGroupForm();" class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-indigo-100 dark:border-slate-700/80 shadow-xs space-y-3.5">
+                                <input type="hidden" id="group-form-id">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                                    <h4 id="group-form-heading" class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-plus text-indigo-500"></i> Form Tambah / Ubah Kelompok Tugas
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="btn-reset-group" onclick="window.resetGroupForm()" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            Reset Form
+                                        </button>
+                                        <span class="text-slate-300 dark:text-slate-700">|</span>
+                                        <button type="button" onclick="window.toggleGroupForm(false)" class="text-[11px] text-slate-400 hover:text-rose-500 transition-colors">
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                                    <div class="sm:col-span-3">
+                                        <label for="group-form-code" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Kode Kelompok <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="group-form-code" required placeholder="Misal: KLP-01" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-5">
+                                        <label for="group-form-name" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Nama Kelompok Tugas <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="group-form-name" required placeholder="Misal: Pengadministrasian Kurikulum" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="group-form-order" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Urutan
+                                        </label>
+                                        <input type="number" inputmode="numeric" id="group-form-order" value="1" min="1" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <button type="submit" id="btn-save-group" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                                            <i class="fa-solid fa-save"></i> <span>Simpan</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tabel Kelompok Tugas (Langsung Terlihat Fokus) -->
+                        <div class="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xs">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-2.5 px-3 text-center w-16">Urutan</th>
+                                        <th class="py-2.5 px-3 w-28">Kode</th>
+                                        <th class="py-2.5 px-3">Nama Kelompok Tugas</th>
+                                        <th class="py-2.5 px-3 text-center w-28">Butir Tugas</th>
+                                        <th class="py-2.5 px-3 text-right w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-manage-groups-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-6 text-slate-400 italic">Memuat kelompok tugas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: BUTIR RINCIAN TUGAS -->
+                    <div id="pane-manage-items" class="hidden space-y-3.5">
+                        <!-- Toolbar Baris Atas: Judul, Filter, & Tombol Toggle Form -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-list-ol text-indigo-500"></i> Butir Rincian Tugas Pokok
+                                </h4>
+                                <span id="label-item-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">0 Butir</span>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <select id="filter-item-by-group" onchange="window.onFilterItemGroupChange()" class="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                                    <option value="all">Semua Kelompok Tugas</option>
+                                </select>
+                                <button type="button" id="btn-toggle-item-form" onclick="window.toggleItemForm()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" title="Buka / Tutup Form Butir">
+                                    <i id="icon-toggle-item-form" class="fa-solid fa-plus-circle text-xs"></i>
+                                    <span id="text-toggle-item-form">Tambah Butir</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Tambah / Edit Butir Tugas (Collapsible Container) -->
+                        <div id="container-form-item" class="hidden transition-all duration-300">
+                            <form id="form-manage-item" onsubmit="event.preventDefault(); window.saveTaskItemForm();" class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-indigo-100 dark:border-slate-700/80 shadow-xs space-y-3.5">
+                                <input type="hidden" id="item-form-id">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                                    <h4 id="item-form-heading" class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-file-circle-plus text-indigo-500"></i> Form Tambah / Ubah Butir Rincian Tugas
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="btn-reset-item" onclick="window.resetTaskItemForm()" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            Reset Form
+                                        </button>
+                                        <span class="text-slate-300 dark:text-slate-700">|</span>
+                                        <button type="button" onclick="window.toggleItemForm(false)" class="text-[11px] text-slate-400 hover:text-rose-500 transition-colors">
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                                    <div class="sm:col-span-5">
+                                        <label for="item-form-group" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Kelompok Tugas <span class="text-rose-500">*</span>
+                                        </label>
+                                        <select id="item-form-group" required class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                            <option value="">-- Pilih Kelompok Tugas --</option>
+                                        </select>
+                                    </div>
+                                    <div class="sm:col-span-4">
+                                        <label for="item-form-code" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Kode Butir <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="item-form-code" required placeholder="Misal: KUR-01" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-3">
+                                        <label for="item-form-order" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Urutan
+                                        </label>
+                                        <input type="number" inputmode="numeric" id="item-form-order" value="1" min="1" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-12">
+                                        <label for="item-form-desc" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Uraian Rincian Tugas Pokok <span class="text-rose-500">*</span>
+                                        </label>
+                                        <textarea id="item-form-desc" rows="2" required placeholder="Deskripsi rincian tugas pokok yang wajib dikerjakan oleh pemangku penugasan..." class="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-end">
+                                    <button type="submit" id="btn-save-item" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-save"></i> <span>Simpan Butir Tugas</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Filter Per Kelompok & Tabel Butir Tugas (Langsung Terlihat Fokus) -->
+                        <div class="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xs">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-2.5 px-3 text-center w-16">Urutan</th>
+                                        <th class="py-2.5 px-3 w-28">Kode</th>
+                                        <th class="py-2.5 px-3 w-48">Kelompok</th>
+                                        <th class="py-2.5 px-3">Uraian Butir Tugas Pokok</th>
+                                        <th class="py-2.5 px-3 text-right w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-manage-items-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-6 text-slate-400 italic">Memuat rincian butir tugas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: BUTIR TUGAS KEPALA SEKOLAH (PERMENDIKDASMEN 23/2026) -->
+                    <div id="pane-manage-principal" class="hidden space-y-3.5">
+                        <!-- Toolbar Baris Atas: Judul & Tombol Toggle Form -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-user-tie text-amber-500"></i> Butir Tugas Pokok Kepala Sekolah
+                                </h4>
+                                <span id="label-principal-group-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">0 Butir</span>
+                            </div>
+                            <div class="flex items-center gap-2 self-start sm:self-auto">
+                                <button type="button" id="btn-seed-principal-groups" onclick="window.seedDefaultPrincipalGroups()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center gap-1.5 active:scale-95" title="Muat Butir Standar Permendikdasmen 23/2026">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> <span>Standar Permendikdasmen</span>
+                                </button>
+                                <button type="button" id="btn-toggle-principal-group-form" onclick="window.togglePrincipalGroupForm()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" title="Buka / Tutup Form Butir Tugas Kepala Sekolah">
+                                    <i id="icon-toggle-principal-group-form" class="fa-solid fa-plus-circle text-xs"></i>
+                                    <span id="text-toggle-principal-group-form">Tambah Butir</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Info Banner Permendikdasmen -->
+                        <div class="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-300/40 dark:border-amber-800/40 text-[11px] text-amber-800 dark:text-amber-200 flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"></i>
+                            <span>Berdasarkan <strong>Permendikdasmen 23/2026</strong>, Kepala Sekolah bertindak sebagai Tenaga Kependidikan. Pada pencatatan kinerja harian, Kepala Sekolah cukup memilih <strong>Butir Utama</strong> di bawah ini tanpa perlu memilih butir rincian tugas. Butir dapat disesuaikan secara dinamis melalui formulir ini.</span>
+                        </div>
+
+                        <!-- Form Tambah / Edit Butir Tugas Kepala Sekolah (Collapsible Container) -->
+                        <div id="container-form-principal-group" class="hidden transition-all duration-300">
+                            <form id="form-manage-principal-group" onsubmit="event.preventDefault(); window.savePrincipalGroupForm();" class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-amber-200 dark:border-slate-700/80 shadow-xs space-y-3.5">
+                                <input type="hidden" id="principal-group-form-id">
+                                <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                                    <h4 id="principal-group-form-heading" class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                        <i class="fa-solid fa-folder-plus text-amber-500"></i> Form Tambah / Ubah Butir Tugas Kepala Sekolah
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" id="btn-reset-principal-group" onclick="window.resetPrincipalGroupForm()" class="text-[11px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                            Reset Form
+                                        </button>
+                                        <span class="text-slate-300 dark:text-slate-700">|</span>
+                                        <button type="button" onclick="window.togglePrincipalGroupForm(false)" class="text-[11px] text-slate-400 hover:text-rose-500 transition-colors">
+                                            Tutup
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                                    <div class="sm:col-span-3">
+                                        <label for="principal-group-form-code" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Kode Butir <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="principal-group-form-code" required placeholder="Misal: KS-01" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-7">
+                                        <label for="principal-group-form-name" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Tugas Pokok (Judul Singkat) <span class="text-rose-500">*</span>
+                                        </label>
+                                        <input type="text" id="principal-group-form-name" required placeholder="Misal: Visi dan Budaya Belajar" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="principal-group-form-order" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Urutan
+                                        </label>
+                                        <input type="number" inputmode="numeric" id="principal-group-form-order" value="1" min="1" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none font-medium">
+                                    </div>
+                                    <div class="sm:col-span-12">
+                                        <label for="principal-group-form-desc" class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            Uraian Butir Tugas <span class="text-rose-500">*</span>
+                                        </label>
+                                        <textarea id="principal-group-form-desc" rows="2" required placeholder="Deskripsi uraian butir tugas yang akan otomatis muncul saat Kepala Sekolah memilih tugas pokok ini..." class="w-full px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 outline-none resize-none font-normal"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-end">
+                                    <button type="submit" id="btn-save-principal-group" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-save"></i> <span>Simpan Butir Tugas Kepsek</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Tabel Butir Tugas Kepala Sekolah (2 Kolom: Tugas Pokok & Uraian) -->
+                        <div class="overflow-x-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xs">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-2.5 px-3 text-center w-14">Urutan</th>
+                                        <th class="py-2.5 px-3 w-24">Kode</th>
+                                        <th class="py-2.5 px-3 w-48 sm:w-60">Tugas Pokok</th>
+                                        <th class="py-2.5 px-3">Uraian Butir Tugas</th>
+                                        <th class="py-2.5 px-3 text-right w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-manage-principal-groups-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-6 text-slate-400 italic">Memuat butir tugas Kepala Sekolah...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: HAK AKSES VIP TENDIK (SUPER ADMIN ONLY) -->
+                    <div id="pane-manage-vip" class="hidden space-y-4">
+                        <!-- Header Banner Penjelasan Fitur VIP -->
+                        <div class="p-4 bg-gradient-to-r from-amber-500/10 via-emerald-500/5 to-amber-500/10 rounded-2xl border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0 text-base">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                        <span>Pengaturan Hak Akses Eksklusif VIP E-Kinerja Tendik</span>
+                                        <span class="text-[9px] font-black tracking-widest text-amber-500 uppercase bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">VIP</span>
+                                    </h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                                        Fitur VIP mencakup <b>Rekapitulasi Realisasi Kinerja Bulanan</b> berbasis SK Penugasan dan <b>Ekspor PDF Infografis A4 Format Canva</b>. Tentukan tendik yang memiliki hak membuka fitur ini.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="shrink-0 flex items-center gap-2">
+                                <button type="button" onclick="window.saveVipSettings()" id="btn-save-vip-settings-top" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                                    <i class="fa-solid fa-floppy-disk text-xs"></i>
+                                    <span>Simpan Pengaturan</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card Master Switch Global: Buka Akses Seluruh Tendik -->
+                        <div class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-users-gear text-sm"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-bold text-slate-800 dark:text-white">Akses Global untuk Seluruh Tendik</h5>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Jika aktif, seluruh tenaga kependidikan otomatis dapat menggunakan fitur VIP tanpa perlu dicentang satu per satu.</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="toggle-vip-all-tendik" onchange="window.toggleVipAllTendik(this.checked)" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-amber-500"></div>
+                                <span id="label-vip-all-tendik-status" class="ml-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 select-none">Nonaktif</span>
+                            </label>
+                        </div>
+
+                        <!-- Toolbar Filter Pencarian & Pemilihan Cepat Tendik -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-100 dark:border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <h5 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-id-card-clip text-amber-500"></i> Daftar Pegawai Tendik
+                                </h5>
+                                <span id="label-vip-selected-count" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40">
+                                    0 dari 0 Dipilih
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                                <div class="relative flex-1 sm:w-60">
+                                    <input type="text" id="input-search-vip" oninput="window.filterVipEmployeesList()" placeholder="Cari nama tendik / NIP..." class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-400">
+                                </div>
+                                <button type="button" onclick="window.selectAllVipEmployees(true)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all active:scale-95 shrink-0 cursor-pointer" title="Pilih Seluruh Pegawai yang Muncul">
+                                    Pilih Semua
+                                </button>
+                                <button type="button" onclick="window.selectAllVipEmployees(false)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-rose-600 dark:text-slate-400 text-xs font-semibold rounded-xl transition-all active:scale-95 shrink-0 cursor-pointer" title="Kosongkan Pilihan">
+                                    Kosongkan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Kontainer Tabel / List Checklist Tendik -->
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs max-h-96 overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold text-[11px] uppercase tracking-wider sticky top-0 z-10 backdrop-blur-xs border-b border-slate-200/80 dark:border-slate-800">
+                                    <tr>
+                                        <th class="py-2.5 px-3 w-12 text-center">Akses</th>
+                                        <th class="py-2.5 px-3">Nama Pegawai & NIP</th>
+                                        <th class="py-2.5 px-3">Jabatan / Jenis PTK</th>
+                                        <th class="py-2.5 px-3 text-center">Status Akses VIP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-manage-vip-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-8 text-slate-400 italic">
+                                            <i class="fa-solid fa-spinner fa-spin text-xl mb-2 text-amber-500 block"></i>
+                                            Memuat daftar pegawai tendik...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Footer Bar: Keterangan Simpan & Tombol Simpan -->
+                        <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800">
+                            <p class="text-[11px] text-slate-400">
+                                <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>
+                                Pengaturan ini disimpan langsung ke Cloudflare D1 sebagai Single Source of Truth (SSOT).
+                            </p>
+                            <button type="button" onclick="window.saveVipSettings()" id="btn-save-vip-settings" class="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all hover:scale-102 active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0">
+                                <i class="fa-solid fa-floppy-disk text-xs"></i>
+                                <span>Simpan Hak Akses VIP Tendik</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: KONFIRMASI GENERIK -->
+    <div id="modal-generic-confirm"
+        class="hidden fixed inset-0 z-[140] bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800 scale-100">
+            <div class="p-8 text-center">
+                <div id="confirm-icon-bg"
+                    class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 dark:text-amber-400">
+                    <i id="confirm-icon" class="fa-solid fa-question text-3xl"></i>
+                </div>
+                <h3 id="confirm-title" class="font-bold text-slate-800 dark:text-white text-xl mb-2">Konfirmasi</h3>
+                <div id="confirm-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Apakah Anda yakin?</div>
+                <div class="flex gap-3 justify-center">
+                    <button id="btn-confirm-cancel"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-ok"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 dark:shadow-none transition-transform active:scale-95">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LIGHTBOX FOTO BUKTI KEGIATAN (Top-Level Sibling, Anti-Nesting Mandate) -->
+    <div id="modal-evidence-lightbox" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 sm:p-4 transition-all" onclick="if(event.target === this) window.closeEmployeeLightbox()">
+        <div class="relative max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[96vh] sm:max-h-[92vh]">
+            <!-- Header Lightbox -->
+            <div class="flex items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-slate-950/70 border-b border-slate-800/80 text-white">
+                <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-900/60 flex items-center justify-center text-emerald-300 shrink-0">
+                        <i class="fa-solid fa-images text-xs"></i>
+                    </div>
+                    <h4 id="lightbox-title" class="font-bold text-xs sm:text-sm truncate">Foto Bukti Kegiatan</h4>
+                    <span id="lightbox-counter" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono font-bold shrink-0">1 / 1</span>
+                </div>
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <a id="lightbox-btn-drive" href="#" target="_blank" rel="noopener noreferrer" class="px-2 sm:px-2.5 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 hover:text-white text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-colors border border-emerald-500/40" title="Buka berkas foto asli">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span class="hidden sm:inline">Buka Asli</span>
+                    </a>
+                    <button type="button" onclick="window.closeEmployeeLightbox()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup Galeri">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Area Tampilan Gambar & Navigasi -->
+            <div id="lightbox-image-stage" class="relative flex-1 min-h-[260px] sm:min-h-[380px] flex items-center justify-center bg-black/95 p-2 sm:p-4 overflow-hidden select-none touch-pan-y">
+                <img id="lightbox-img" src="" alt="Bukti Kegiatan Tendik" class="max-h-[55vh] sm:max-h-[65vh] max-w-full object-contain rounded-lg transition-all duration-300 pointer-events-none">
+                
+                <!-- Tombol Geser Kiri / Kanan -->
+                <button type="button" id="lightbox-btn-prev" onclick="window.employeeLightboxPrev()" class="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center text-sm transition-all border border-white/10 cursor-pointer shadow-lg active:scale-90 z-20" title="Foto Sebelumnya">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button type="button" id="lightbox-btn-next" onclick="window.employeeLightboxNext()" class="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center text-sm transition-all border border-white/10 cursor-pointer shadow-lg active:scale-90 z-20" title="Foto Berikutnya">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Strip Thumbnail Bawah -->
+            <div id="lightbox-thumbnails-strip" class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-950/80 border-t border-slate-800/80 overflow-x-auto scrollbar-thin snap-x touch-pan-x">
+                <!-- Diisi via JS: Thumbnail 1-2 foto -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: REKAPITULASI REALISASI BULANAN TENDIK (SIMAS VIP - Top-Level Sibling) -->
+    <div id="modal-employee-monthly-recap" class="hidden fixed inset-0 z-[120] overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="monthly-recap-title">
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-5">
+            <div class="relative w-full max-w-5xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all scale-95 opacity-0 duration-300 max-h-[92vh] flex flex-col" id="modal-employee-monthly-recap-content">
+                
+                <!-- Modal Header (Compact & VIP Themed) -->
+                <div class="px-4 sm:px-6 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/70 shrink-0">
+                    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 border border-amber-500/20 shadow-xs">
+                            <i class="fa-solid fa-crown text-base sm:text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h3 id="monthly-recap-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight truncate">Rekapitulasi Realisasi Kinerja Tendik</h3>
+                                <span class="text-[9px] font-black tracking-widest text-amber-400 uppercase bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-500/40 shrink-0">SIMAS VIP</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-slate-400 text-xs mt-0.5 truncate">
+                                <span id="monthly-recap-employee-name" class="font-bold text-slate-700 dark:text-slate-200 truncate">Memuat data tendik...</span>
+                                <span class="opacity-40">·</span>
+                                <span id="monthly-recap-employee-nip" class="truncate font-mono">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.closeEmployeeMonthlyRecapModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0" title="Tutup Modal" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Toolbar Filter Periode & Aksi Ekspor PDF -->
+                <div class="px-4 sm:px-6 py-2.5 bg-slate-50/40 dark:bg-slate-800/40 border-b border-slate-200/70 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
+                    <!-- Sisi Kiri: Navigasi Bulan & Tahun -->
+                    <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                        <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+                            <button type="button" id="btn-monthly-recap-prev" onclick="window.navigateMonthlyRecapMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all active:scale-95 cursor-pointer" title="Bulan Sebelumnya">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            
+                            <!-- Dropdown Bulan -->
+                            <select id="select-monthly-recap-month" onchange="window.onMonthlyRecapMonthChange()" class="h-7 px-2 bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 border-0 focus:ring-0 cursor-pointer" aria-label="Pilih Bulan">
+                                <option value="01">Januari</option>
+                                <option value="02">Februari</option>
+                                <option value="03">Maret</option>
+                                <option value="04">April</option>
+                                <option value="05">Mei</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">Agustus</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+
+                            <!-- Dropdown Tahun -->
+                            <select id="select-monthly-recap-year" onchange="window.onMonthlyRecapMonthChange()" class="h-7 px-2 bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 border-0 focus:ring-0 cursor-pointer" aria-label="Pilih Tahun">
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                            </select>
+
+                            <button type="button" id="btn-monthly-recap-next" onclick="window.navigateMonthlyRecapMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all active:scale-95 cursor-pointer" title="Bulan Berikutnya">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+
+                            <button type="button" id="btn-monthly-recap-today" onclick="window.setMonthlyRecapCurrentMonth()" class="ml-1 px-2.5 h-7 flex items-center justify-center bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap shadow-2xs active:scale-95 cursor-pointer" title="Kembali ke Bulan Ini">
+                                Bulan Ini
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sisi Kanan: Segarkan (cetak infografis tersedia per butir tugas) -->
+                    <div class="flex items-center gap-2 justify-end shrink-0">
+                        <!-- bg eksplisit: cegah override global html.dark :where(.bg-white button) di css/style.css -->
+                        <button type="button" id="btn-monthly-recap-refresh" onclick="window.loadEmployeeMonthlyRecapData(true)" class="h-8 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer" title="Segarkan Data Realisasi">
+                            <i class="fa-solid fa-arrows-rotate text-xs"></i> <span class="hidden sm:inline">Segarkan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body: Scrollable Content -->
+                <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                    
+                    <!-- 1. Multi-Segmented Progress Bar Distribusi Waktu Kelompok Tugas SK -->
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-2.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-pie text-emerald-500"></i>
+                                <span>Distribusi Waktu Berdasarkan Kelompok Tugas SK</span>
+                            </h4>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="text-slate-400">Total Akumulasi:</span>
+                                <span id="monthly-recap-total-hours" class="font-extrabold text-emerald-600 dark:text-emerald-400">0 Jam</span>
+                                <span class="text-slate-400 font-mono" id="monthly-recap-target-ratio">(0% dari target)</span>
+                            </div>
+                        </div>
+
+                        <!-- Segmented Bar -->
+                        <div id="monthly-recap-segmented-bar" class="h-3.5 w-full bg-slate-200 dark:bg-slate-700/80 rounded-full overflow-hidden flex shadow-inner">
+                            <div style="width: 100%" class="h-full bg-slate-300 dark:bg-slate-600"></div>
+                        </div>
+
+                        <!-- Legend Kelompok Tugas -->
+                        <div id="monthly-recap-category-legends" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-1 text-xs">
+                            <!-- Diisi via JS -->
+                        </div>
+                    </div>
+
+                    <!-- 2. Rangkuman Metrik Ringkas Ketercapaian -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 rounded-xl">
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Total Kegiatan</div>
+                            <div id="monthly-recap-activity-count" class="text-sm font-black text-slate-800 dark:text-white mt-0.5">0 Kegiatan</div>
+                        </div>
+                        <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 rounded-xl">
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Hari Kerja Lapor</div>
+                            <div id="monthly-recap-reporting-days" class="text-sm font-black text-slate-800 dark:text-white mt-0.5">0 Hari</div>
+                        </div>
+                        <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 rounded-xl">
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Target Hari Efektif</div>
+                            <div id="monthly-recap-working-days" class="text-sm font-black text-slate-800 dark:text-white mt-0.5">0 Hari (0 Jam)</div>
+                        </div>
+                        <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 rounded-xl">
+                            <div class="text-[10px] uppercase font-bold text-slate-400">Tugas Dinas Luar</div>
+                            <div id="monthly-recap-outside-duty" class="text-sm font-black text-slate-800 dark:text-white mt-0.5">0 Kali</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Tabel Rekapitulasi Realisasi Berdasarkan Butir Rincian Tugas Pokok -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+                            <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-indigo-500"></i>
+                                <span>Rekapitulasi Realisasi per Butir Rincian Tugas Pokok</span>
+                            </h4>
+                            <span class="text-[11px] text-slate-400 italic">Sesuai SK Penugasan Tendik</span>
+                        </div>
+
+                        <!-- Kontainer Accordion Kelompok Tugas & Tabel Butir Tugas -->
+                        <div id="monthly-recap-items-container" class="space-y-3">
+                            <div class="p-8 text-center bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-200/80 dark:border-slate-800 text-slate-400 text-xs">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-amber-500"></i>
+                                <p>Memuat rekapitulasi realisasi butir tugas...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KHUSUS: PEMBERITAHUAN FITUR EKSKLUSIF SIMAS VIP E-KINERJA TENDIK (ANTI-NESTING: TOP-LEVEL SIBLING) -->
+    <div id="modal-employee-rekap-vip-notice" class="hidden fixed inset-0 z-[125] bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="modal-employee-vip-notice-title">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl border border-amber-200/60 dark:border-amber-900/40 overflow-hidden text-center p-6 sm:p-7 space-y-4 animate-scale-up">
+            <!-- Icon Elegan & Mewah SIMAS VIP -->
+            <div class="w-16 h-16 sm:w-18 sm:h-18 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-slate-950 flex items-center justify-center text-2xl sm:text-3xl shadow-xl shadow-amber-500/25 border border-amber-300/40">
+                <i class="fa-solid fa-crown text-slate-950"></i>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-yellow-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/50 dark:border-amber-700/50 shadow-2xs">
+                    SIMAS VIP
+                </div>
+                <h3 id="modal-employee-vip-notice-title" class="text-base sm:text-lg font-extrabold text-slate-800 dark:text-white">
+                    Rekapitulasi Realisasi Kinerja Tendik
+                </h3>
+            </div>
+
+            <!-- Penjelasan Fitur Eksklusif -->
+            <div class="bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-4.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 text-left space-y-2.5">
+                <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+                    Modul <strong>Rekapitulasi Realisasi Bulanan Berdasarkan Butir Tugas</strong> pada <strong>SIMAS VIP</strong> dirancang untuk evaluasi kinerja komprehensif, analisis distribusi waktu per kelompok tugas SK, serta pencetakan dokumen PDF sesuai Sasaran Kinerja.
+                </p>
+                <div class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-400/30 dark:border-amber-700/40 text-[11px] text-amber-900 dark:text-amber-200 font-medium leading-relaxed">
+                    <i class="fa-solid fa-lock text-amber-600 dark:text-amber-400 text-xs mt-0.5 shrink-0"></i>
+                    <span>Akses terbatas dan dalam tahap pengembangan.</span>
+                </div>
+            </div>
+
+            <!-- Tombol Tutup -->
+            <div class="pt-1">
+                <button type="button" onclick="window.closeEmployeeRekapVipNoticeModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-slate-950 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+                    <span>Mengerti</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- MODAL: RINCIAN KEGIATAN PEGAWAI (POV SUPERVISOR / KEPSEK) -->
+    <div id="modal-supervisor-employee-detail" class="hidden fixed inset-0 z-[120] overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-opacity duration-200" role="dialog" aria-modal="true" aria-labelledby="modal-supervisor-detail-name" onclick="if(event.target === this) window.closeSupervisorDetailModal()">
+        <div id="modal-supervisor-detail-backdrop-wrapper" class="flex min-h-full items-center justify-center p-3 sm:p-5" onclick="if(event.target === this) window.closeSupervisorDetailModal()">
+            <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-200" id="modal-supervisor-employee-detail-content">
+                <!-- Header -->
+                <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/70">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-xs">
+                            <i class="fa-solid fa-user-tie text-base"></i>
+                        </div>
+                        <div>
+                            <h3 id="modal-supervisor-detail-name" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Nama Pegawai</h3>
+                            <p id="modal-supervisor-detail-subtitle" class="text-slate-400 text-xs mt-0.5">NIP / SK Penugasan · Tanggal</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.closeSupervisorDetailModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer" title="Tutup Modal" aria-label="Tutup modal">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+                <!-- Body -->
+                <div class="p-4 sm:p-5 max-h-[75vh] overflow-y-auto custom-scrollbar space-y-4">
+                    <!-- Ringkasan Metrik / Stats -->
+                    <div id="modal-supervisor-detail-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <!-- Injected by JS -->
+                    </div>
+                    <!-- Kontainer Daftar Aktivitas -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check text-emerald-500"></i> Rincian Aktivitas Terdata
+                        </h4>
+                        <div id="modal-supervisor-detail-activities" class="space-y-2.5">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 gap-2">
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="modal-supervisor-detail-btn-inspect" class="px-3.5 py-1.5 sm:py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:bg-emerald-900 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Buka di Tampilan Utama
+                        </button>
+                        <button type="button" id="modal-supervisor-detail-btn-recap" class="px-3.5 py-1.5 sm:py-2 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-300 dark:hover:bg-amber-900 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-amber-300/60 dark:border-amber-700/60">
+                            <i class="fa-solid fa-crown text-amber-500 text-xs"></i> Rekap Realisasi (VIP)
+                        </button>
+                    </div>
+                    <button type="button" onclick="window.closeSupervisorDetailModal()" class="px-4 py-2 text-xs font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-colors cursor-pointer">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL: KETIDAKHADIRAN PEGAWAI (SAKIT / CUTI / IZIN)                      -->
+    <!-- Top-level sibling mandiri di luar <main> (Kepatuhan Modal Anti-Nesting)   -->
+    <!-- ========================================================================= -->
+    <div id="modal-employee-absence" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="modal-employee-absence-title">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-100 dark:border-slate-800 overflow-y-auto max-h-[90vh] transition-all">
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-employee-absence-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Tidak Melaksanakan Tugas</h3>
+                        <p class="text-[11px] text-slate-400">Atur status Sakit, Cuti, atau Izin resmi pegawai</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeEmployeeAbsenceModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 flex items-center justify-center cursor-pointer transition-colors" title="Tutup Modal" aria-label="Tutup modal">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="form-employee-absence" onsubmit="window.submitEmployeeAbsence(event)" class="space-y-4 mt-4 text-xs">
+                <input type="hidden" id="absence-form-id" value="">
+                <input type="hidden" id="absence-form-date" value="">
+
+                <!-- Info Hari / Tanggal -->
+                <div class="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-day text-amber-600 dark:text-amber-400"></i>
+                        <span id="absence-form-date-label">Hari Kerja: -</span>
+                    </div>
+                    <p class="text-[11px] text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
+                        Hari yang ditandai akan tercatat sebagai keterangan resmi tidak melaksanakan tugas. Jam kerja terisi <strong>0 Menit</strong> dan target pekanan tetap 37,5 jam sehingga tercatat sah pada rekap supervisi pimpinan (bukan kelalaian/alpa).
+                    </p>
+                </div>
+
+                <!-- Jenis Ketidakhadiran -->
+                <div>
+                    <label for="absence-form-type" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clipboard-list text-amber-600 dark:text-amber-400"></i>
+                        <span>Jenis Status Ketidakhadiran *</span>
+                    </label>
+                    <select id="absence-form-type" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
+                        <option value="Sakit">Sakit</option>
+                        <option value="Cuti">Cuti (Tahunan / Bersama / Melahirkan)</option>
+                        <option value="Izin">Izin (Keperluan Pribadi / Mendesak)</option>
+                    </select>
+                </div>
+
+                <!-- Keterangan / Alasan -->
+                <div>
+                    <label for="absence-form-notes" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen text-amber-600 dark:text-amber-400"></i>
+                        <span>Keterangan Alasan *</span>
+                    </label>
+                    <textarea id="absence-form-notes" required rows="3" placeholder="Contoh: Sakit demam tinggi, cuti urusan penting, izin upacara adat/keagamaan..." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed"></textarea>
+                </div>
+
+                <!-- Tombol Aksi Form -->
+                <div class="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div>
+                        <button type="button" id="btn-delete-employee-absence" onclick="window.cancelEmployeeAbsence()" class="hidden px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold transition-all text-xs flex items-center gap-1.5 border border-rose-300 dark:border-rose-800 cursor-pointer active:scale-95">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                            <span>Batalkan Status</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="window.closeEmployeeAbsenceModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-xs">
+                            Tutup
+                        </button>
+                        <button type="submit" id="btn-submit-employee-absence" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer text-xs active:scale-95">
+                            <i class="fa-solid fa-check"></i>
+                            <span id="label-btn-submit-absence">Simpan Keterangan</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CETAK INFOGRAFIS PER BUTIR TUGAS (ALA CANVA, 1 LEMBAR A4) -->
+    <div id="modal-employee-butir-print" class="hidden fixed inset-0 z-[130] bg-black/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="emp-print-modal-title">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-5xl w-full max-h-[96vh] flex flex-col shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-900 text-white shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shadow-xs shrink-0">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="emp-print-modal-title" class="font-bold text-sm sm:text-base leading-tight truncate">Cetak Laporan Butir Tugas</h3>
+                        <p id="emp-print-modal-subtitle" class="text-[11px] text-slate-300 truncate">Infografis ala Canva (A4 / Simpan PDF)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" onclick="window.printEmployeeButirReport()" class="h-8 px-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer">
+                        <i class="fa-solid fa-print"></i> <span>Cetak / PDF</span>
+                    </button>
+                    <button type="button" onclick="window.closeEmployeeButirPrintModal()" class="w-8 h-8 rounded-full hover:bg-white/20 active:bg-white/30 text-white/80 hover:text-white flex items-center justify-center transition-all cursor-pointer" aria-label="Tutup Dialog Cetak">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                <div class="bg-slate-50 dark:bg-slate-800/60 p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-3">
+                    <!-- Baris 1: Label Periode & Tombol Toggle Drawer Checklist -->
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-calendar-week text-emerald-500"></i>
+                                <span>Periode Laporan:</span>
+                            </span>
+                        </div>
+
+                        <!-- Toggle Checklist Kegiatan & Kelola Foto -->
+                        <div class="flex items-center gap-2 shrink-0 ml-auto">
+                            <button type="button" onclick="window.toggleEmployeeButirPrintDrawer()" class="h-8 px-3 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
+                                <i class="fa-solid fa-list-check text-indigo-500"></i>
+                                <span>Pilih Kegiatan (<span id="emp-print-selected-count">0</span> Terpilih)</span>
+                                <i id="icon-emp-print-drawer" class="fa-solid fa-chevron-down text-[10px] ml-0.5 transition-transform"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Baris 2: Segmented Pill Chips Periode (Full Width) -->
+                    <div class="pt-0.5">
+                        <div id="emp-print-period-chips" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5 flex-wrap"></div>
+                    </div>
+
+                    <p id="emp-print-period-hint" class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug"></p>
+
+                    <!-- Panel Drawer Checklist Kegiatan & Upload Foto Lokal (Collapsible) -->
+                    <div id="panel-emp-print-drawer" class="hidden pt-3 border-t border-slate-200 dark:border-slate-700/80 space-y-2.5">
+                        <div class="flex items-center justify-between text-xs gap-2 flex-wrap">
+                            <span class="font-semibold text-slate-600 dark:text-slate-300">Pilih kegiatan per lembar & unggah foto (maks. 2 per kegiatan, hanya untuk cetak ini):</span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" onclick="window.toggleEmployeeButirPrintSelectAll(true)" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer" title="Pilih 6 kegiatan pertama, utamakan yang berfoto">Pilih Otomatis</button>
+                                <span class="text-slate-300">|</span>
+                                <button type="button" onclick="window.toggleEmployeeButirPrintSelectAll(false)" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:underline cursor-pointer">Batal Semua</button>
+                            </div>
+                        </div>
+
+                        <!-- Kontainer List Item Kegiatan & Foto (Lebih Tinggi & Luas) -->
+                        <div id="emp-print-activity-list" class="max-h-[520px] sm:max-h-[600px] overflow-y-auto space-y-2 pr-1.5 custom-scrollbar"></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/80 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-signature text-emerald-500"></i> Tanda Tangan Digital Pegawai
+                            </h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Bubuhkan tanda tangan pada kanvas untuk dicantumkan di kaki laporan.</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span id="emp-print-sign-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Belum Ada TTD</span>
+                            <button type="button" onclick="window.clearEmployeeButirSignature()" class="h-7 px-2.5 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-semibold transition-all cursor-pointer">
+                                Hapus / Gambar Ulang
+                            </button>
+                        </div>
+                    </div>
+                    <div class="max-w-md mx-auto sm:mx-0">
+                        <canvas id="emp-print-signature-canvas" width="380" height="110" class="w-full max-w-[380px] h-[110px] bg-white rounded-xl border border-slate-300 dark:border-slate-600 shadow-inner cursor-crosshair touch-none select-none"></canvas>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <!-- Bilah Header & Kontrol Pratinjau Terpadu -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-100/90 dark:bg-slate-800/80 p-2.5 sm:p-3 rounded-2xl border border-slate-200 dark:border-slate-700/80">
+                        <!-- Kiri: Judul & Badge Dimensi Kertas -->
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-eye text-emerald-500"></i> Lembar Pratinjau Laporan Infografis
+                            </span>
+                            <span id="emp-print-scale-hint" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                A4 Portrait (210 × 297 mm)
+                            </span>
+                        </div>
+
+                        <!-- Kanan: Saklar Orientasi, Tombol Perbarui, & Tombol Cetak Cepat -->
+                        <div class="flex items-center gap-2 flex-wrap shrink-0">
+                            <!-- Saklar Segmented Orientasi -->
+                            <div class="inline-flex p-0.5 rounded-xl bg-slate-200/90 dark:bg-slate-700/90 border border-slate-300/80 dark:border-slate-600">
+                                <button type="button" id="btn-emp-print-orient-portrait" onclick="window.setEmployeeButirPrintOrientation('portrait')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-2xs cursor-pointer" title="Tata letak vertikal A4">
+                                    <i class="fa-solid fa-file text-[11px]"></i> <span>Portrait</span>
+                                </button>
+                                <button type="button" id="btn-emp-print-orient-landscape" onclick="window.setEmployeeButirPrintOrientation('landscape')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white cursor-pointer" title="Tata letak horisontal A4">
+                                    <i class="fa-solid fa-file text-[11px] rotate-90"></i> <span>Landscape</span>
+                                </button>
+                            </div>
+
+                            <!-- Tombol Perbarui Pratinjau Cepat -->
+                            <button type="button" onclick="window.refreshEmpPrintPreview()" class="h-7 px-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Muat ulang lembar pratinjau">
+                                <i class="fa-solid fa-arrows-rotate text-[10px] text-indigo-500"></i> <span class="hidden sm:inline">Perbarui</span>
+                            </button>
+
+                            <!-- Tombol Cetak / PDF Cepat -->
+                            <button type="button" onclick="window.printEmployeeButirReport()" class="h-7 px-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Cetak atau simpan sebagai dokumen PDF">
+                                <i class="fa-solid fa-print text-[10px]"></i> <span>Cetak / PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Container Iframe Pratinjau -->
+                    <div class="w-full bg-slate-200 dark:bg-slate-950 p-2 sm:p-4 rounded-2xl border border-slate-300 dark:border-slate-800 flex justify-center overflow-x-auto">
+                        <iframe id="emp-print-preview-frame" title="Pratinjau Laporan Infografis Butir Tugas" class="w-full max-w-[850px] min-h-[420px] bg-white rounded-xl shadow-lg border border-slate-300"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-e-kinerja-tendik.js?v=26.11.02.1"></script>
+</body>
+</html>

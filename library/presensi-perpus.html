@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Buku Tamu Pengunjung - Perpustakaan SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased min-h-screen min-h-dvh">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-1">
+                    <a href="index.html" class="hover:underline">Perpustakaan</a> <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i> Buku Tamu Digital
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Presensi Pengunjung Perpustakaan</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Pencatatan kunjungan siswa, guru, staf, dan tamu perpustakaan.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btn-export-pengunjung" class="px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 font-bold text-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Export Rekap Kunjungan
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats Banner -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-user-clock"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400">Pengunjung Hari Ini</span>
+                    <div id="stat-visitor-today" class="text-2xl font-black text-slate-900 dark:text-white">0</div>
+                    <span class="text-[10px] text-slate-400">Orang berkunjung</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-calendar-week"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400">Pengunjung Bulan Ini</span>
+                    <div id="stat-visitor-month" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">0</div>
+                    <span class="text-[10px] text-slate-400">Total akumulasi bulan ini</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-slate-400">Kunjungan Siswa</span>
+                    <div id="stat-visitor-siswa-pct" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0%</div>
+                    <span class="text-[10px] text-slate-400">Dari total pengunjung</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Check-in Form Card & Live Feed Table Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <!-- CHECK-IN FORM (5 cols) -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base text-slate-800 dark:text-white">Check-in Pengunjung</h2>
+                        <p class="text-xs text-slate-400">Silakan isi formulir kehadiran perpustakaan</p>
+                    </div>
+                </div>
+
+                <form id="form-checkin" class="space-y-4 text-xs">
+                    <!-- Tipe Pengunjung -->
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Tipe Pengunjung</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 cursor-pointer flex items-center gap-2 hover:border-blue-500 transition">
+                                <input type="radio" name="visitor_type" value="siswa" checked class="text-blue-600 focus:ring-blue-500">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">Siswa</span>
+                            </label>
+                            <label class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 cursor-pointer flex items-center gap-2 hover:border-blue-500 transition">
+                                <input type="radio" name="visitor_type" value="guru" class="text-blue-600 focus:ring-blue-500">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">Guru / Staf</span>
+                            </label>
+                            <label class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 cursor-pointer flex items-center gap-2 hover:border-blue-500 transition">
+                                <input type="radio" name="visitor_type" value="tamu" class="text-blue-600 focus:ring-blue-500">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">Tamu Luar</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Input Nama / Identitas (Stacking Context z-30) -->
+                    <div class="relative z-30">
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Cari / Masukkan Nama <span class="text-rose-500">*</span></label>
+                        <input type="text" id="input-visitor-search" required autocomplete="off"
+                            placeholder="Ketik NIS / Nama Siswa atau Guru..."
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+                        <div id="visitor-autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-56 overflow-y-auto z-50 divide-y divide-slate-100 dark:divide-slate-700 ring-1 ring-black/5"></div>
+                    </div>
+
+                    <!-- Cardlet Pratinjau Identitas & Pasfoto Pengunjung Terverifikasi -->
+                    <div id="visitor-preview-cardlet" class="hidden p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-800/60 flex items-center gap-3 transition-all">
+                        <div id="visitor-photo-box" class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 overflow-hidden shadow-xs ring-2 ring-white/50 dark:ring-slate-700">
+                            <img id="visitor-cardlet-img" src="" alt="Foto" class="w-full h-full object-cover hidden"
+                                onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('visitor-cardlet-fallback')?.classList.remove('hidden');">
+                            <div id="visitor-cardlet-fallback" class="w-full h-full flex items-center justify-center font-bold text-xs select-none">
+                                <span id="visitor-cardlet-initials">P</span>
+                            </div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span id="visitor-cardlet-name" class="font-bold text-slate-800 dark:text-white text-xs truncate">Nama Pengunjung</span>
+                                <span id="visitor-cardlet-badge" class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold text-[9px]">Guru</span>
+                            </div>
+                            <p id="visitor-cardlet-sub" class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">NIP • Jabatan</p>
+                        </div>
+                        <button type="button" id="btn-reset-visitor-preview" class="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-slate-400 hover:text-rose-500 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700 transition" title="Ganti Pengunjung">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="visitor-hidden-id">
+                    <input type="hidden" id="visitor-hidden-name">
+
+                    <!-- Kelas / Instansi -->
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Kelas / Jabatan / Asal Instansi</label>
+                        <input type="text" id="input-visitor-class" placeholder="Contoh: XII MIPA 1 / SMA Luar"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Keperluan Berkunjung -->
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Keperluan Kunjungan <span class="text-rose-500">*</span></label>
+                        <select id="input-visitor-purpose" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Membaca Buku">Membaca Buku / Literasi</option>
+                            <option value="Meminjam / Mengembalikan Buku">Meminjam / Mengembalikan Buku</option>
+                            <option value="Mengerjakan Tugas / Belajar Mandiri">Mengerjakan Tugas / Belajar Mandiri</option>
+                            <option value="Diskusi Kelompok">Diskusi Kelompok</option>
+                            <option value="Akses Internet / Komputer">Akses Internet / Komputer</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="btn-submit-checkin" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-md shadow-blue-600/30 flex items-center justify-center gap-2 active:scale-98">
+                        <i class="fa-solid fa-check-circle"></i> Check-in Sekarang
+                    </button>
+                </form>
+            </div>
+
+            <!-- LIVE FEED VISITORS (7 cols) -->
+            <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col justify-between">
+                <div>
+                    <!-- Header Table -->
+                    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                                <i class="fa-solid fa-tower-broadcast animate-pulse"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-sm text-slate-800 dark:text-white">Daftar Kunjungan Hari Ini</h3>
+                                <p class="text-[11px] text-slate-400">Log kehadiran pengunjung secara real-time</p>
+                            </div>
+                        </div>
+                        <span id="badge-total-today" class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px]">
+                            0 Pengunjung
+                        </span>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                            <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                                <tr>
+                                    <th class="px-4 py-3">Waktu</th>
+                                    <th class="px-4 py-3">Nama Pengunjung</th>
+                                    <th class="px-4 py-3">Kelas / Instansi</th>
+                                    <th class="px-4 py-3">Keperluan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitors-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                                <tr>
+                                    <td colspan="4" class="p-8 text-center text-slate-400 italic">
+                                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat data pengunjung...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-slate-100 dark:border-slate-700 text-[11px] text-slate-400 flex items-center justify-between">
+                    <span>*Data direset otomatis setiap pergantian tanggal.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="presensi-perpus.js?v=26.11.02.1"></script>
+</body>
+
+</html>

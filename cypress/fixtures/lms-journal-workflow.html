@@ -1,0 +1,16 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verifikasi jurnal LMS</title><link rel="stylesheet" href="/css/lms-journal.css">
+<style>body{font-family:Arial,sans-serif;background:#f8fafc;margin:20px;color:#1e293b}button{padding:12px}</style></head>
+<body><h1>Jurnal dari pembelajaran LMS</h1><button data-lms-journal-material="read">Sinkron Jurnal Mengajar</button>
+<script type="module">
+import { installLmsJournal } from '/js/lms-journal.mjs';
+async function journalRequest(route, options = {}) {
+    const response = await fetch(route, { ...options, headers: { 'Content-Type': 'application/json' } });
+    const data = await response.json();
+    if (!response.ok) { const error = new Error(data.error || 'Permintaan gagal'); error.status = response.status; throw error; }
+    if (route.endsWith('/save') && window.dropNextJournalSaveResponse) { window.dropNextJournalSaveResponse = false; throw new Error('Koneksi terputus sesudah simpan. Coba lagi.'); }
+    return data;
+}
+installLmsJournal({ school: { schoolShortName:'SMAGESA', schoolName:'SMA Negeri 1 Abang' }, request: journalRequest,
+    loadMotivations: async () => (await journalRequest('/api/jurnal/master')).data?.motivasi });
+</script></body></html>

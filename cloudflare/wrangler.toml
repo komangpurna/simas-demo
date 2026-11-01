@@ -1,0 +1,36 @@
+name = "simas-smagesa-api"
+main = "worker.js"
+compatibility_date = "2024-08-01"
+
+# D1 Database Binding
+[[d1_databases]]
+binding = "DB"
+database_name = "simas-demo-db"
+database_id = "5ab663e4-b504-4c82-adeb-52f8471c5063"
+
+# Cloudflare R2 Bucket Binding (Foto Siswa Resmi & Digital Card)
+[[r2_buckets]]
+binding = "STUDENT_PHOTOS_BUCKET"
+bucket_name = "simas-demo-student-photos"
+
+# Cloudflare R2 Bucket Binding (Foto Profil GTK & Staf Sekolah)
+[[r2_buckets]]
+binding = "GTK_PHOTOS_BUCKET"
+bucket_name = "simas-demo-gtk-photos"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+FIREBASE_PROJECT_ID = "simas-demo-5ead3"
+PUBLIC_WORKER_URL = "https://simas-smagesa-api.komangpurna1.workers.dev"
+APP_BASE_URL = "https://simas-demo-5ead3.web.app"
+SUPABASE_URL = "https://wwvtthoeknizglicrhor.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3dnR0aG9la25pemdsaWNyaG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjAzOTgsImV4cCI6MjEwMjM5NjM5OH0.opR-NvBZYWawcRdUeqX2M-jyJBRhcL2ggeTBVQbQTvo"
+
+# Dispatcher cron tunggal (setiap 10 menit). Memenuhi limit Cloudflare Workers Free (maksimal 5 cron triggers per akun).
+# Menjalankan retry outbox notifikasi secara kontinu serta mendispatch ulang tahun siswa (06:00 WITA), agenda sekolah (08:00 WITA),
+# pengingat presensi (10:00 WITA), pengingat KBM (15:00 WITA), dan cleanup retensi (02:00 WITA)
+# secara terpadu dan idempoten harian.
+[triggers]
+crons = ["*/10 * * * *"]
+

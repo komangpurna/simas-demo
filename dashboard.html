@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Dashboard - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+
+        <div
+            class="premium-header mesh-gradient-bg rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 text-white shadow-xl sm:shadow-2xl border border-white/10 dark:border-slate-800/60 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+            <div class="relative z-10">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard Ikhtisar</h1>
+                <p class="text-slate-200 text-xs sm:text-sm mt-1">Selamat datang kembali, <span id="user-name-display"
+                        class="font-bold text-yellow-300">User</span>!</p>
+            </div>
+            <div class="w-full md:w-auto text-left md:text-right relative z-10 flex items-center justify-between md:justify-end gap-3">
+                <!-- Tombol Toggle Mode Dashboard (Super Admin Only) -->
+                <button id="btn-toggle-dashboard-mode" onclick="window.toggleDashboardMode()"
+                    class="hidden bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-white/20 backdrop-blur-md hover:scale-105 active:scale-95 shadow-sm">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i><span id="label-toggle-dashboard-mode">Mode Eksekutif</span>
+                </button>
+                <!-- Tombol Log Aktivitas (Hanya Super Admin) -->
+                <button id="btn-login-history" onclick="openLoginHistoryModal()"
+                    class="hidden bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all border border-white/20 backdrop-blur-md hover:scale-105 active:scale-95 shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Log Aktivitas
+                </button>
+                <div class="bg-black/20 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
+                    <p class="text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase tracking-wider">Hari ini</p>
+                    <div class="text-sm sm:text-base md:text-lg font-black tracking-tight" id="current-date">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BUNGKUS KONTEN STANDARD DASHBOARD -->
+        <div id="standard-dashboard-content">
+            <!-- Filter Waktu untuk Statistik -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-bold tracking-wide">Statistik Catatan Siswa</p>
+                </div>
+    
+                <!-- Segmented Control untuk Filter Periode -->
+                <div class="relative flex items-center bg-slate-200/70 dark:bg-slate-800/90 p-1.5 rounded-2xl backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 w-full sm:w-auto shadow-inner"
+                    id="filter-periode-container">
+                    <!-- Highlight Background Animation (JS controlled) -->
+                    <div id="filter-highlight"
+                        class="absolute left-1.5 top-1.5 bottom-1.5 bg-white dark:bg-blue-600 rounded-xl shadow-md shadow-slate-300/50 dark:shadow-blue-900/50 transition-all duration-300 ease-out z-0">
+                    </div>
+    
+                    <button onclick="setFilterPeriode('today')" data-filter="today"
+                        class="filter-btn relative z-10 flex-1 px-3 py-1.5 text-[11px] font-bold transition-colors duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 text-center whitespace-nowrap">
+                        Hari Ini
+                    </button>
+                    <button onclick="setFilterPeriode('week')" data-filter="week"
+                        class="filter-btn relative z-10 flex-1 px-3 py-1.5 text-[11px] font-bold transition-colors duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 text-center whitespace-nowrap">
+                        Mingguan
+                    </button>
+                    <button onclick="setFilterPeriode('month')" data-filter="month"
+                        class="filter-btn active-filter relative z-10 flex-1 px-3 py-1.5 text-[11px] font-bold transition-colors duration-200 text-slate-900 dark:text-white text-center whitespace-nowrap">
+                        Bulanan
+                    </button>
+                    <button onclick="setFilterPeriode('semester')" data-filter="semester"
+                        class="filter-btn relative z-10 flex-1 px-3 py-1.5 text-[11px] font-bold transition-colors duration-200 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 text-center whitespace-nowrap">
+                        Semester
+                    </button>
+                </div>
+            </div>
+    
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 mb-8">
+                <!-- Card + : Akses cepat ke halaman Input Catatan (visibility dikontrol JS) -->
+                <a href="input.html" id="btn-quick-input"
+                    class="hidden bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 p-4 sm:p-5 rounded-2xl border border-emerald-500/50 shadow-md flex items-center justify-center transition-colors duration-200 cursor-pointer group">
+                    <div class="text-center text-white">
+                        <div
+                            class="w-11 h-11 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white text-lg sm:text-2xl mx-auto mb-2 ring-1 ring-white/30">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-white">Permisi, Pelanggaran,
+                            Prestasi</p>
+                    </div>
+                </a>
+    
+                <!-- Total Siswa -->
+                <div onclick="window.showStudentDistributionModal()"
+                    class="stat-card-premium group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 dark:hover:border-indigo-400/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer">
+                    <div class="min-w-0 pr-2">
+                        <p class="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">Total Siswa</p>
+                        <h3 class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums text-slate-800 dark:text-white mt-1 flex items-center" id="count-students">
+                            <span class="inline-block w-12 h-8 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg"></span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-1 flex items-center gap-1 truncate">
+                            <i class="fa-solid fa-graduation-cap text-[9px] text-indigo-500"></i> Terdaftar Aktif
+                        </p>
+                    </div>
+                    <div
+                        class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-blue-700 rounded-2xl flex items-center justify-center text-white text-base sm:text-lg shadow-md ring-1 ring-white/20 shrink-0">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+    
+                <!-- Permisi: Link ke input.html (Data Riwayat) -->
+                <div class="stat-card-premium group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 dark:hover:border-blue-400/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer"
+                    onclick="window.navigateToHistory('permission')">
+                    <div class="min-w-0 pr-2">
+                        <p class="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase" id="label-permissions">Permisi</p>
+                        <h3 class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums text-blue-600 dark:text-blue-400 mt-1 flex items-center"
+                            id="count-permissions">
+                            <span class="inline-block w-10 h-8 bg-blue-100 dark:bg-blue-950/60 animate-pulse rounded-lg"></span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-1 flex items-center gap-1 truncate" id="subtext-permissions">
+                            <i class="fa-regular fa-clock text-[9px] text-blue-500"></i> Bulanan
+                        </p>
+                    </div>
+                    <div
+                        class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-base sm:text-lg shadow-md ring-1 ring-white/20 shrink-0">
+                        <i class="fa-solid fa-person-walking-arrow-right"></i>
+                    </div>
+                </div>
+ 
+                <!-- Pelanggaran: Link ke input.html (Data Riwayat) -->
+                <div class="stat-card-premium group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 dark:hover:border-rose-400/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer"
+                    onclick="window.navigateToHistory('violation')">
+                    <div class="min-w-0 pr-2">
+                        <p class="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase" id="label-violations">Pelanggaran</p>
+                        <h3 class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums text-rose-600 dark:text-rose-400 mt-1 flex items-center"
+                            id="count-violations">
+                            <span class="inline-block w-10 h-8 bg-rose-100 dark:bg-rose-950/60 animate-pulse rounded-lg"></span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-1 flex items-center gap-1 truncate" id="subtext-violations">
+                            <i class="fa-solid fa-shield-halved text-[9px] text-rose-500"></i> Bulanan
+                        </p>
+                    </div>
+                    <div
+                        class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-rose-500 to-red-600 rounded-2xl flex items-center justify-center text-white text-base sm:text-lg shadow-md ring-1 ring-white/20 shrink-0">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                </div>
+    
+                <!-- Prestasi: Link ke input.html (Data Riwayat) -->
+                <div class="stat-card-premium group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 dark:hover:border-emerald-400/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between cursor-pointer"
+                    onclick="window.navigateToHistory('achievement')">
+                    <div class="min-w-0 pr-2">
+                        <p class="text-[10px] sm:text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase" id="label-achievements">Prestasi</p>
+                        <h3 class="text-2xl sm:text-3xl font-black tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400 mt-1 flex items-center"
+                            id="count-achievements">
+                            <span class="inline-block w-10 h-8 bg-emerald-100 dark:bg-emerald-950/60 animate-pulse rounded-lg"></span>
+                        </h3>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-1 flex items-center gap-1 truncate" id="subtext-achievements">
+                            <i class="fa-solid fa-star text-[9px] text-emerald-500"></i> Bulanan
+                        </p>
+                    </div>
+                    <div
+                        class="w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center text-white text-base sm:text-lg shadow-md ring-1 ring-white/20 shrink-0">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- PENGAJUAN PERMISI PENDING (Wali Kelas & Super Admin) - Posisi di atas grafik -->
+            <div id="wali-permisi-section" class="hidden mb-8">
+                <div
+                    class="bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-sm border border-sky-200/80 dark:border-sky-900/50 overflow-hidden backdrop-blur-md">
+                    <div
+                        class="p-4 sm:p-5 border-b border-sky-100 dark:border-slate-800/80 flex justify-between items-center bg-sky-50/60 dark:bg-slate-800/60">
+                        <h3
+                            class="font-bold text-sky-900 dark:text-sky-300 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-wide">
+                            <i class="fa-solid fa-person-walking-arrow-right text-sky-500"></i>
+                            Pengajuan Permisi Menunggu Persetujuan
+                            <span id="badge-pending-count"
+                                class="hidden bg-rose-500 text-white text-[11px] font-black rounded-full px-2.5 py-0.5 animate-pulse">0</span>
+                        </h3>
+                        <button onclick="loadPendingPermissionRequests()"
+                            class="text-xs font-bold bg-white dark:bg-slate-800 border border-sky-200 dark:border-slate-700 px-3.5 py-1.5 rounded-xl text-sky-600 dark:text-sky-400 hover:bg-sky-600 hover:text-white dark:hover:bg-sky-600 dark:hover:text-white transition-all shadow-sm">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh
+                        </button>
+                    </div>
+                    <div id="wali-permisi-list" class="p-4">
+                        <div class="text-center text-slate-400 dark:text-slate-500 py-6 text-sm">
+                            <i class="fa-solid fa-spinner fa-spin mr-2 text-sky-500"></i> Memuat pengajuan...
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mb-8">
+    
+                <div
+                    class="bg-white/90 dark:bg-slate-900/90 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/90 flex flex-col backdrop-blur-md hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3
+                            class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-wider">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <i class="fa-solid fa-chart-pie text-slate-400 dark:text-slate-500"></i> Komposisi Aktivitas
+                        </h3>
+                    </div>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+                        <canvas id="compositionChart"></canvas>
+                    </div>
+                </div>
+    
+                <div
+                    class="bg-white/90 dark:bg-slate-900/90 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/90 flex flex-col backdrop-blur-md hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3
+                            class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-wider">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <i class="fa-solid fa-chart-simple text-rose-500 dark:text-rose-400"></i> Tren Jenis Pelanggaran
+                        </h3>
+                    </div>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+                        <canvas id="violationTypeChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500" id="violation-chart-period-note">*Data berdasarkan catatan 30 hari terakhir</p>
+                    </div>
+                </div>
+            </div>
+    
+            <div
+                class="bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/90 overflow-hidden backdrop-blur-md">
+                <div
+                    class="p-4 sm:p-5 border-b border-slate-200/70 dark:border-slate-800/80 flex justify-between items-center bg-slate-50/60 dark:bg-slate-800/60">
+                    <h3
+                        class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <i class="fa-solid fa-clock-rotate-left text-slate-400 dark:text-slate-500"></i> Log Aktivitas
+                        Terbaru
+                    </h3>
+                    <a href="input.html"
+                        class="text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3.5 py-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 transition-all shadow-sm">Lihat
+                        Semua</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead
+                            class="bg-slate-50 dark:bg-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200/60 dark:border-slate-700/60">
+                            <tr>
+                                <th class="px-5 py-3.5">Waktu</th>
+                                <th class="px-5 py-3.5">Identitas Siswa</th>
+                                <th class="px-5 py-3.5">Kategori</th>
+                                <th class="px-5 py-3.5">Keterangan</th>
+                                <th class="px-5 py-3.5 text-right">Poin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-activity-body" class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500"><i
+                                        class="fa-solid fa-circle-notch fa-spin mr-2 text-blue-500"></i> Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD KHUSUS KEPALA SEKOLAH -->
+        <div id="kepala-sekolah-dashboard-content" class="hidden space-y-6">
+            <!-- Bilah Akses Cepat Monitoring Eksekutif (Command Center) -->
+            <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 dark:border-slate-800/90 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Akses Cepat Eksekutif:</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="monitoring-kbm.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-chalkboard-user"></i> Monitor KBM
+                    </a>
+                    <a href="bk.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-scale-balanced"></i> Buku Kasus BK
+                    </a>
+                    <a href="keuangan.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-wallet"></i> Keuangan SPP
+                    </a>
+                    <a href="library/laporan.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-book-bookmark"></i> Perpustakaan
+                    </a>
+                    <a href="guru.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-users-gear"></i> Direktori GTK
+                    </a>
+                    <a href="agenda.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
+                        <i class="fa-solid fa-calendar-days"></i> Agenda Sekolah
+                    </a>
+                    <a href="ranking-kelas.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-trophy"></i> Ranking Kelas
+                    </a>
+                    <a href="sarpras-inventaris.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-sm">
+                        <i class="fa-solid fa-warehouse"></i> Sarpras & Aset
+                    </a>
+                </div>
+            </div>
+
+            <!-- Section: Atensi Hari Ini (Executive Attention Center) -->
+            <div id="section-atensi-hari-ini" class="bg-white/90 dark:bg-slate-900/90 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800/90 shadow-sm backdrop-blur-md transition-all">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200/70 dark:border-slate-800/80 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wide flex items-center gap-2">
+                                Atensi Hari Ini
+                                <span id="atensi-count-badge" class="hidden px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">0</span>
+                            </h3>
+                            <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500" id="atensi-date-scope">Pusat pantauan kondisi prioritas sekolah hari ini</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden sm:inline" id="atensi-status-label">
+                        <i class="fa-solid fa-shield-check text-emerald-500 mr-1"></i> Terverifikasi Sistem
+                    </span>
+                </div>
+                <div id="atensi-items-container" class="space-y-2">
+                    <div class="p-4 text-center text-xs text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-circle-notch fa-spin mr-1.5 text-blue-500"></i> Menganalisis kondisi sekolah hari ini...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Atas: Ringkasan Umum & Progress SPP -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Ringkasan Statistik Eksekutif (4 Kartu Interaktif 2x2) -->
+                <div class="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- Total Siswa Aktif -->
+                    <div onclick="window.showStudentDistributionModal()"
+                        class="stat-card-premium group relative bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/90 hover:border-blue-500/50 dark:hover:border-blue-400/50 backdrop-blur-md rounded-2xl p-4 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-900/20 transition-all duration-300 flex items-center justify-between cursor-pointer"
+                        title="Klik untuk melihat distribusi siswa per kelas & angkatan">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Siswa Aktif</p>
+                            <h3 class="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-slate-800 dark:text-slate-100 mt-0.5" id="kepsek-total-siswa">...</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-base shadow-md shadow-blue-500/25 ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                    </div>
+                    <!-- Total Guru & Tendik (GTK) -->
+                    <a href="guru.html"
+                        class="stat-card-premium group relative bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/90 hover:border-indigo-500/50 dark:hover:border-indigo-400/50 backdrop-blur-md rounded-2xl p-4 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-900/20 transition-all duration-300 flex items-center justify-between cursor-pointer"
+                        title="Klik untuk membuka direktori guru dan tenaga kependidikan">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Guru & Tendik</p>
+                            <h3 class="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-slate-800 dark:text-slate-100 mt-0.5" id="kepsek-total-gtk">...</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-base shadow-md shadow-indigo-500/25 ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                    </a>
+                    <!-- Rata-rata Kehadiran Sekolah -->
+                    <a href="presensi.html"
+                        class="stat-card-premium group relative bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/90 hover:border-emerald-500/50 dark:hover:border-emerald-400/50 backdrop-blur-md rounded-2xl p-4 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-900/20 transition-all duration-300 flex items-center justify-between cursor-pointer"
+                        title="Klik untuk melihat data presensi siswa">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kehadiran (TA)</p>
+                            <h3 class="text-xl sm:text-2xl font-black tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5" id="kepsek-avg-attendance">...</h3>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 truncate" id="kepsek-attendance-subtext">-</p>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl flex items-center justify-center text-white text-base shadow-md shadow-emerald-500/25 ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                    </a>
+                    <!-- Kedisiplinan & Prestasi BK (TA) -->
+                    <a href="bk.html"
+                        class="stat-card-premium group relative bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/90 hover:border-purple-500/50 dark:hover:border-purple-400/50 backdrop-blur-md rounded-2xl p-4 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-900/20 transition-all duration-300 flex items-center justify-between cursor-pointer"
+                        title="Klik untuk melihat buku kasus pelanggaran & catatan prestasi BK">
+                        <div class="min-w-0 pr-1 flex-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Catatan BK (TA)</p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-0.5 tabular-nums" title="Total Pelanggaran">
+                                    <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                                    <span id="kepsek-total-violations">...</span>
+                                </span>
+                                <span class="text-slate-300 dark:text-slate-600 text-[10px]">/</span>
+                                <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 tabular-nums" title="Total Prestasi">
+                                    <i class="fa-solid fa-trophy text-[10px]"></i>
+                                    <span id="kepsek-total-achievements">...</span>
+                                </span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 truncate" id="kepsek-bk-subtext">Hari ini: -</p>
+                        </div>
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-base shadow-md shadow-purple-500/25 ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Widget SPP vs Target -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row items-center gap-6 backdrop-blur-sm relative overflow-hidden">
+                    <div class="absolute -right-16 -top-16 w-40 h-40 bg-blue-500/5 rounded-full blur-2xl"></div>
+                    <!-- Progress Ring SVG -->
+                    <div class="relative w-40 h-40 shrink-0 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <!-- Background Circle -->
+                            <circle cx="80" cy="80" r="70" class="stroke-slate-100 dark:stroke-slate-800" stroke-width="12" fill="transparent" />
+                            <!-- Foreground Circle with Dasharray -->
+                            <circle cx="80" cy="80" r="70" id="spp-progress-bar" class="stroke-blue-600 dark:stroke-blue-500 transition-all duration-1000 ease-out" stroke-width="12" fill="transparent" stroke-dasharray="439.8" stroke-dashoffset="439.8" stroke-linecap="round" />
+                        </svg>
+                        <div class="absolute text-center">
+                            <span class="text-2xl font-black text-slate-800 dark:text-slate-100" id="spp-progress-percent">0%</span>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Realisasi Bulan</p>
+                        </div>
+                    </div>
+                    <!-- Detail SPP -->
+                    <div class="flex-1 w-full space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-900/30 uppercase tracking-wider">Keuangan SPP</span>
+                                <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1.5">Realisasi & Target SPP</h4>
+                                <p class="text-xs text-slate-400 mt-0.5">Rincian target & realisasi bulan berjalan serta akumulasi tahun ajaran</p>
+                            </div>
+                            <a href="keuangan.html#tab=laporan&subtab=estimasi" class="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                                Kelola SPP <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+
+                        <!-- Sub-cards Rincian Bulan & Tahun -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <!-- Sub-card Bulan Berjalan -->
+                            <div class="bg-slate-50/70 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider flex items-center gap-1">
+                                        <i class="fa-solid fa-calendar-day"></i> <span id="spp-month-label">Bulan Berjalan</span>
+                                    </span>
+                                    <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300" id="spp-month-percent">0%</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Tercapai</p>
+                                        <p class="font-black text-slate-800 dark:text-slate-100 text-xs" id="spp-month-realisasi">Rp 0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Target Bulan</p>
+                                        <p class="font-black text-slate-800 dark:text-slate-100 text-xs" id="spp-month-target">Rp 0</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-dashed border-slate-200 dark:border-slate-700/60 pt-1.5 flex justify-between items-center text-[10px]">
+                                    <span class="font-bold text-slate-400 uppercase">Kekurangan</span>
+                                    <span class="font-black text-rose-600 dark:text-rose-400" id="spp-month-kekurangan">Rp 0</span>
+                                </div>
+                            </div>
+
+                            <!-- Sub-card Tahun Ajaran -->
+                            <div class="bg-slate-50/70 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center gap-1">
+                                        <i class="fa-solid fa-calendar-check"></i> Target Tahun Ajaran
+                                    </span>
+                                    <span class="text-[10px] font-black px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300" id="spp-year-percent">0%</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Tercapai</p>
+                                        <p class="font-black text-slate-800 dark:text-slate-100 text-xs" id="spp-realisasi-amount">Rp 0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Target Tahunan</p>
+                                        <p class="font-black text-slate-800 dark:text-slate-100 text-xs" id="spp-target-amount">Rp 0</p>
+                                    </div>
+                                </div>
+                                <div class="border-t border-dashed border-slate-200 dark:border-slate-700/60 pt-1.5 flex justify-between items-center text-[10px]">
+                                    <span class="font-bold text-slate-400 uppercase">Kekurangan</span>
+                                    <span class="font-black text-rose-600 dark:text-rose-400" id="spp-kekurangan-amount">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actionable SPP Footer: Penunggak & Tunggakan Terbesar -->
+                        <a href="keuangan.html#tab=laporan&subtab=estimasi" title="Klik untuk membuka tab Laporan & sub-tab Estimasi Tunggakan SPP" class="mt-2.5 pt-2.5 border-t border-dashed border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs p-1.5 -mx-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Menunggak:</span>
+                                <span class="font-black text-amber-600 dark:text-amber-400 text-xs" id="spp-unpaid-students-count">... siswa</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Tunggakan Terbesar:</span>
+                                <span class="font-bold text-slate-800 dark:text-slate-200 text-xs" id="spp-top-debt-class">-</span>
+                                <span class="font-black text-rose-600 dark:text-rose-400 text-xs font-mono" id="spp-top-debt-amount">(Rp 0)</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-slate-400 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Ringkasan Ranking Kinerja Rombel Kelas (Executive Ranking Showcase) -->
+            <div id="section-ranking-kelas-summary" class="bg-white dark:bg-slate-900/80 rounded-2xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm backdrop-blur-sm transition-all relative overflow-hidden">
+                <div class="absolute -right-16 -top-16 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Header Section -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-5 gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-lg shadow-md shrink-0">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                                    Ranking Kinerja Rombel Kelas
+                                </h3>
+                                <span class="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
+                                    Semester Berjalan
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                                Evaluasi komprehensif 4 pilar: Kehadiran, Ketertiban SPP, Kedisiplinan BK, dan Literasi
+                            </p>
+                        </div>
+                    </div>
+                    <a href="ranking-kelas.html"
+                        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm hover:shadow transition-all active:scale-95 shrink-0"
+                        title="Buka halaman papan ranking kelas selengkapnya">
+                        <span>Papan Ranking Lengkap</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
+                    </a>
+                </div>
+
+                <!-- Kontainer Loading Skeleton / Data State -->
+                <div id="ranking-summary-loading" class="py-10 text-center text-xs text-slate-400 dark:text-slate-500">
+                    <i class="fa-solid fa-circle-notch fa-spin mr-2 text-amber-500 text-lg"></i>
+                    <span>Menganalisis data kinerja dan pemeringkatan kelas...</span>
+                </div>
+
+                <!-- Kontainer Konten Ranking -->
+                <div id="ranking-summary-content" class="hidden space-y-5">
+                    <!-- Top 3 Juara Umum (Podium Mini Cards 3 Kolom) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5" id="ranking-summary-podium">
+                        <!-- Diisi via JS -->
+                    </div>
+
+                    <!-- Mini Leaderboard Table: Top 5 Rombel Terbaik -->
+                    <div class="bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-ranking-star text-amber-500"></i>
+                                5 Besar Rombel Kinerja Terbaik
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-medium">Klik baris rombel untuk membuka ranking kelas</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-100/70 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 text-[10.5px] uppercase font-bold tracking-wider">
+                                        <th class="py-2.5 px-3 text-center w-12">Rank</th>
+                                        <th class="py-2.5 px-3">Kelas &amp; Wali</th>
+                                        <th class="py-2.5 px-3 text-center">Skor Kinerja</th>
+                                        <th class="py-2.5 px-3 text-center">Kehadiran</th>
+                                        <th class="py-2.5 px-3 text-center">SPP Lunas</th>
+                                        <th class="py-2.5 px-3 text-center">Disiplin BK</th>
+                                        <th class="py-2.5 px-3 text-center w-20">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ranking-summary-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                    <!-- Baris diisi via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="px-4 py-2.5 bg-white/60 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                            <span class="text-slate-400 text-[11px]" id="ranking-summary-total-info">
+                                Menampilkan 5 rombel kelas terbaik
+                            </span>
+                            <a href="ranking-kelas.html" class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
+                                <span>Lihat Peringkat Seluruh Rombel di Papan Ranking Lengkap</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Tengah: Grafik Batang Kehadiran & Grafik Tren Pelanggaran -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kehadiran per Tingkat Kelas -->
+                <div class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col backdrop-blur-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            <i class="fa-solid fa-chart-bar text-slate-400"></i> Kehadiran Per Tingkat Kelas (TA)
+                        </h3>
+                        <a href="presensi.html" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+                            Presensi Siswa <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                        </a>
+                    </div>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+                        <canvas id="gradeAttendanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tren Pelanggaran Bulanan -->
+                <div class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col backdrop-blur-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            <i class="fa-solid fa-chart-line text-rose-500"></i> Tren Pelanggaran Bulanan (TA)
+                        </h3>
+                        <a href="bk.html" class="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1">
+                            Buku Kasus <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                        </a>
+                    </div>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[250px]">
+                        <canvas id="violationTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Bawah: Heatmap Pelanggaran & Top 5 Kehadiran Kelas -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Heatmap Pelanggaran Mingguan -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col backdrop-blur-sm">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <i class="fa-solid fa-calendar-days text-slate-400"></i> Heatmap Hari Rawan Pelanggaran
+                    </h3>
+                    <p class="text-[11px] text-slate-400 -mt-2 mb-4">Frekuensi akumulasi kasus pelanggaran sepanjang tahun ajaran</p>
+                    <div class="grid grid-cols-5 gap-2 text-center" id="violations-heatmap-container">
+                        <!-- Heatmap diisi via JS -->
+                    </div>
+                    <div class="flex justify-between items-center mt-4 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                        <span>Aman (0)</span>
+                        <div class="flex gap-1">
+                            <span class="w-2.5 h-2.5 rounded bg-emerald-500/10"></span>
+                            <span class="w-2.5 h-2.5 rounded bg-amber-500/30"></span>
+                            <span class="w-2.5 h-2.5 rounded bg-rose-500/60"></span>
+                            <span class="w-2.5 h-2.5 rounded bg-red-600"></span>
+                        </div>
+                        <span>Rawan (Tinggi)</span>
+                    </div>
+                </div>
+
+                <!-- Top 5 Kehadiran Kelas -->
+                <div class="bg-white dark:bg-slate-900/80 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            <i class="fa-solid fa-ranking-star text-slate-400"></i> Kehadiran Kelas Ekstrim
+                        </h3>
+                        <span id="kepsek-extreme-att-badge" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">Semester Berjalan</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4" id="kepsek-extreme-att-subtext">Akumulasi semester aktif (s.d. hari ini)</p>
+                    <div class="flex-1 space-y-4">
+                        <!-- Terbaik -->
+                        <div>
+                            <span class="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-2"><i class="fa-solid fa-circle-chevron-up mr-1"></i> TOP 3 Kehadiran Terbaik (Semester)</span>
+                            <div class="space-y-2.5" id="attendance-best-classes">
+                                <!-- Diisi via JS -->
+                            </div>
+                        </div>
+                        <!-- Terburuk -->
+                        <div class="border-t border-slate-100 dark:border-slate-800 pt-3">
+                            <span class="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest block mb-2"><i class="fa-solid fa-circle-chevron-down mr-1"></i> TOP 3 Kehadiran Terendah (Semester)</span>
+                            <div class="space-y-2.5" id="attendance-worst-classes">
+                                <!-- Diisi via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL TOLAK PERMISI -->
+    <div id="modal-reject-permisi"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4 text-red-600 dark:text-red-500">
+                    <i class="fa-solid fa-xmark-circle text-2xl"></i>
+                    <h3 class="font-bold text-lg text-slate-800 dark:text-white">Tolak Pengajuan Permisi</h3>
+                </div>
+
+                <div
+                    class="mb-5 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                    <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">Siswa: <b id="reject-student-name"
+                            class="text-slate-800 dark:text-white">-</b></p>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">Keperluan: <span id="reject-reason-preview"
+                            class="italic text-slate-500 dark:text-slate-400">-</span></p>
+                </div>
+
+                <div class="mb-5">
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Alasan
+                        Penolakan</label>
+                    <textarea id="input-reject-reason" rows="3"
+                        class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-red-500/50 focus:border-red-500 outline-none resize-none transition-all shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                        placeholder="Jelaskan alasan penolakan..."></textarea>
+                </div>
+
+                <input type="hidden" id="reject-doc-id">
+
+                <div class="flex gap-3 justify-end">
+                    <button onclick="closeRejectModal()"
+                        class="px-5 py-2.5 rounded-xl font-bold text-slate-500 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:!bg-slate-700 border border-slate-200 dark:border-slate-700 transition-[background-color] shadow-sm">Batal</button>
+                    <button onclick="executeRejectPermission()"
+                        class="px-5 py-2.5 rounded-xl font-bold text-white bg-red-600 dark:bg-red-600 hover:bg-red-700 dark:hover:!bg-red-700 shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> Tolak Pengajuan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DISTRIBUSI SISWA -->
+    <div id="modal-student-distribution"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in"
+        style="overscroll-behavior: contain;">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-lg max-h-[85vh] transform transition-all flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div
+                class="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/80 dark:bg-slate-800/80 shrink-0 backdrop-blur-md">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    <i class="fa-solid fa-chart-pie text-blue-500 dark:text-blue-400"></i> Distribusi Jumlah Siswa
+                </h3>
+                <button onclick="window.closeStudentDistributionModal()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:!bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <!-- Body -->
+            <div class="overflow-y-auto flex-1 p-6 space-y-6" style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+                <!-- Total Siswa Ringkasan -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl p-4 border border-blue-100/30 dark:border-blue-900/30 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Total Siswa Aktif</p>
+                        <h4 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400 mt-1" id="dist-total-active">...</h4>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                </div>
+
+                <!-- Bagian 1: Distribusi Per Angkatan (X, XI, XII) -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-slate-400"></i> Distribusi Per Angkatan
+                    </h4>
+                    <div class="grid grid-cols-3 gap-3" id="dist-generation-container">
+                        <!-- Card Angkatan diisi via JS -->
+                    </div>
+                </div>
+
+                <!-- Bagian 2: Rincian Per Kelas -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-door-open text-slate-400"></i> Detail Per Kelas
+                    </h4>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden" id="dist-class-container">
+                        <!-- List Kelas diisi via JS -->
+                    </div>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex justify-end shrink-0">
+                <button onclick="window.closeStudentDistributionModal()"
+                    class="px-5 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOG AKTIVITAS LOGIN (Super Admin Only) -->
+    <div id="modal-login-history"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in"
+        style="overscroll-behavior: contain;"
+        onclick="if(event.target === this) window.closeLoginHistoryModal()">
+        <div
+            class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-3xl max-h-[85vh] transform transition-all flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div
+                class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/80 dark:bg-slate-800/80 shrink-0 backdrop-blur-md">
+                <h3
+                    class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    <i class="fa-solid fa-clock-rotate-left text-blue-500 dark:text-blue-400"></i> Log Aktivitas Login
+                </h3>
+                <!-- Tombol Close Pojok Kanan Atas Modal -->
+                <button type="button" onclick="window.closeLoginHistoryModal()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:!bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors shrink-0"
+                    title="Tutup Modal" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Toolbar Filter Log Aktivitas -->
+            <div
+                class="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-white/50 dark:bg-slate-900/50 shrink-0">
+                <div class="flex items-center gap-2">
+                    <input type="date" id="filter-login-start" title="Tanggal Mulai"
+                        class="text-[10px] sm:text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none"
+                        onchange="window.loadLoginHistoryRange()">
+                    <span class="text-slate-400 text-xs">-</span>
+                    <input type="date" id="filter-login-end" title="Tanggal Akhir"
+                        class="text-[10px] sm:text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none"
+                        onchange="window.loadLoginHistoryRange()">
+                </div>
+                <div
+                    class="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <label class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500">Role</label>
+                    <select id="filter-login-role" onchange="window.filterLoginHistory()"
+                        class="text-xs bg-transparent text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer border-none p-0 outline-none focus:ring-0">
+                        <option value="" class="dark:bg-slate-800">Memuat...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Konten Tabel Log -->
+            <div class="overflow-y-auto flex-1 bg-white dark:bg-slate-900"
+                style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
+                <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                    <thead
+                        class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold uppercase text-slate-400 dark:text-slate-500 sticky top-0 backdrop-blur-md z-10 border-b border-slate-100 dark:border-slate-800">
+                        <tr>
+                            <th class="px-5 py-3 tracking-wider">Waktu Login</th>
+                            <th class="px-5 py-3 tracking-wider">Nama User</th>
+                            <th class="px-5 py-3 tracking-wider">Email</th>
+                            <th class="px-5 py-3 tracking-wider">Role</th>
+                            <th class="px-5 py-3 tracking-wider">Device</th>
+                        </tr>
+                    </thead>
+                    <tbody id="login-history-body" class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                        <tr>
+                            <td colspan="5" class="p-8 text-center text-slate-400 dark:text-slate-500"><i
+                                    class="fa-solid fa-circle-notch fa-spin mr-2"></i> Memuat data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 flex justify-end shrink-0">
+                <button type="button" onclick="window.closeLoginHistoryModal()"
+                    class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700 transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-dashboard.js?v=26.11.02.1"></script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+/* page-peminatan-hasil.css */
+.font-outfit {
+    font-family: 'Outfit', sans-serif;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-zoom-in {
+    animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 dark:bg-slate-700 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-600;
+}
+
+/* Table Enhancements */
+#results-body tr:hover, #pem-soal-body tr:hover {
+    @apply bg-slate-50/80 dark:bg-slate-900/40;
+}
+
+/* Progress bar in table */
+.progress-mini-bar {
+    @apply h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden;
+}
+
+.progress-mini-fill {
+    @apply h-full bg-indigo-500 rounded-full transition-all duration-500;
+}
+
+/* Modal Glassmorphism */
+.backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* Animation for rows */
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.row-animate {
+    animation: slideInRight 0.3s ease-out forwards;
+}

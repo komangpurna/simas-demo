@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uji alur asesmen LMS</title><link rel="stylesheet" href="/css/tailwind.css"></head>
+<body class="bg-slate-100 text-slate-800 p-4"><main class="max-w-3xl mx-auto space-y-4">
+<h1 class="text-xl font-bold">Uji alur asesmen LMS · data lokal</h1>
+<nav class="flex flex-wrap gap-3"><button id="demo-save" class="border px-4 py-2 rounded-lg">Simpan soal</button><button id="demo-student" class="bg-purple-600 text-white px-4 py-2 rounded-lg">Buka kuis siswa</button><button id="demo-teacher" class="border px-4 py-2 rounded-lg">Periksa jawaban</button></nav>
+<div id="demo-notice" role="status"></div>
+<section class="lms-material-card bg-white rounded-xl p-4 space-y-4"><h2 class="font-bold">Penyusunan soal</h2>
+<div class="flex flex-wrap gap-4"><label>Ketuntasan<input class="lms-quiz-kkm border rounded p-2 w-20" type="number" value="70"></label><label>Waktu (menit)<input class="lms-quiz-time border rounded p-2 w-20" type="number" value="10"></label></div>
+<label class="block"><input class="lms-quiz-retake" type="checkbox" checked> Izinkan pengerjaan ulang</label>
+<button onclick="window.previewLmsQuiz(this.closest('.lms-material-card'))" class="border px-4 py-2 rounded-lg">Pratinjau soal siswa</button>
+<div class="lms-quiz-questions-list space-y-4"></div></section></main>
+<script type="module">
+import { installQuizBuilder, installTeacherQuiz } from '/js/lms-quiz-ui.mjs';
+import { installStudentQuiz } from '/js/lms-quiz-student.mjs';
+const notify = (title, message) => document.getElementById('demo-notice').textContent = title + ': ' + message;
+const material = { id: 'mat', title: 'Fotosintesis dan kehidupan tumbuhan', subject_name: 'IPA' };
+const questions = [
+ { id: 'q1', type: 'mc', question: 'Bagian tumbuhan yang berperan utama dalam **fotosintesis** adalah ...', points: 2, options: ['Daun', 'Akar', 'Batang', 'Bunga'], correct_option: 0, explanation: 'Daun memiliki klorofil untuk menyerap energi cahaya.' },
+ { id: 'q2', type: 'short', question: 'Tuliskan nama gas yang dihasilkan dalam proses fotosintesis.', points: 3, correct_answer: 'Oksigen', accepted_answers: ['O2'], explanation: 'Oksigen dilepaskan dalam proses fotosintesis.' },
+ { id: 'q3', type: 'essay', question: 'Mengapa tumbuhan yang diletakkan di tempat gelap dapat tumbuh berbeda?\n\nJelaskan hubungan cahaya dengan proses fotosintesis dan berikan satu contoh.', points: 5, grading_guidance: 'Hubungan cahaya 2 poin; penjelasan proses 2 poin; contoh 1 poin.' }
+];
+async function api(action, body = {}) {
+    const response = await fetch('/__test__/quiz/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Permintaan gagal');
+    return data;
+}
+const template = await (await fetch('/portal-siswa.html')).text();
+const parsed = new DOMParser().parseFromString(template, 'text/html');
+document.body.append(document.importNode(parsed.getElementById('modal-student-quiz'), true));
+installQuizBuilder({ notify });
+questions.forEach(q => window.addLmsQuizQuestion(document.querySelector('.lms-material-card'), q.type, q));
+installStudentQuiz({ getMaterial: () => material, getStudentId: () => '100', notify, onResult: () => {},
+    api: { start: body => api('start', body), save: body => api('save', body), submit: body => api('submit', body) } });
+installTeacherQuiz({ getMaterial: () => material, refresh: () => {}, notify,
+    api: { list: (id, nis) => api('list', { material_id: id, student_nis: nis }), review: body => api('review', body) } });
+document.getElementById('demo-save').onclick = async () => {
+    try {
+        const quiz = window.serializeLmsQuizPayload(document.querySelector('.lms-material-card'));
+        await api('material', { id: 'mat', topic_id: 'topic', subject_name: 'IPA', class_name: 'X-1', title: material.title, resource_type: 'quiz', quiz_payload: quiz });
+        notify('Soal tersimpan', 'Siap dikerjakan siswa.');
+    } catch (error) { notify('Gagal', error.message); }
+};
+document.getElementById('demo-student').onclick = () => window.openStudentQuiz('mat');
+document.getElementById('demo-teacher').onclick = () => window.openLmsQuizReview('mat', '100');
+window.demoReady = true;
+</script></body></html>

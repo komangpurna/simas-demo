@@ -1,0 +1,101 @@
+# === Dependencies ===
+**/node_modules/
+
+# === Firebase ===
+.firebase/
+dist-hosting/
+.hosting-history/
+firebase-debug.log
+firebase-debug.*.log
+deploy.log
+
+# === Cloudflare ===
+.wrangler/
+cloudflare/.wrangler/
+.mf/
+
+# === Supabase ===
+supabase/.temp/
+
+# === IDE & Editor ===
+.vscode/
+.idea/
+.claude/
+*.sublime-workspace
+*.sublime-project
+
+# === Logs & Cache ===
+*.log
+*.cache
+.eslintcache
+
+# === Cypress & Test Artifacts ===
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+coverage/
+.nyc_output/
+test-results.json
+*-results.json
+
+# === OS Generated ===
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# === Scratch/Debugging ===
+/scratch/
+temp_query.sql
+*.tmp
+
+# === AI Agents & Teamwork Temporary Artifacts ===
+.agents/teamwork/
+.agents/scratch/
+.agents/temp/
+
+# === Microsoft Office Temporary & Lock Files ===
+~$*
+
+# === Sensitive/Private Files & Backups ===
+.env
+/school.local.json
+.env*.local
+pub/kirim_kapsul_waktu.gs
+pub/test-*.html
+screenshot.png
+/backup/
+backup/
+scripts/backup_archive/
+*.csv
+users.csv
+firebase-jurnal-smagesa.json
+cloudflare/seed_telemetry_data.sql
+
+# === Documents (PDF, Excel & Generated Word) ===
+*.xlsx
+*.xls
+sukaduka/AD-ART-SUKA-DUKA-SMAN 1 Abang 2025.pdf
+PRD_SIMAS*.docx
+Panduan_Keamanan_Data_dan_Web_SIMAS.docx
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
+
+# === Android / TWA Artifacts & Security ===
+*.keystore
+*.jks
+android-twa/build/
+android-twa/.gradle/
+android-twa/*.apk
+android-twa/*.aab
+android-twa/android.keystore
+
+
+# === Hasil cetak/rekap berisi data siswa (dihasilkan scripts/format_rekap_absen.*) ===
+Rekap_Absen_*

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Laporan Statistik & Akreditasi - Perpustakaan SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased min-h-screen min-h-dvh">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-1">
+                    <a href="index.html" class="hover:underline">Perpustakaan</a> <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i> Laporan & Statistik
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Laporan Statistik Perpustakaan</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Rekapitulasi sirkulasi, distribusi klasifikasi DDC, leaderboard pembaca, dan standar akreditasi.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btn-export-current-laporan" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-md shadow-emerald-600/30 flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Export Laporan Aktif (.xlsx)
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation Buttons -->
+        <div class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm mb-6 flex flex-wrap gap-1.5">
+            <button onclick="window.switchLaporanTab('ddc')" id="tab-btn-ddc" class="laporan-tab-btn flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-layer-group"></i> Distribusi DDC
+            </button>
+            <button onclick="window.switchLaporanTab('sirkulasi')" id="tab-btn-sirkulasi" class="laporan-tab-btn flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center gap-2">
+                <i class="fa-solid fa-repeat"></i> Rekap Sirkulasi
+            </button>
+            <button onclick="window.switchLaporanTab('top')" id="tab-btn-top" class="laporan-tab-btn flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center gap-2">
+                <i class="fa-solid fa-trophy"></i> Top Reader & Buku
+            </button>
+            <button onclick="window.switchLaporanTab('denda')" id="tab-btn-denda" class="laporan-tab-btn flex-1 min-w-[140px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center gap-2">
+                <i class="fa-solid fa-coins"></i> Rekap Denda
+            </button>
+        </div>
+
+        <!-- TAB 1: DISTRIBUSI DDC -->
+        <div id="tab-content-ddc" class="space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Distribusi Koleksi 10 Kelas Utama DDC</h3>
+                        <p class="text-[11px] text-slate-400">Klasifikasi perpustakaan sesuai standar Dewey Decimal (000-900)</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="px-5 py-3">Kelas DDC</th>
+                                <th class="px-5 py-3">Klasifikasi Bidang Ilmu</th>
+                                <th class="px-5 py-3 text-center">Jumlah Judul</th>
+                                <th class="px-5 py-3 text-center">Jumlah Eksemplar</th>
+                                <th class="px-5 py-3 text-center">Proporsi Koleksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ddc-distribution-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                        <tfoot class="bg-slate-50 dark:bg-slate-900/80 font-bold border-t border-slate-200 dark:border-slate-700 text-xs">
+                            <tr>
+                                <td colspan="2" class="px-5 py-3 text-slate-800 dark:text-white">TOTAL KOLEKSI PERPUSTAKAAN</td>
+                                <td id="tfoot-total-judul" class="px-5 py-3 text-center text-blue-600 font-extrabold">0</td>
+                                <td id="tfoot-total-eksemplar" class="px-5 py-3 text-center text-indigo-600 font-extrabold">0</td>
+                                <td class="px-5 py-3 text-center text-emerald-600 font-extrabold">100%</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: REKAP SIRKULASI -->
+        <div id="tab-content-sirkulasi" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Rekapitulasi Sirkulasi Bulanan</h3>
+                        <p class="text-[11px] text-slate-400">Statistik peminjaman, pengembalian, dan keterlambatan</p>
+                    </div>
+                    <select id="select-filter-tahun-sirkulasi" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="px-5 py-3">Bulan</th>
+                                <th class="px-5 py-3 text-center">Peminjaman Siswa</th>
+                                <th class="px-5 py-3 text-center">Peminjaman Guru</th>
+                                <th class="px-5 py-3 text-center">Buku Kembali</th>
+                                <th class="px-5 py-3 text-center">Terlambat</th>
+                                <th class="px-5 py-3 text-center">Total Sirkulasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sirkulasi-monthly-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: TOP READER & TOP BOOKS -->
+        <div id="tab-content-top" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Readers Siswa -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden p-6">
+                <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Top 10 Pembaca Teraktif (Siswa)</h3>
+                        <p class="text-[11px] text-slate-400">Siswa dengan frekuensi peminjaman buku terbanyak</p>
+                    </div>
+                </div>
+
+                <div id="top-readers-list" class="space-y-2.5">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Top Books -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden p-6">
+                <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Top 10 Buku Terpopuler</h3>
+                        <p class="text-[11px] text-slate-400">Judul buku yang paling sering dipinjam</p>
+                    </div>
+                </div>
+
+                <div id="top-books-list" class="space-y-2.5">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: REKAP DENDA -->
+        <div id="tab-content-denda" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Rekapitulasi Penerimaan Denda Keterlambatan</h3>
+                        <p class="text-[11px] text-slate-400">Rincian denda keterlambatan buku yang telah lunas maupun tertunggak</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="px-5 py-3">Peminjam</th>
+                                <th class="px-5 py-3">Judul Buku</th>
+                                <th class="px-5 py-3">Keterlambatan</th>
+                                <th class="px-5 py-3">Nominal Denda</th>
+                                <th class="px-5 py-3">Status Pembayaran</th>
+                                <th class="px-5 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekap-denda-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="laporan.js"></script>
+</body>
+
+</html>

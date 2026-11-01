@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Presensi Guru - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in">
+        <!-- Header Mobile-First -->
+        <div class="flex flex-col gap-3 mb-4">
+            <!-- Row 1: Title + Kelas Selector (super_admin only) -->
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-lg md:text-2xl font-bold text-slate-800 dark:text-white">Presensi Guru</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden md:block">Input kehadiran guru per jam pelajaran</p>
+                </div>
+                <!-- Selector Kelas (untuk super_admin) atau Badge Kelas (untuk admin_kelas) -->
+                <div id="kelas-container">
+                    <!-- Diisi oleh JavaScript -->
+                    <div class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-2 rounded-lg font-bold text-sm shadow-xs" id="display-kelas">
+                        <i class="fa-solid fa-door-open mr-1"></i>
+                        <span id="kelas-name">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Date Picker -->
+            <div class="flex items-center gap-2">
+                <div class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 flex items-center gap-2 shadow-xs">
+                    <i class="fa-solid fa-calendar text-slate-400"></i>
+                    <input type="date" id="input-tanggal"
+                        class="!p-0 !border-0 w-full font-bold text-slate-700 dark:text-slate-200 bg-transparent focus:ring-0 text-sm">
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget Monitoring Kelengkapan Presensi Guru Kelas (Aktif mulai pukul 14:00) -->
+        <div id="incomplete-classes-widget" class="hidden mb-4 transition-all duration-300"></div>
+
+
+
+        <!-- Legend Mini (Mobile) -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 mb-4 text-xs text-slate-600 dark:text-slate-300 flex flex-wrap items-center justify-between gap-2.5">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center whitespace-nowrap"><strong class="font-bold text-emerald-600 mr-1">H</strong>= Hadir</span>
+                <span class="inline-flex items-center whitespace-nowrap"><strong class="font-bold text-purple-600 mr-1">K</strong>= Kegiatan</span>
+                <span class="inline-flex items-center whitespace-nowrap"><strong class="font-bold text-blue-600 mr-1">I</strong>= Izin</span>
+                <span class="inline-flex items-center whitespace-nowrap"><strong class="font-bold text-amber-600 mr-1">S</strong>= Sakit</span>
+                <span class="inline-flex items-center whitespace-nowrap"><strong class="font-bold text-red-600 mr-1">TK</strong>= Tanpa Keterangan</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-700 pt-2 sm:pt-0 sm:pl-3">
+                <span class="inline-flex items-center text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 shrink-0"></span>JP Tersimpan
+                </span>
+                <span class="inline-flex items-center text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 mr-1.5 shrink-0"></span>JP Belum Disimpan
+                </span>
+            </div>
+        </div>
+
+        <!-- Tabel Input Presensi (Mobile Optimized) -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs uppercase hidden md:table-header-group">
+                        <tr>
+                            <th class="px-4 py-3 w-16">JP</th>
+                            <th class="px-4 py-3">Waktu</th>
+                            <th class="px-4 py-3">Mapel</th>
+                            <th class="px-4 py-3">Guru</th>
+                            <th class="px-4 py-3 w-36 md:w-44 text-center">Status</th>
+                            <th class="px-4 py-3 w-16 text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="presensi-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                        <!-- Diisi oleh JavaScript -->
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-slate-400">
+                                <i class="fa-solid fa-spinner fa-spin mr-2"></i>Memuat...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Status -->
+            <div class="px-4 py-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700/50">
+                <div id="status-saved" class="text-xs text-slate-500 dark:text-slate-400 text-center">
+                    <i class="fa-solid fa-clock mr-1"></i> Belum ada data tersimpan
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Presensi Guru Hari Sebelumnya Belum Lengkap -->
+    <div id="modal-previous-day-incomplete" onclick="if (event.target === this) window.acknowledgeAndShowToday()" class="fixed inset-0 z-[250] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200">
+        <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 text-center transform transition-all duration-200 scale-95 opacity-0" id="modal-previous-day-card">
+            <button type="button" onclick="window.acknowledgeAndShowToday()" title="Tutup dan lanjutkan hari ini" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+            <div class="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center text-2xl mb-4 shadow-xs">
+                <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+            </div>
+            
+            <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-2" id="modal-prev-day-title">
+                Presensi Hari Sebelumnya Belum Lengkap
+            </h3>
+            
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-3" id="modal-prev-day-message">
+                Presensi guru kelas Anda pada hari sebelumnya belum lengkap atau belum terisi.
+            </p>
+
+            <!-- Box Rincian Status -->
+            <div class="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-3 text-left mb-4 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-amber-800 dark:text-amber-300 font-medium">Tanggal Sebelumnya:</span>
+                    <span class="font-bold text-amber-950 dark:text-amber-200" id="modal-prev-day-date">-</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-amber-800 dark:text-amber-300 font-medium">Status Terisi:</span>
+                    <span class="font-bold text-amber-950 dark:text-amber-200" id="modal-prev-day-status">-</span>
+                </div>
+                <div class="text-[11px] text-amber-700 dark:text-amber-400 pt-1 border-t border-amber-200/60 dark:border-amber-800/40" id="modal-prev-day-missing">
+                    Jam belum terisi: -
+                </div>
+            </div>
+
+            <!-- Petunjuk Siswa & Keterangan Khusus Libur / Tidak Belajar -->
+            <div class="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl p-3 text-left mb-5 space-y-1.5 text-xs text-blue-900 dark:text-blue-200">
+                <div class="flex items-start gap-2">
+                    <i class="fa-solid fa-lightbulb text-blue-600 dark:text-blue-400 mt-0.5 shrink-0"></i>
+                    <p class="leading-relaxed">
+                        <strong>Petunjuk:</strong> Disarankan mengubah tanggal presensi ke hari sebelumnya untuk melengkapi data kehadiran guru yang masih kosong.
+                    </p>
+                </div>
+                <div class="flex items-start gap-2 pt-1 border-t border-blue-200/60 dark:border-blue-800/40 text-[11px] text-blue-800 dark:text-blue-300">
+                    <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0"></i>
+                    <p class="leading-relaxed">
+                        <em>Catatan:</em> Jika pada hari sebelumnya kelas memang <strong>tidak belajar</strong> (hari libur, tanggal merah, atau kegiatan non-KBM), Anda dapat langsung mengklik <strong>"Oke, Lanjut Hari Ini"</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex flex-col sm:flex-row items-center gap-2 justify-center">
+                <button id="btn-switch-to-prev-day" type="button"
+                    class="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 active:scale-95">
+                    <i class="fa-solid fa-calendar-day"></i>
+                    <span id="btn-switch-prev-day-text">Ubah ke Hari Sebelumnya</span>
+                </button>
+                <button id="btn-ack-prev-day" type="button" onclick="window.acknowledgeAndShowToday()"
+                    class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition border border-slate-200 dark:border-slate-700 active:scale-95">
+                    Oke, Lanjut Hari Ini
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-presensi-guru.js"></script>
+</body>
+
+</html>

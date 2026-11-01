@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Aduan & Usulan Sarpras - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300 min-h-screen">
+
+    <!-- KONTAINER LAYOUT GLOBAL -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA -->
+    <main class="hidden fade-in pb-16 lg:pb-12 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3">
+        
+        <!-- ============================================== -->
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                    <span>Aduan & Usulan Sarpras</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Layanan pelaporan kerusakan fasilitas fisik dan usulan sarana prasarana sekolah.
+                </p>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <button type="button" id="btn-refresh" onclick="window.refreshReports?.()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Segarkan Data" aria-label="Segarkan">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span>Segarkan</span>
+                </button>
+                <button type="button" id="btn-create-report" onclick="window.openCreateReportModal?.()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" aria-label="Buat Laporan Baru">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Lapor Kerusakan / Usulan</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2. GRID KARTU STATISTIK (KPI METRICS)          -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+            <!-- Metric 1: Total Aduan -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Total Laporan</p>
+                    <h3 id="kpi-total-reports" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 2: Menunggu Tindak Lanjut -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-hourglass-start"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Menunggu Respon</p>
+                    <h3 id="kpi-pending-reports" class="text-base sm:text-xl font-black text-amber-600 dark:text-amber-400 leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 3: Dalam Proses -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Diproses / Servis</p>
+                    <h3 id="kpi-progress-reports" class="text-base sm:text-xl font-black text-blue-600 dark:text-blue-400 leading-tight">0</h3>
+                </div>
+            </div>
+
+            <!-- Metric 4: Selesai Ditangani -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Telah Dituntaskan</p>
+                    <h3 id="kpi-resolved-reports" class="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 3. TOOLBAR FILTER & PENCARIAN (Anti-Overlapping)-->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs mb-4 flex flex-col gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
+                <!-- Search Field -->
+                <div class="lg:col-span-4">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-magnifying-glass text-emerald-500"></i>
+                        <span>Cari Laporan</span>
+                    </label>
+                    <input type="text" id="filter-search" placeholder="Cari nomor tiket, judul, uraian, pelapor..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium placeholder:text-slate-400">
+                </div>
+
+                <!-- Filter Status -->
+                <div class="lg:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-filter text-emerald-500"></i>
+                        <span>Status</span>
+                    </label>
+                    <select id="filter-status" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Status</option>
+                        <option value="submitted">Menunggu Respon</option>
+                        <option value="reviewed">Ditelaah Waka/Admin</option>
+                        <option value="in_progress">Sedang Dikerjakan</option>
+                        <option value="resolved">Selesai Dituntaskan</option>
+                        <option value="rejected">Ditolak / Non-Relevan</option>
+                    </select>
+                </div>
+
+                <!-- Filter Kategori -->
+                <div class="lg:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tags text-emerald-500"></i>
+                        <span>Kategori</span>
+                    </label>
+                    <select id="filter-category" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Kategori</option>
+                        <option value="kerusakan_sarana">Kerusakan Sarana/Barang</option>
+                        <option value="kerusakan_gedung">Kerusakan Gedung/Bangunan</option>
+                        <option value="usulan_kebutuhan">Usulan Pengadaan Baru</option>
+                    </select>
+                </div>
+
+                <!-- Filter Urgensi -->
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                        <span>Urgensi</span>
+                    </label>
+                    <select id="filter-urgency" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Urgensi</option>
+                        <option value="Mendesak">Mendesak</option>
+                        <option value="Sedang">Sedang</option>
+                        <option value="Rendah">Rendah</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 4. TABEL DATA ADUAN                            -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-100/75 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/80 uppercase tracking-wider text-[11px] font-bold">
+                            <th class="py-3 px-3 sm:px-4">Tiket & Tanggal</th>
+                            <th class="py-3 px-3 sm:px-4">Pelapor</th>
+                            <th class="py-3 px-3 sm:px-4">Kategori & Urgensi</th>
+                            <th class="py-3 px-3 sm:px-4">Lokasi / Aset</th>
+                            <th class="py-3 px-3 sm:px-4">Uraian Aduan</th>
+                            <th class="py-3 px-3 sm:px-4">Status & Disposisi</th>
+                            <th class="py-3 px-3 sm:px-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-reports-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                        <tr>
+                            <td colspan="7" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-500 mb-2"></i>
+                                <p class="text-xs">Memuat daftar aduan...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination / Counter Footer -->
+            <div class="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <span id="reports-counter-text">Menampilkan 0 aduan</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- 5. DIALOG MODAL (TOP-LEVEL SIBLINGS DI LUAR MAIN - ANTI NESTING) -->
+    <!-- ================================================================= -->
+
+    <!-- MODAL 1: FORM ADUAN / USULAN BARU / EDIT -->
+    <div id="modal-report-form" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <!-- Modal Header -->
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <h3 id="modal-report-form-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Buat Laporan / Usulan Sarpras</h3>
+                </div>
+                <button type="button" onclick="window.closeReportFormModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Form) -->
+            <form id="form-report" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="report-form-id" value="">
+
+                <!-- Kategori & Urgensi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-tags text-emerald-600"></i>
+                            <span>Kategori Laporan *</span>
+                        </label>
+                        <select id="report-input-category" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                            <option value="kerusakan_sarana">Kerusakan Sarana/Barang</option>
+                            <option value="kerusakan_gedung">Kerusakan Gedung/Bangunan</option>
+                            <option value="usulan_kebutuhan">Usulan Kebutuhan Pengadaan Baru</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                            <span>Tingkat Urgensi *</span>
+                        </label>
+                        <select id="report-input-urgency" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                            <option value="Sedang">Sedang (Standar)</option>
+                            <option value="Mendesak">Mendesak (Mengganggu KBM/Bahaya)</option>
+                            <option value="Rendah">Rendah (Dapat Dijadwalkan)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Ruangan & Aset -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-door-open text-blue-600"></i>
+                            <span>Lokasi Ruangan (Opsional)</span>
+                        </label>
+                        <select id="report-input-room" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                            <option value="">-- Pilih Ruangan Terkait --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-chair text-indigo-600"></i>
+                            <span>Nama Barang / Bagian Fisik</span>
+                        </label>
+                        <input type="text" id="report-input-item-name" placeholder="Misal: AC Sharp, Meja Guru, Lampu TL..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                    </div>
+                </div>
+
+                <!-- Judul Aduan -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-heading text-slate-600"></i>
+                        <span>Judul Laporan Singkat *</span>
+                    </label>
+                    <input type="text" id="report-input-title" required placeholder="Contoh: AC Ruang X-1 Tidak Dingin & Meneteskan Air" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <!-- Uraian Masalah -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-align-left text-slate-600"></i>
+                        <span>Rincian Masalah / Usulan Kebutuhan *</span>
+                    </label>
+                    <textarea id="report-input-description" required rows="4" placeholder="Jelaskan secara jelas kendala kerusakan, lokasi spesifik, atau alasan kebutuhan sarpras ini..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <!-- Modal Footer -->
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeReportFormModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-report" id="btn-save-report" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Kirim Laporan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DETAIL LENGKAP LAPORAN -->
+    <div id="modal-report-detail" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Detail Laporan Aduan</h3>
+                        <p id="detail-report-number" class="text-xs text-slate-400 font-mono">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeReportDetailModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <!-- Status & Urgensi Badges -->
+                <div class="flex items-center gap-2 flex-wrap" id="detail-badges-container">
+                    <!-- Dynamic badges -->
+                </div>
+
+                <!-- Info Pelapor & Tanggal -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Pelapor:</span>
+                        <span id="detail-reporter-name" class="font-bold text-slate-800 dark:text-white">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Peran / NIP / NIS:</span>
+                        <span id="detail-reporter-role" class="font-medium text-slate-600 dark:text-slate-300">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Waktu Pelaporan:</span>
+                        <span id="detail-created-at" class="font-medium text-slate-600 dark:text-slate-300">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Lokasi / Ruang:</span>
+                        <span id="detail-room-name" class="font-bold text-emerald-600 dark:text-emerald-400">-</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Aset Fisik:</span>
+                        <span id="detail-item-name" class="font-medium text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                </div>
+
+                <!-- Judul & Rincian Deskripsi -->
+                <div>
+                    <h4 id="detail-title" class="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1.5">Judul Aduan</h4>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/80 whitespace-pre-line text-slate-700 dark:text-slate-300 font-normal leading-relaxed" id="detail-description">
+                        Deskripsi aduan...
+                    </div>
+                </div>
+
+                <!-- Perkembangan Tiket & Riwayat Status -->
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 text-xs text-slate-700 dark:text-slate-300">
+                    <span class="font-bold">Perkembangan Pemeliharaan:</span>
+                    <span id="detail-maintenance-progress" class="ml-1 text-slate-600 dark:text-slate-400">Belum ada tiket pemeliharaan terkait.</span>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 text-xs text-slate-700 dark:text-slate-300 space-y-1.5">
+                    <span class="font-bold block">Riwayat Tindak Lanjut:</span>
+                    <ol id="detail-report-history" class="mt-1 space-y-1"></ol>
+                </div>
+
+                <!-- Riwayat Disposisi / Tindak Lanjut -->
+                <div id="detail-disposition-card" class="hidden p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <span>Catatan Tindak Lanjut</span>
+                        </span>
+                        <span id="detail-handled-by" class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">-</span>
+                    </div>
+                    <p id="detail-disposition-notes" class="text-xs text-emerald-900 dark:text-emerald-200 whitespace-pre-line">-</p>
+                    <div id="detail-disposition-to-badge" class="mt-1"></div>
+                </div>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeReportDetailModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: DISPOSISI ADUAN (KHUSUS WAKA SARPRAS & ADMIN SARPRAS) -->
+    <div id="modal-report-disposition" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-stamp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Disposisi Tindak Lanjut Sarpras</h3>
+                        <p id="disposition-report-number" class="text-xs text-slate-400 font-mono">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeReportDispositionModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-disposition" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="disposition-report-id" value="">
+
+                <!-- Judul Ringkas Aduan Terkait -->
+                <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase">Aduan Masuk:</p>
+                    <p id="disposition-report-title" class="font-bold text-slate-800 dark:text-white text-xs sm:text-sm mt-0.5">-</p>
+                    <p id="disposition-report-desc" class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">-</p>
+                </div>
+
+                <!-- Pilihan Status Tindak Lanjut -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tasks text-emerald-600"></i>
+                        <span>Status Baru *</span>
+                    </label>
+                    <select id="disposition-status" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        <option value="reviewed">Ditelaah / Terverifikasi (Waka/Admin)</option>
+                        <option value="in_progress">Sedang Dikerjakan / Dalam Proses Servis</option>
+                        <option value="resolved">Selesai Dituntaskan (Tutup Tiket)</option>
+                        <option value="rejected">Ditolak / Tidak Dapat Dipenuhi</option>
+                    </select>
+                </div>
+
+                <!-- Jalur Disposisi -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrows-split-up-and-left text-blue-600"></i>
+                        <span>Arah Disposisi / Alur Penanganan</span>
+                    </label>
+                    <select id="disposition-to" onchange="window.handleDispositionToChange?.(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        <option value="">-- Selesaikan Mandiri / Tanpa Anggaran Khusus --</option>
+                        <option value="pemeliharaan">Tiket Pemeliharaan / Perbaikan Teknis</option>
+                        <option value="rkas">Teruskan ke Perencanaan Anggaran RKAS</option>
+                    </select>
+                </div>
+
+                <!-- Panel Mini 1-Klik Buat Draft RKAS (Muncul jika pilih rkas) -->
+                <div id="panel-rkas-auto-create" class="hidden p-3.5 bg-indigo-50/70 dark:bg-indigo-950/30 rounded-xl border border-indigo-200 dark:border-indigo-800/60 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="check-create-rkas" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                        <label for="check-create-rkas" class="font-bold text-indigo-900 dark:text-indigo-200 text-xs sm:text-sm cursor-pointer">
+                            Buat Draft Usulan Pengadaan RKAS Otomatis (1-Klik)
+                        </label>
+                    </div>
+
+                    <div id="rkas-form-fields" class="hidden space-y-2.5 pt-2 border-t border-indigo-200/60 dark:border-indigo-800/50">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Tahun Anggaran</label>
+                                <input type="number" id="rkas-draft-year" value="2026" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Sumber Dana</label>
+                                <select id="rkas-draft-funding" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                                    <option value="BOS Reguler">BOS Reguler</option>
+                                    <option value="BOS Kinerja">BOS Kinerja</option>
+                                    <option value="Komite">Dana Komite</option>
+                                    <option value="DAK">DAK Fisik</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Volume</label>
+                                <input type="number" id="rkas-draft-qty" value="1" min="1" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Satuan</label>
+                                <input type="text" id="rkas-draft-unit" value="Unit" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Skala Prioritas</label>
+                                <select id="rkas-draft-priority" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                                    <option value="1">Prioritas 1 (Mendesak)</option>
+                                    <option value="2" selected>Prioritas 2 (Penting)</option>
+                                    <option value="3">Prioritas 3 (Tambahan)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Estimasi Biaya Satuan (Rp)</label>
+                            <input type="number" id="rkas-draft-price" placeholder="Contoh: 7500000" class="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catatan Disposisi / Instruksi -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment-dots text-slate-600"></i>
+                        <span>Catatan Disposisi / Instruksi Tindak Lanjut</span>
+                    </label>
+                    <textarea id="disposition-notes" rows="3" placeholder="Tulis instruksi perbaikan teknis atau pertimbangan keputusan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeReportDispositionModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-disposition" id="btn-save-disposition" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Disposisi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="js/global.js"></script>
+    <script type="module" src="js/page-sarpras-aduan.js"></script>
+</body>
+
+</html>

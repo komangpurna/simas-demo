@@ -1,0 +1,21 @@
+#panel-koreksi-ai [data-state="error"], #panel-koreksi-ai [data-state="conflict"] { color: #b45309; }
+.dark #panel-koreksi-ai [data-state="error"], .dark #panel-koreksi-ai [data-state="conflict"] { color: #fcd34d; }
+#panel-koreksi-ai table { min-width: 720px; }
+#panel-koreksi-ai button:disabled, #modal-ai-review-split button:disabled { opacity: .5; cursor: wait; }
+#modal-ai-review-split > div { height: 94dvh; }
+#modal-ai-review-split .ai-review-body { grid-template-rows: minmax(180px, 38%) minmax(0, 1fr); }
+#modal-ai-review-split .ai-review-identity { flex: 1; }
+#modal-ai-review-split .ai-review-header button { min-height: 44px; }
+#modal-ai-review-split #text-ai-review-student-title { overflow-wrap: anywhere; }
+#modal-ai-review-split #viewport-ai-review-sheet { min-height: 0; }
+#modal-ai-review-split .ai-review-sources > .absolute { top: 60px; }
+#modal-ai-review-split .ai-review-scores > * { flex-shrink: 0; }
+#modal-ai-review-split #details-ai-typed-answer textarea { max-height: 15dvh; }
+@media (min-width: 768px) {
+    #modal-ai-review-split .ai-review-body { grid-template-rows: minmax(0, 1fr); }
+}
+@media (max-width: 639px) {
+    #modal-ai-review-split .ai-review-header { gap: 6px; padding: 8px; }
+    #modal-ai-review-split .ai-review-header > div:last-child { justify-content: space-between; }
+    #modal-ai-review-split .ai-review-header button { flex-shrink: 0; }
+}

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Buku Kenangan Kelas XII - {{schoolShortName}} Yearbook</title>
+    <meta name="description" content="Buku kenangan digital angkatan Kelas XII {{schoolName}}: profil, mimpi, dan pesan kenangan antar sahabat, serta arsip buku tahunan alumni.">
+    <meta name="theme-color" content="#17140f">
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        // Terapkan tema sebelum render agar tidak berkedip (preferensi sama dengan SIMAS: localStorage.dark_mode)
+        try { if (localStorage.getItem('dark_mode') === 'true') document.documentElement.classList.add('dark'); } catch (_) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/yearbook.css?v=26.11.02.1">
+    <script type="module" src="js/school-config.js"></script>
+    <style>
+        .hidden { display: none !important; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+        @media (max-width: 560px) {
+            .yb-brand-text, .yb-portal-label { display: none; }
+            .yb-tab { padding: 8px 12px; }
+        }
+    </style>
+</head>
+
+<body class="yb-body">
+
+    <!-- TOP BAR -->
+    <header class="yb-topbar">
+        <div class="yb-container yb-topbar-inner">
+            <a href="yearbook.html" class="yb-brand" aria-label="Beranda Buku Kenangan">
+                <img src="assets/logo-sekolah.png" alt="">
+                <span class="yb-brand-text">
+                    <span class="yb-brand-title">The Yearbook</span>
+                    <span class="yb-brand-sub">{{schoolName}}</span>
+                </span>
+            </a>
+
+            <nav class="yb-tabs" aria-label="Navigasi Buku Kenangan">
+                <button type="button" id="nav-gallery" class="yb-tab is-active" onclick="window.switchYearbookTab('gallery')">
+                    <i class="fa-solid fa-users"></i><span>Angkatan</span>
+                </button>
+                <button type="button" id="nav-archives" class="yb-tab" onclick="window.switchYearbookTab('archives')">
+                    <i class="fa-solid fa-book"></i><span>Arsip</span>
+                </button>
+            </nav>
+
+            <div class="yb-actions">
+                <button type="button" class="yb-icon-btn" onclick="window.toggleYearbookTheme()" title="Ganti tema terang / gelap" aria-label="Ganti tema">
+                    <i id="yb-theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <a id="yb-portal-link" href="portal-siswa.html" class="yb-btn yb-btn-primary yb-btn-sm" title="Masuk Portal Siswa">
+                    <i class="fa-solid fa-right-to-bracket"></i><span class="yb-portal-label">Portal Siswa</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="fade-in">
+
+        <!-- ================================================================= -->
+        <!-- TAB 1: GALERI ANGKATAN -->
+        <!-- ================================================================= -->
+        <section id="section-gallery">
+            <div class="yb-hero">
+                <div class="yb-hero-watermark" aria-hidden="true">XII</div>
+                <div class="yb-container yb-hero-inner">
+                    <span class="yb-eyebrow"><span>Buku Kenangan Digital &middot; <span id="yb-hero-ta">Tahun Ajaran</span></span></span>
+                    <h1 class="yb-hero-title">Class of <em id="yb-hero-year">2026</em></h1>
+                    <p class="yb-hero-lead">
+                        Setiap wajah di sini adalah satu bab cerita {{schoolName}}. Telusuri mimpi, kutipan, dan pesan
+                        yang mereka tinggalkan sebelum melangkah keluar gerbang sekolah.
+                    </p>
+
+                    <div class="yb-stats" aria-live="polite">
+                        <div class="yb-stat">
+                            <div class="yb-stat-value" id="yb-stat-students">&ndash;</div>
+                            <div class="yb-stat-label">Wisudawan</div>
+                        </div>
+                        <div class="yb-stat">
+                            <div class="yb-stat-value" id="yb-stat-classes">&ndash;</div>
+                            <div class="yb-stat-label">Rombel</div>
+                        </div>
+                        <div class="yb-stat">
+                            <div class="yb-stat-value" id="yb-stat-profiles">&ndash;</div>
+                            <div class="yb-stat-label">Profil Terisi</div>
+                        </div>
+                        <div class="yb-stat">
+                            <div class="yb-stat-value" id="yb-stat-messages">&ndash;</div>
+                            <div class="yb-stat-label">Pesan Kenangan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="yb-toolbar">
+                <div class="yb-container yb-toolbar-inner">
+                    <div id="yb-class-chips" class="yb-chips" role="tablist" aria-label="Pilih rombel">
+                        <span class="yb-chip">Memuat rombel...</span>
+                    </div>
+                    <div class="yb-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <label for="gallery-search-input" class="sr-only">Cari teman</label>
+                        <input type="search" id="gallery-search-input" class="yb-input" autocomplete="off"
+                            oninput="window.filterGalleryStudents(this.value)" placeholder="Cari nama, cita-cita, kampus...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="yb-container">
+                <div class="yb-class-head">
+                    <div>
+                        <div class="yb-class-kicker" id="yb-class-kicker">Rombel</div>
+                        <h2 class="yb-class-title" id="yb-class-title">&nbsp;</h2>
+                    </div>
+                    <div class="yb-progress">
+                        <div class="yb-progress-label">
+                            <span id="yb-class-count">0 siswa</span>
+                            <span><strong id="yb-class-pct">0%</strong> profil terisi</span>
+                        </div>
+                        <div class="yb-progress-track"><div class="yb-progress-bar" id="yb-class-bar"></div></div>
+                    </div>
+                </div>
+
+                <div id="gallery-students-grid" class="yb-grid" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: ARSIP ALUMNI -->
+        <!-- ================================================================= -->
+        <section id="section-archives" class="hidden">
+            <div class="yb-archive-hero">
+                <div class="yb-container">
+                    <span class="yb-eyebrow">Perpustakaan Alumni</span>
+                    <h1 class="yb-hero-title" style="font-size: clamp(2.2rem, 6vw, 4rem);">Rak <em>Buku Tahunan</em></h1>
+                    <p class="yb-hero-lead">
+                        Edisi cetak Master PDF setiap angkatan, diabadikan untuk seluruh alumni {{schoolName}}.
+                        Buka dan unduh kapan saja &mdash; tanpa batas waktu.
+                    </p>
+                </div>
+            </div>
+            <div class="yb-container">
+                <div id="archives-list-grid" class="yb-shelf"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- MODAL PROFIL SISWA (SPREAD) -->
+    <!-- ================================================================= -->
+    <div id="yb-profile-modal" class="yb-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ybp-name">
+        <div class="yb-modal-backdrop" onclick="window.closeYearbookProfile()"></div>
+        <article class="yb-spread">
+            <div class="yb-spread-photo">
+                <img id="ybp-photo" alt="" onerror="this.classList.add('hidden'); document.getElementById('ybp-initials').classList.remove('hidden');">
+                <div id="ybp-initials" class="yb-initials hidden"></div>
+                <div class="yb-photo-switch" role="group" aria-label="Pilih foto">
+                    <button type="button" id="ybp-btn-formal" class="is-active" onclick="window.setProfilePhotoMode('formal')">Resmi</button>
+                    <button type="button" id="ybp-btn-casual" onclick="window.setProfilePhotoMode('casual')">Santai</button>
+                </div>
+            </div>
+
+            <div class="yb-spread-content">
+                <button type="button" class="yb-icon-btn yb-spread-close" onclick="window.closeYearbookProfile()" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="yb-spread-kicker">
+                    <span id="ybp-class">Kelas</span>
+                    <span aria-hidden="true">&middot;</span>
+                    <span id="ybp-year">Class of 2026</span>
+                </div>
+                <h2 class="yb-spread-name" id="ybp-name">Nama Siswa</h2>
+                <blockquote class="yb-quote" id="ybp-quote"></blockquote>
+                <div class="yb-facts" id="ybp-facts"></div>
+
+                <div class="yb-section-label"><span id="ybp-notes-label">Pesan dari Kawan</span></div>
+                <div id="ybp-notes" class="yb-notes"></div>
+
+                <div class="yb-spread-footer">
+                    <div class="yb-spread-nav">
+                        <button type="button" class="yb-icon-btn" onclick="window.stepYearbookProfile(-1)" aria-label="Siswa sebelumnya"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button type="button" class="yb-icon-btn" onclick="window.stepYearbookProfile(1)" aria-label="Siswa berikutnya"><i class="fa-solid fa-arrow-right"></i></button>
+                        <span id="ybp-position">1 / 1</span>
+                    </div>
+                    <button type="button" id="ybp-write-btn" class="yb-btn yb-btn-accent" onclick="window.openSendMessageForActive()">
+                        <i class="fa-solid fa-pen-nib"></i><span>Tulis Pesan Kenangan</span>
+                    </button>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL KIRIM PESAN KENANGAN ANTAR SISWA -->
+    <!-- ================================================================= -->
+    <div id="modal-send-message" class="yb-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-send-title" style="z-index: 70;">
+        <div class="yb-modal-backdrop" onclick="window.closeSendMessageModal()"></div>
+        <div class="yb-sheet">
+            <button type="button" class="yb-icon-btn" style="position:absolute; top:14px; right:14px;" onclick="window.closeSendMessageModal()" aria-label="Tutup">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <span class="yb-eyebrow">Tanda Tangan Digital</span>
+            <h3 id="modal-send-title">Tulis Pesan Kenangan</h3>
+
+            <div class="yb-recipient">
+                <div class="yb-recipient-avatar" id="modal-target-avatar">?</div>
+                <div style="min-width:0;">
+                    <div class="yb-hint">Untuk</div>
+                    <div id="modal-target-name" style="font-weight:700; color:var(--yb-ink);">Nama Teman</div>
+                    <div id="modal-target-class" class="yb-hint">Kelas XII</div>
+                </div>
+            </div>
+
+            <!-- Belum login sebagai siswa -->
+            <div id="modal-login-required" class="hidden">
+                <div class="yb-callout">
+                    <i class="fa-solid fa-lock" style="color:var(--yb-gold); margin-right:6px;"></i>
+                    Pesan kenangan hanya bisa ditulis oleh siswa yang sudah <strong>masuk ke Portal Siswa</strong>,
+                    agar setiap pesan tercatat atas nama pengirim yang jelas.
+                </div>
+                <div style="display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:18px;">
+                    <button type="button" class="yb-btn yb-btn-ghost" onclick="window.closeSendMessageModal()">Nanti saja</button>
+                    <a href="portal-siswa.html" class="yb-btn yb-btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Masuk Portal Siswa</a>
+                </div>
+            </div>
+
+            <!-- Form pesan -->
+            <form id="modal-message-form" onsubmit="window.submitYearbookMessage(event)">
+                <input type="hidden" id="modal-target-nis">
+                <label for="modal-input-message" class="sr-only">Isi pesan kenangan</label>
+                <textarea id="modal-input-message" class="yb-textarea" maxlength="250" minlength="3" required
+                    placeholder="Tulis kenangan seru, doa, atau pesan untuk masa depannya..."
+                    oninput="document.getElementById('modal-msg-counter').textContent = `${this.value.length} / 250`"></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:6px;">
+                    <span class="yb-hint" id="modal-sender-info">Dikirim sebagai siswa</span>
+                    <span class="yb-hint" id="modal-msg-counter">0 / 250</span>
+                </div>
+                <p class="yb-hint" style="margin:12px 0 0; line-height:1.5;">
+                    <i class="fa-solid fa-circle-info" style="color:var(--yb-gold);"></i>
+                    Pesan tampil di halaman temanmu setelah ia menyetujuinya. Mengirim ulang ke teman yang sama akan memperbarui pesan sebelumnya.
+                </p>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:18px;">
+                    <button type="button" class="yb-btn yb-btn-ghost" onclick="window.closeSendMessageModal()">Batal</button>
+                    <button type="submit" id="btn-submit-msg" class="yb-btn yb-btn-accent">
+                        <i class="fa-solid fa-paper-plane"></i><span>Kirim Pesan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="yb-footer">
+        <div class="yb-container yb-footer-inner">
+            <span>The Yearbook &middot; {{schoolName}} ({{schoolShortName}} {{schoolVisiAcronym}})</span>
+            <span>Dikelola melalui SIMAS {{schoolShortName}}</span>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/cloudflare-client.js"></script>
+    <script type="module" src="js/page-yearbook.js?v=26.11.02.1"></script>
+</body>
+
+</html>

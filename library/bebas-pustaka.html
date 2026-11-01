@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Surat Bebas Perpustakaan - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-surat, #printable-surat * {
+                visibility: visible;
+            }
+            #printable-surat {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                padding: 2cm !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .surat-font {
+            font-family: 'Tinos', serif;
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased min-h-screen min-h-dvh">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider mb-1">
+                    <a href="index.html" class="hover:underline">Perpustakaan</a> <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i> Layanan Bebas Pustaka Digital
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Surat Keterangan Bebas Pustaka Digital</h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">Verifikasi kelulusan & bebas tanggungan buku secara digital (tersinkronisasi otomatis ke Portal Wali Kelas & Siswa).</p>
+            </div>
+            <!-- Tab Switcher Navigation -->
+            <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm text-xs font-bold">
+                <button id="tab-btn-single" class="px-4 py-2 rounded-xl bg-teal-600 text-white shadow-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-user-check"></i> Verifikasi Satuan
+                </button>
+                <button id="tab-btn-bulk" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-users-gear"></i> Verifikasi Massal Kelas
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 1: VERIFIKASI SATUAN (PER SISWA) -->
+        <div id="tab-content-single" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <!-- PANEL 1: VERIFIKASI & PENERBITAN (5 cols) -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-file-shield"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base text-slate-800 dark:text-white">Verifikasi Bebas Pustaka</h2>
+                        <p class="text-xs text-slate-400">Cari siswa untuk cek status pinjaman & denda</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 text-xs">
+                    <div class="relative z-30">
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Pilih Siswa <span class="text-rose-500">*</span></label>
+                        <input type="text" id="input-student-search" autocomplete="off"
+                            placeholder="Ketik NIS atau Nama Siswa..."
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-teal-500">
+                        <div id="student-search-dropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-56 overflow-y-auto z-50 divide-y divide-slate-100 dark:divide-slate-700 ring-1 ring-black/5"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-semibold text-slate-400 block mb-0.5 text-[11px]">NIS Siswa</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" id="selected-student-nis" readonly class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 font-mono font-bold text-slate-700 dark:text-slate-300">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-slate-400 block mb-0.5 text-[11px]">Kelas</label>
+                            <input type="text" id="selected-student-class" readonly class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 font-bold text-slate-700 dark:text-slate-300">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Keperluan Surat</label>
+                        <select id="input-keperluan-surat" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="Pengambilan Ijazah / Kelulusan">Pengambilan Ijazah / Kelulusan</option>
+                            <option value="Pindah Sekolah / Mutasi Keluar">Pindah Sekolah / Mutasi Keluar</option>
+                            <option value="Persyaratan Beasiswa / Masuk PTN">Persyaratan Beasiswa / Masuk PTN</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <!-- Verification Result Banner -->
+                    <div id="verification-status-banner" class="hidden p-4 rounded-2xl border space-y-2">
+                        <div class="flex items-center gap-2 font-bold text-xs" id="verification-title">
+                            <i class="fa-solid fa-circle-check"></i> Status Verifikasi
+                        </div>
+                        <p id="verification-desc" class="text-[11px]">Memeriksa pinjaman aktif dan denda...</p>
+                        
+                        <div id="unreturned-books-list" class="hidden pt-2 border-t text-[11px] space-y-1"></div>
+                    </div>
+
+                    <button id="btn-generate-surat" disabled
+                        class="w-full py-3 px-4 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-400 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed">
+                        <i class="fa-solid fa-certificate"></i> Setujui Bebas Pustaka Digital
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 2: PRATINJAU SURAT (7 cols) -->
+            <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-teal-600"></i> Pratinjau Dokumen Digital
+                        </h3>
+                        <button id="btn-print-active-surat" class="hidden px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition shadow-md flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                        </button>
+                    </div>
+
+                    <!-- KONTEN SURAT RESMI -->
+                    <div id="printable-surat" class="bg-white text-black p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-inner surat-font leading-relaxed">
+                        <!-- KOP SURAT RESMI -->
+                        <div class="border-b-4 border-double border-black pb-3 mb-6 text-center">
+                            <div class="flex items-center justify-center gap-4">
+                                <img src="../assets/logo-sekolah.png" alt="Logo" class="w-16 h-16 object-contain">
+                                <div>
+                                    <div class="text-xs font-bold uppercase tracking-wide">Pemerintah Provinsi Bali &bull; Dinas Pendidikan</div>
+                                    <div class="text-base font-bold uppercase tracking-wider">{{schoolNameUpper}}</div>
+                                    <div class="text-xs font-bold uppercase">PERPUSTAKAAN WIDYA {{schoolVisiAcronym}}</div>
+                                    <div class="text-[10px] italic">Alamat: {{schoolAddress}}, {{schoolPostalCode}} &bull; Website: {{schoolWebsite}}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- JUDUL SURAT -->
+                        <div class="text-center mb-6">
+                            <div class="text-sm font-bold uppercase tracking-wider underline">SURAT KETERANGAN BEBAS PERPUSTAKAAN</div>
+                            <div id="preview-no-surat" class="text-xs font-mono font-semibold mt-0.5">Nomor: 421.3/---/{{schoolShortName}}/LIB/2026</div>
+                        </div>
+
+                        <!-- ISI SURAT -->
+                        <div class="text-xs space-y-3 mb-6">
+                            <p>Yang bertanda tangan di bawah ini, Kepala Perpustakaan {{schoolName}} menerangkan bahwa:</p>
+                            
+                            <table class="w-full text-xs ml-4 my-2">
+                                <tr>
+                                    <td class="w-32 py-1 font-semibold">Nama Siswa</td>
+                                    <td class="w-3">:</td>
+                                    <td id="preview-student-name" class="font-bold">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1 font-semibold">Nomor Induk Siswa</td>
+                                    <td>:</td>
+                                    <td id="preview-student-nis" class="font-mono font-bold">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1 font-semibold">Kelas</td>
+                                    <td>:</td>
+                                    <td id="preview-student-class" class="font-semibold">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1 font-semibold">Tahun Pelajaran</td>
+                                    <td>:</td>
+                                    <td id="preview-academic-year" class="font-semibold">2025/2026</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-1 font-semibold">Keperluan</td>
+                                    <td>:</td>
+                                    <td id="preview-keperluan" class="font-semibold">-</td>
+                                </tr>
+                            </table>
+
+                            <p>
+                                Berdasarkan data administrasi perpustakaan, siswa yang bersangkutan <b>TIDAK MEMILIKI TANGGUNGAN PINJAMAN BUKU</b> maupun <b>DENDA KETERLAMBATAN</b> di Perpustakaan Widya Shakti {{schoolName}}.
+                            </p>
+                            <p>
+                                Demikian Surat Keterangan Bebas Perpustakaan ini diterbitkan secara digital untuk dapat dipergunakan sebagaimana mestinya.
+                            </p>
+                        </div>
+
+                        <!-- TANDA TANGAN -->
+                        <div class="flex justify-end text-xs mt-8">
+                            <div class="text-center w-56">
+                                <p id="preview-tanggal-surat">Abang, 23 Agustus 2026</p>
+                                <p class="font-bold mt-1">Kepala Perpustakaan,</p>
+                                <div class="h-16 flex items-center justify-center text-slate-300 italic text-[10px]">
+                                    (Tanda Tangan & Cap Digital)
+                                </div>
+                                <p id="preview-kepala-perpus-nama" class="font-bold underline">Kepala Perpustakaan {{schoolShortName}}</p>
+                                <p id="preview-kepala-perpus-nip" class="text-[10px] text-slate-600 font-mono">NIP. -</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: VERIFIKASI MASSAL PER KELAS (ROMBEL) -->
+        <div id="tab-content-bulk" class="hidden mb-8 space-y-6">
+            <!-- Filter & Action Card -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div class="w-full sm:w-64">
+                            <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Pilih Rombel / Kelas</label>
+                            <select id="bulk-select-class" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-bold outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="">-- Pilih Rombel Kelas --</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-60">
+                            <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Keperluan Standar</label>
+                            <select id="bulk-keperluan" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="Pengambilan Ijazah / Kelulusan">Pengambilan Ijazah / Kelulusan</option>
+                                <option value="Pindah Sekolah / Mutasi Keluar">Pindah Sekolah / Mutasi Keluar</option>
+                                <option value="Persyaratan Beasiswa / Masuk PTN">Persyaratan Beasiswa / Masuk PTN</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Batch Action Button -->
+                    <div class="shrink-0 w-full md:w-auto text-right">
+                        <label class="hidden md:block text-[11px] font-bold text-transparent mb-1">Aksi</label>
+                        <button id="btn-approve-all-clean" disabled
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-400 font-bold text-xs transition flex items-center justify-center gap-2 cursor-not-allowed">
+                            <i class="fa-solid fa-square-check"></i> Setujui Semua Siswa Bersih (Batch)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats summary bar for selected class -->
+                <div id="bulk-class-stats-bar" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                        <span class="text-slate-400 block text-[10px] font-semibold">Total Siswa Rombel</span>
+                        <span id="stat-bulk-total" class="font-extrabold text-base text-slate-800 dark:text-white">0</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/40">
+                        <span class="text-emerald-600 dark:text-emerald-400 block text-[10px] font-semibold">Sudah Bebas Pustaka</span>
+                        <span id="stat-bulk-approved" class="font-extrabold text-base text-emerald-700 dark:text-emerald-300">0</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/40">
+                        <span class="text-teal-600 dark:text-teal-400 block text-[10px] font-semibold">Bersih (Siap Disetujui)</span>
+                        <span id="stat-bulk-clean" class="font-extrabold text-base text-teal-700 dark:text-teal-300">0</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/40">
+                        <span class="text-rose-600 dark:text-rose-400 block text-[10px] font-semibold">Ada Tanggungan</span>
+                        <span id="stat-bulk-burden" class="font-extrabold text-base text-rose-700 dark:text-rose-300">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Students Verification Table -->
+            <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-teal-600"></i> Status Verifikasi Siswa Kelas <span id="bulk-table-classname" class="font-mono text-teal-600">-</span>
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                            <tr>
+                                <th class="px-4 py-3 w-12 text-center">No</th>
+                                <th class="px-4 py-3">Nama Siswa</th>
+                                <th class="px-4 py-3">NIS</th>
+                                <th class="px-4 py-3 text-center">Pinjaman Aktif</th>
+                                <th class="px-4 py-3 text-center">Tunggakan Denda</th>
+                                <th class="px-4 py-3 text-center">Status Bebas Pustaka</th>
+                                <th class="px-4 py-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulk-students-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-slate-400 italic">
+                                    Pilih rombel kelas di atas untuk memuat daftar siswa.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIWAYAT SURAT BEBAS PUSTAKA DIGITAL YANG SUDAH DITERBITKAN -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-white">Riwayat Bebas Pustaka Digital</h3>
+                        <p class="text-[11px] text-slate-400">Daftar siswa yang telah memiliki status Bebas Pustaka resmi</p>
+                    </div>
+                </div>
+                <!-- Filter Search -->
+                <div class="w-full sm:w-72">
+                    <input type="text" id="history-search-input" placeholder="Cari nama, NIS, atau no surat..."
+                        class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                    <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                        <tr>
+                            <th class="px-5 py-3">Nomor Surat</th>
+                            <th class="px-5 py-3">Nama Siswa & NIS</th>
+                            <th class="px-5 py-3">Kelas</th>
+                            <th class="px-5 py-3">Tgl Verifikasi</th>
+                            <th class="px-5 py-3">Petugas</th>
+                            <th class="px-5 py-3 text-center">Status</th>
+                            <th class="px-5 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-surat-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/60 font-medium">
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-slate-400 italic">
+                                Memuat riwayat surat bebas pustaka digital...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-400">
+                <span id="history-count-info">Menampilkan 0 data bebas pustaka</span>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="bebas-pustaka.js"></script>
+</body>
+
+</html>

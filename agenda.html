@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Kalender Agenda - SIMAS SHAKTI</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        // Penanganan Kompatibilitas Tautan Lama (Instant Redirect tanpa merusak riwayat back button)
+        (function () {
+            const hash = window.location.hash;
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+
+            if (hash === '#docs' || hash === '#tab-docs') {
+                window.location.replace('dokumen.html');
+            } else if (hash === '#docs-settings' || hash === '#tab-docs-settings') {
+                window.location.replace('dokumen.html#settings');
+            } else if (hash === '#employee' || hash === '#tab-employee' || tab === 'employee') {
+                params.delete('tab');
+                const q = params.toString() ? '?' + params.toString() : '';
+                window.location.replace('e-kinerja-tendik.html' + q);
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/data-holidays.js"></script>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+        <!-- HEADER -->
+        <div class="premium-header mesh-gradient-bg rounded-2xl px-5 py-3 mb-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden">
+            <div class="relative z-10">
+                <h1 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-days text-xl opacity-80"></i> Kalender Agenda
+                </h1>
+                <p class="text-slate-200 text-[11px] mt-0.5 max-w-lg hidden md:block">Kelola dan pantau seluruh agenda kegiatan sekolah dalam kalender interaktif.</p>
+            </div>
+            <div class="mt-2 md:mt-0 text-right relative z-10 flex items-center gap-4">
+                <!-- Tombol Kelola Agenda (Muncul bagi tim pengelola) -->
+                <button id="btn-add-agenda" onclick="window.openCalendarManager()" class="hidden bg-white hover:bg-slate-50 text-blue-600 px-3.5 py-1.5 rounded-xl font-bold shadow transition-all hover:scale-105 hover:shadow-md flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-sliders"></i> Kelola Agenda
+                </button>
+            </div>
+            <!-- Decorative Elements -->
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 blur-2xl rounded-full"></div>
+            <div class="absolute right-20 -bottom-10 w-24 h-24 bg-blue-400/20 blur-xl rounded-full"></div>
+        </div>
+
+        <!-- KALENDER MAIN SECTION -->
+        <div id="tab-content-calendar" class="grid grid-cols-1 xl:grid-cols-5 gap-6 xl:gap-8">
+            
+            <!-- LEFT: CALENDAR GRID -->
+            <div class="xl:col-span-3 flex flex-col">
+                <div class="bg-white dark:bg-slate-900/80 rounded-[2rem] p-4 sm:p-5 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 backdrop-blur-md relative overflow-hidden flex-1">
+                    
+                    <!-- Decorative blur -->
+                    <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-400/10 dark:bg-blue-600/20 blur-3xl rounded-full pointer-events-none"></div>
+                    <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-400/10 dark:bg-purple-600/20 blur-3xl rounded-full pointer-events-none"></div>
+                    
+                    <!-- Calendar Header -->
+                    <div class="flex items-center justify-between mb-3 relative z-10 flex-wrap gap-2">
+                        <h2 id="cal-month-year" class="text-lg sm:text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">Memuat...</h2>
+                        <div class="flex items-center gap-2">
+                            <!-- Toggle Libur Nasional -->
+                            <button id="btn-toggle-holidays" type="button" onclick="window.toggleNationalHolidays()" class="px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all flex items-center gap-1.5 bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60 shadow-sm" title="Tampilkan / sembunyikan hari libur nasional dan cuti bersama">
+                                <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                                <span id="label-toggle-holidays">Libur Nasional</span>
+                            </button>
+                            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl shadow-inner border border-slate-200 dark:border-slate-700">
+                                <button onclick="window.changeMonth(-1)" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-sm transition-all text-xs" aria-label="Bulan sebelumnya">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <div class="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                                <button onclick="window.changeMonth(1)" class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-sm transition-all text-xs" aria-label="Bulan berikutnya">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Days of Week -->
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-3 relative z-10">
+                        <div class="text-center text-[10px] sm:text-xs font-black text-rose-500 uppercase tracking-widest">Min</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Sen</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Sel</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Rab</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Kam</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Jum</div>
+                        <div class="text-center text-[10px] sm:text-xs font-black text-emerald-500 uppercase tracking-widest">Sab</div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2 relative z-10 text-slate-700 dark:text-slate-300">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: AGENDA LIST -->
+            <div class="xl:col-span-2 flex flex-col">
+                <div class="bg-white dark:bg-slate-900/80 rounded-[2rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 backdrop-blur-md overflow-hidden flex flex-col h-[600px] xl:h-auto">
+                    <div class="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0 flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-list-check text-blue-500"></i> Daftar Kegiatan
+                        </h3>
+                        <p id="label-cal-period" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Memuat...</p>
+                    </div>
+                    
+                    <div id="events-list" class="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 custom-scrollbar">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOOLTIP INFO AGENDA (Muncul saat hover/klik tanggal beragenda) -->
+        <div id="calendar-day-tooltip"
+            role="tooltip"
+            aria-live="polite"
+            class="fixed z-[90] hidden max-w-xs sm:max-w-sm w-72 sm:w-80 bg-slate-900/95 dark:bg-slate-950/95 text-slate-100 rounded-2xl shadow-2xl border border-slate-700/80 backdrop-blur-md p-3.5 transition-all duration-150 opacity-0 scale-95 pointer-events-auto"
+            style="top: 0px; left: 0px;">
+            <div class="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-800 text-xs font-bold text-slate-300">
+                <span id="tooltip-date" class="flex items-center gap-1.5 truncate">
+                    <i class="fa-regular fa-calendar-check text-blue-400"></i>
+                    <span id="tooltip-date-text">Tanggal</span>
+                </span>
+                <span id="tooltip-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    1 Agenda
+                </span>
+            </div>
+            <div id="tooltip-events-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-0.5">
+                <!-- Rendered via JS -->
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+                <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer text-[9px] text-blue-400"></i> Klik untuk sorot agenda</span>
+                <button type="button" onclick="window.hideCalendarTooltip(true)" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-800 transition-colors" aria-label="Tutup tooltip">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL KELOLA AGENDA KEGIATAN -->
+    <div id="modal-calendar-manager" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="modal-manager-title">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="window.closeCalendarManager()"></div>
+        <div class="relative w-full max-w-5xl xl:max-w-6xl bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700/80 transition-all scale-95 opacity-0 duration-300 flex flex-col h-[94dvh] max-h-[94dvh] z-10" id="modal-calendar-content">
+            <!-- Modal Header -->
+            <div class="px-4 sm:px-6 py-2.5 sm:py-3 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50/80 dark:bg-slate-800/90 shrink-0 min-h-[56px] flex items-center justify-between">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <i class="fa-solid fa-calendar-days text-blue-600 dark:text-blue-400 text-base shrink-0"></i>
+                    <h3 id="modal-manager-title" class="text-base sm:text-lg font-bold text-slate-800 dark:text-white truncate">Kelola Agenda Kegiatan</h3>
+                </div>
+                <!-- Tombol Tutup -->
+                <button onclick="window.closeCalendarManager()" aria-label="Tutup modal" class="w-8 h-8 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-times text-base"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body: 2 Kolom (Form Kiri, Daftar Kanan) -->
+            <div class="p-3.5 sm:p-4 md:p-5 overflow-y-auto md:overflow-hidden custom-scrollbar flex-1 min-h-0 flex flex-col">
+                <div class="flex flex-col md:flex-row gap-3.5 sm:gap-4 md:gap-5 flex-1 min-h-0">
+                    <!-- Form Tambah/Edit Agenda (Left) -->
+                    <div class="w-full md:w-[34%] md:min-w-[280px] md:max-w-[360px] flex flex-col shrink-0 min-h-0">
+                        <div class="bg-slate-50/70 dark:bg-slate-900/40 p-3.5 sm:p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 flex flex-col flex-1 min-h-0">
+                            <div class="flex items-center justify-between mb-2.5 shrink-0">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5 truncate">
+                                    <i class="fa-solid fa-plus-circle text-emerald-500 text-xs"></i> <span id="agenda-form-title" class="truncate">Tambah Agenda Baru</span>
+                                </h4>
+                                <button type="button" onclick="window.cancelEditCalendarEvent()" id="btn-reset-agenda-form" class="px-2 py-1 bg-slate-200/70 hover:bg-slate-300/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 shrink-0">
+                                    <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset
+                                </button>
+                            </div>
+                            <div class="space-y-2.5 overflow-visible md:overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-0.5">
+                                <!-- Preset Cepat Hari Besar Nasional -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label for="select-preset-holiday" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                                            <i class="fa-solid fa-landmark text-amber-500 mr-1"></i> Preset Hari Besar
+                                        </label>
+                                        <span class="text-[9px] text-slate-400">Pilih untuk auto-fill</span>
+                                    </div>
+                                    <select id="select-preset-holiday" onchange="window.applyHolidayPreset(this.value)" class="manager-input w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-[11px] text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <option value="">-- Pilih Hari Besar Nasional (Tahunan) --</option>
+                                        <!-- Diisi otomatis oleh JS -->
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="input-event-title" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Judul Kegiatan <span class="text-rose-500">*</span></label>
+                                    <input type="text" id="input-event-title" class="manager-input w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Misal: Rapat Pleno Kelulusan">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="input-event-date" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Tgl Mulai <span class="text-rose-500">*</span></label>
+                                        <input type="date" id="input-event-date" onchange="window.updateRepeatPreview()" class="manager-input w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    </div>
+                                    <div>
+                                        <label for="input-event-end-date" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Sampai (Opsional)</label>
+                                        <input type="date" id="input-event-end-date" onchange="window.updateRepeatPreview()" class="manager-input w-full px-2.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="select-event-type" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Kategori</label>
+                                    <select id="select-event-type" class="manager-input w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                                        <option value="kegiatan">Kegiatan Sekolah</option>
+                                        <option value="libur">Libur Nasional / Sekolah</option>
+                                        <option value="penting">Penting / Ujian</option>
+                                    </select>
+                                </div>
+
+                                <!-- Pengaturan Jadwal Perulangan / Periodik -->
+                                <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                    <label for="select-event-repeat" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                                        <i class="fa-solid fa-arrows-rotate text-emerald-500 mr-1"></i> Pola Perulangan
+                                    </label>
+                                    <select id="select-event-repeat" onchange="window.onRepeatModeChange(this.value)" class="manager-input w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-medium">
+                                        <option value="none">Sekali Saja (Tidak Berulang)</option>
+                                        <option value="yearly">📅 Tahunan (Setiap 1 Tahun pada tanggal sama)</option>
+                                        <option value="periodic">🔄 Periodik Fleksibel (Siklus N Hari)</option>
+                                        <option value="monthly">📆 Bulanan (Setiap Bulan)</option>
+                                        <option value="weekly">🗓️ Mingguan (Setiap Minggu)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sub-form Pengaturan Periodik (Hanya tampil saat mode 'periodic') -->
+                                <div id="section-periodic-settings" class="hidden p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <label for="input-repeat-interval" class="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">Interval Hari</label>
+                                        <span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold">Tiap berapa hari berulang</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" inputmode="numeric" id="input-repeat-interval" min="1" max="999" value="210" oninput="window.updateRepeatPreview()" class="manager-input w-24 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-center focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <span class="text-xs text-slate-500">hari sekali</span>
+                                    </div>
+                                    <!-- Preset Chips Cepat -->
+                                    <div class="flex flex-wrap gap-1 pt-1">
+                                        <button type="button" onclick="window.setRepeatIntervalPreset(210)" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-300 transition-all shadow-xs" title="Siklus Pawukon Kalender Bali (Galungan, Kuningan, Saraswati, Piodalan)">
+                                            🌸 210 Hari (Pawukon Bali)
+                                        </button>
+                                        <button type="button" onclick="window.setRepeatIntervalPreset(105)" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-300 transition-all">
+                                            105 Hari
+                                        </button>
+                                        <button type="button" onclick="window.setRepeatIntervalPreset(30)" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-300 transition-all">
+                                            30 Hari
+                                        </button>
+                                        <button type="button" onclick="window.setRepeatIntervalPreset(14)" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 text-slate-700 dark:text-slate-300 transition-all">
+                                            14 Hari
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Sub-form Jumlah Perulangan & Live Schedule Preview -->
+                                <div id="section-repeat-count-preview" class="hidden p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <label for="input-repeat-count" class="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase">Jumlah Perulangan</label>
+                                        <span id="label-repeat-duration-estimate" class="text-[9px] text-slate-400">Estimasi</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" inputmode="numeric" id="input-repeat-count" min="1" max="50" value="10" oninput="window.updateRepeatPreview()" class="manager-input w-20 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-center focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <span class="text-xs text-slate-500">kali jadwal mendatang</span>
+                                    </div>
+                                    <!-- Live Schedule Preview -->
+                                    <div class="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                                        <div class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 flex items-center justify-between">
+                                            <span><i class="fa-solid fa-list-ol text-emerald-500 mr-1"></i> Pratinjau Jadwal:</span>
+                                            <span id="badge-preview-count" class="text-[9px] text-emerald-600 dark:text-emerald-400 font-extrabold">0 Tanggal</span>
+                                        </div>
+                                        <div id="container-repeat-preview" class="max-h-28 overflow-y-auto custom-scrollbar text-[11px] space-y-1 font-mono text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/90 p-2 rounded-lg border border-slate-200/80 dark:border-slate-700">
+                                            <p class="text-slate-400 italic text-[10px]">Tentukan tanggal mulai untuk melihat pratinjau</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="input-event-desc" class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Keterangan Singkat</label>
+                                    <textarea id="input-event-desc" rows="2" class="manager-input w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 outline-none resize-none" placeholder="Opsional..."></textarea>
+                                </div>
+                                <button type="button" onclick="window.saveCalendarEvent()" id="btn-save-event" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 dark:shadow-none transition-all active:scale-95">
+                                    Simpan Agenda
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List Agenda (Right) -->
+                    <div class="w-full md:flex-1 flex flex-col min-h-0">
+                        <div class="flex items-center justify-between mb-2.5 shrink-0">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-list text-blue-500 text-xs"></i> Daftar Agenda Mendatang
+                            </h4>
+                            <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                                <button type="button" onclick="window.loadCalendarEvents(-1)" aria-label="Bulan sebelumnya" class="w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                                </button>
+                                <span id="label-cal-manager-period" class="text-xs font-bold text-slate-700 dark:text-slate-200 min-w-[90px] text-center px-1">Memuat...</span>
+                                <button type="button" onclick="window.loadCalendarEvents(1)" aria-label="Bulan berikutnya" class="w-7 h-7 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="calendar-events-list" class="space-y-2.5 overflow-visible md:overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-1">
+                            <!-- Events injected by JS -->
+                            <div class="text-center py-10 opacity-30">
+                                <i class="fa-solid fa-spinner fa-spin text-3xl mb-2"></i>
+                                <p class="text-xs font-bold uppercase">Memuat Agenda...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: KONFIRMASI GENERIK (Pengganti confirm()) -->
+    <div id="modal-generic-confirm"
+        class="hidden fixed inset-0 z-[140] bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden transform transition-all border border-slate-100 dark:border-slate-800 scale-100">
+            <div class="p-8 text-center">
+                <div id="confirm-icon-bg"
+                    class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600 dark:text-amber-400">
+                    <i id="confirm-icon" class="fa-solid fa-question text-3xl"></i>
+                </div>
+                <h3 id="confirm-title" class="font-bold text-slate-800 dark:text-white text-xl mb-2">Konfirmasi</h3>
+                <div id="confirm-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Apakah Anda yakin?</div>
+                <div class="flex gap-3 justify-center">
+                    <button id="btn-confirm-cancel"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-ok"
+                        class="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg shadow-amber-200 dark:shadow-none transition-transform active:scale-95">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-agenda.js?v=26.11.02.1"></script>
+</body>
+</html>

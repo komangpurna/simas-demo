@@ -1,0 +1,98 @@
+// Requires scripts/test-lms-quiz-server.cjs; intentionally opt-in to avoid production APIs.
+const quizSuite = Cypress.env('lmsQuizIntegration') ? describe : describe.skip;
+quizSuite('LMS assessment: browser, real Worker, disposable SQLite', () => {
+    beforeEach(() => {
+        cy.request('POST', '/__test__/quiz/reset');
+        cy.visit('/cypress/fixtures/lms-quiz-workflow.html');
+        cy.window().its('demoReady').should('equal', true);
+        cy.get('#demo-save').click();
+        cy.get('#demo-notice').should('contain', 'Soal tersimpan');
+    });
+    it('creates questions, submits on mobile, publishes teacher feedback and reopens the final result', () => {
+        cy.viewport(390, 844);
+        cy.get('#demo-student').click();
+        cy.get('input[name="student-quiz-option"]').first().check();
+        cy.get('#btn-quiz-next').click();
+        cy.get('#student-quiz-answer').type('Oksigen');
+        cy.get('#btn-quiz-next').click();
+        cy.get('#student-quiz-answer').type('Cahaya diperlukan untuk fotosintesis. Tanaman di tempat gelap kekurangan cahaya.');
+        cy.get('#modal-student-quiz').then($el => expect($el[0].scrollWidth).to.be.at.most(390));
+        cy.screenshot('lms-student-mobile', { capture: 'viewport' });
+        cy.on('window:confirm', () => true);
+        cy.get('#btn-quiz-submit').click();
+        cy.get('#student-quiz-result-title').should('contain', 'Menunggu pemeriksaan');
+        cy.get('#student-quiz-result-score').should('have.text', '—');
+        cy.get('#student-quiz-review-list').should('not.contain', 'Daun memiliki klorofil');
+        cy.contains('Selesai & Tutup').click();
+        cy.get('#demo-teacher').click();
+        cy.get('#lms-quiz-review [data-question-id="q3"] [data-points]').type('3');
+        cy.get('#lms-quiz-review [data-question-id="q3"] [data-feedback]').type('Hubungan cahaya sudah tepat. Tambahkan contoh pengamatan.');
+        cy.get('#lms-quiz-review [data-question-id="q3"]').scrollIntoView();
+        cy.get('#lms-quiz-review').then($el => expect($el[0].scrollWidth).to.be.at.most(390));
+        cy.screenshot('lms-teacher-mobile', { capture: 'viewport' });
+        cy.contains('Simpan dan terbitkan hasil').click();
+        cy.get('#demo-notice').should('contain', 'Hasil diterbitkan');
+        cy.get('#lms-quiz-review [data-close]').click();
+        cy.reload();
+        cy.window().its('demoReady').should('equal', true);
+        cy.get('#demo-student').click();
+        cy.get('#student-quiz-result-score').should('have.text', '80');
+        cy.get('#student-quiz-review-list').should('contain', 'Tambahkan contoh pengamatan.').and('contain', 'Cahaya diperlukan');
+        cy.screenshot('lms-student-result-mobile', { capture: 'viewport' });
+    });
+    it('retains answers after a failed submission and succeeds on retry', () => {
+        let disconnected = true;
+        cy.intercept('POST', '**/__test__/quiz/submit', request => { if (disconnected) request.destroy(); else request.continue(); });
+        cy.get('#demo-student').click();
+        cy.get('#student-quiz-nav-pills [data-quiz-index="2"]').click();
+        cy.get('#student-quiz-answer').type('Jawaban tetap utuh saat koneksi putus.');
+        cy.on('window:confirm', () => true);
+        cy.get('#btn-quiz-submit').click();
+        cy.get('#student-quiz-save-status').should('contain', 'belum terkirim');
+        cy.get('#student-quiz-answer').should('have.value', 'Jawaban tetap utuh saat koneksi putus.');
+        cy.then(() => { disconnected = false; });
+        cy.get('#btn-quiz-submit').click();
+        cy.get('#student-quiz-result-title').should('contain', 'Menunggu pemeriksaan');
+        cy.get('#student-quiz-review-list').should('contain', 'Jawaban tetap utuh saat koneksi putus.');
+    });
+    it('previews formatted questions without answer keys or teacher guidance', () => {
+        cy.viewport(1280, 900);
+        cy.contains('Pratinjau soal siswa').click();
+        cy.get('#lms-quiz-preview').should('be.visible').should('not.contain', 'Hubungan cahaya 2 poin');
+        cy.get('#lms-quiz-preview strong').should('contain', 'fotosintesis');
+        cy.screenshot('lms-question-preview-desktop', { capture: 'viewport' });
+    });
+    it('switches each question type on mobile, preserves both editors and saves the selected type for students', () => {
+        cy.viewport(390, 844);
+        cy.get('.lms-quiz-question-item').first().as('question');
+        cy.get('@question').find('[data-quiz-type="mc"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('@question').find('.lms-quiz-mc-option').first().clear().type('Daun hijau');
+        cy.get('@question').find('[data-quiz-type="short"]').click();
+        cy.get('@question').find('[data-quiz-answer-type="mc"]').should('not.be.visible');
+        cy.get('@question').find('.lms-quiz-short-correct').should('be.visible').type('Daun');
+        cy.get('@question').find('.lms-quiz-short-variations').type('Daun hijau');
+        cy.get('.lms-quiz-question-item').eq(1).find('[data-quiz-type="short"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.lms-quiz-question-item').eq(1).find('.lms-quiz-short-correct').should('have.value', 'Oksigen');
+        cy.get('@question').find('[data-quiz-type="mc"]').click();
+        cy.get('@question').find('.lms-quiz-mc-option').first().should('have.value', 'Daun hijau');
+        cy.get('@question').find('.lms-quiz-mc-radio').first().should('be.checked');
+        cy.get('@question').find('[data-quiz-type="short"]').click();
+        cy.get('@question').find('.lms-quiz-short-correct').should('have.value', 'Daun');
+        cy.get('@question').find('.lms-quiz-short-variations').should('have.value', 'Daun hijau');
+        cy.get('@question').then($el => expect($el[0].scrollWidth).to.be.at.most($el[0].clientWidth));
+        cy.screenshot('lms-question-type-toggle-mobile', { capture: 'viewport' });
+        cy.intercept('POST', '/__test__/quiz/material', req => {
+            const quiz = JSON.parse(req.body.quiz_payload);
+            expect(quiz.questions[0]).to.include({ id: 'q1', type: 'short', correct_answer: 'Daun' });
+            expect(quiz.questions[0]).not.to.have.property('options');
+        }).as('saveSwitchedQuiz');
+        cy.get('#demo-save').click(); cy.wait('@saveSwitchedQuiz').its('response.statusCode').should('equal', 200);
+        cy.contains('Pratinjau soal siswa').click();
+        cy.get('#lms-quiz-preview article').first().should('contain', 'Isian singkat');
+        cy.get('#lms-quiz-preview [data-close]').click();
+        cy.get('#demo-student').click();
+        cy.get('#student-quiz-answer').should('be.visible');
+        cy.get('#student-quiz-answer-container input[type="radio"]').should('not.exist');
+        cy.get('#student-quiz-answer').type('Daun hijau');
+    });
+});

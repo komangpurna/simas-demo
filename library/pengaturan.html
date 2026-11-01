@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Pengaturan Perpustakaan - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="module" src="../js/school-config.js"></script>
+    <link rel="stylesheet" href="../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors font-sans antialiased min-h-screen min-h-dvh">
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider mb-1">
+                    <a href="index.html" class="hover:underline">Perpustakaan</a> <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i> Pengaturan
+                </div>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Pengaturan Operasional Perpustakaan</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Konfigurasi aturan peminjaman, tarif denda, prefix nomor induk, dan master DDC.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <!-- PANEL 1: ATURAN SIRKULASI & DENDA (7 cols) -->
+            <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm">
+                <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-base text-slate-800 dark:text-white">Aturan Peminjaman & Denda</h2>
+                        <p class="text-xs text-slate-400">Parameter kuota, masa pinjam, dan sanksi keterlambatan</p>
+                    </div>
+                </div>
+
+                <form id="form-lib-config" class="space-y-4 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Nama Resmi Perpustakaan</label>
+                        <input type="text" id="cfg-nama-perpustakaan" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- SEARCHABLE GTK COMBOBOX: KEPALA PERPUSTAKAAN -->
+                    <div id="container-cfg-kepala-perpus" class="relative">
+                        <label for="cfg-kepala-perpus-search" class="font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-tie text-blue-600 dark:text-blue-400"></i>
+                                <span>Kepala Perpustakaan (Penandatangan Surat)</span>
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-normal">Dari Data Master GTK</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <input type="text" id="cfg-kepala-perpus-search"
+                                role="combobox"
+                                aria-expanded="false"
+                                aria-autocomplete="list"
+                                aria-controls="cfg-kepala-perpus-dropdown"
+                                placeholder="Ketik untuk mencari nama GTK atau NIP..."
+                                autocomplete="off"
+                                class="w-full px-3.5 pr-16 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-xs">
+                            <div class="absolute right-2 flex items-center gap-1">
+                                <button type="button" id="btn-clear-kepala-perpus"
+                                    class="hidden w-6 h-6 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs transition"
+                                    title="Kosongkan pilihan">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                <button type="button" id="btn-toggle-kepala-perpus"
+                                    class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                                    title="Buka daftar GTK">
+                                    <i id="icon-kepala-perpus-chevron" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Inputs untuk menyimpan nilai terpilih -->
+                        <input type="hidden" id="cfg-kepala-perpus-id">
+                        <input type="hidden" id="cfg-kepala-perpus-nama">
+                        <input type="hidden" id="cfg-kepala-perpus-nip">
+
+                        <!-- Info Badge jika GTK Terpilih -->
+                        <div id="cfg-kepala-perpus-info" class="hidden mt-1.5 p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 text-[11px] flex items-center justify-between">
+                            <span class="text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-circle-check text-blue-600"></i>
+                                <span>Terpilih: <strong id="cfg-kepala-perpus-selected-text">-</strong></span>
+                            </span>
+                            <span id="cfg-kepala-perpus-selected-nip" class="font-mono text-slate-500 dark:text-slate-400 font-semibold">NIP. -</span>
+                        </div>
+
+                        <!-- Floating Dropdown List -->
+                        <div id="cfg-kepala-perpus-dropdown"
+                            class="hidden absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl divide-y divide-slate-100 dark:divide-slate-700/60 ring-1 ring-black/5 custom-scrollbar">
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Identitas GTK ini akan dicantumkan sebagai penandatangan resmi (Nama Lengkap & NIP) pada Surat Bebas Perpustakaan.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Maksimal Pinjam Siswa</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan batas maksimal pinjam siswa">
+                                    <input type="checkbox" id="cfg-toggle-max-pinjam-siswa" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-max-pinjam-siswa" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-max-pinjam-siswa" min="1" max="10" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold transition">
+                            <p id="cfg-hint-max-pinjam-siswa" class="text-[10px] text-slate-400 mt-0.5">Jumlah buku per siswa.</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Maksimal Pinjam Guru</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan batas maksimal pinjam guru">
+                                    <input type="checkbox" id="cfg-toggle-max-pinjam-guru" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-max-pinjam-guru" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-max-pinjam-guru" min="1" max="20" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold transition">
+                            <p id="cfg-hint-max-pinjam-guru" class="text-[10px] text-slate-400 mt-0.5">Jumlah buku per guru/staf.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Durasi Pinjam Siswa (Hari)</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan batas durasi pinjam siswa">
+                                    <input type="checkbox" id="cfg-toggle-durasi-siswa" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-durasi-siswa" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-durasi-siswa" min="1" max="30" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold transition">
+                            <p id="cfg-hint-durasi-siswa" class="text-[10px] text-slate-400 mt-0.5">Masa pinjam standar per transaksi.</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Durasi Pinjam Guru (Hari)</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan batas durasi pinjam guru">
+                                    <input type="checkbox" id="cfg-toggle-durasi-guru" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-durasi-guru" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-durasi-guru" min="1" max="60" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold transition">
+                            <p id="cfg-hint-durasi-guru" class="text-[10px] text-slate-400 mt-0.5">Masa pinjam standar guru/staf.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Tarif Denda per Hari (Rp)</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan denda keterlambatan">
+                                    <input type="checkbox" id="cfg-toggle-denda" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-denda" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-tarif-denda" min="0" step="500" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-rose-600 transition">
+                            <p id="cfg-hint-denda" class="text-[10px] text-slate-400 mt-0.5">Denda keterlambatan per buku per hari.</p>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="font-bold text-slate-700 dark:text-slate-300">Batas Maksimal Perpanjangan</label>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer select-none" title="Aktifkan / Nonaktifkan batas maksimal perpanjangan">
+                                    <input type="checkbox" id="cfg-toggle-max-perpanjangan" class="sr-only peer" checked>
+                                    <div class="relative w-7 h-4 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-3 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <span id="cfg-label-max-perpanjangan" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Aktif</span>
+                                </label>
+                            </div>
+                            <input type="number" inputmode="numeric" id="cfg-max-perpanjangan" min="0" max="5" required
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-semibold transition">
+                            <p id="cfg-hint-max-perpanjangan" class="text-[10px] text-slate-400 mt-0.5">Jumlah maksimal perpanjangan masa pinjam.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div>
+                            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Prefix Nomor Induk / Barcode (Opsional)</label>
+                            <input type="text" id="cfg-prefix-nomor-induk" placeholder="Kosongkan untuk Opsi B (Nomor Urut Murni 00001, 00002...)"
+                                class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-mono font-bold">
+                            <p class="text-[10px] text-slate-400 mt-1">Biarkan kosong untuk penomoran nomor urut murni (00001, 00002...).</p>
+                        </div>
+                        <div class="flex flex-col gap-2.5 pt-3">
+                            <label class="inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="cfg-abaikan-libur" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <span class="ml-3 font-semibold text-slate-700 dark:text-slate-300 text-xs">Abaikan Hari Libur Akhir Pekan (Bebas Denda)</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer select-none">
+                                <input type="checkbox" id="cfg-tampilkan-alumni" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                <span class="ml-3 font-semibold text-slate-700 dark:text-slate-300 text-xs">Tampilkan Siswa Alumni / Lulus di Pencarian</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                        <button type="submit" id="btn-save-config" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-md shadow-blue-600/30 flex items-center gap-2">
+                            <i class="fa-solid fa-save"></i> Simpan Pengaturan
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PANEL 2: MASTER KELAS DDC (5 cols) -->
+            <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-tags"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base text-slate-800 dark:text-white">Master Klasifikasi DDC</h3>
+                                <p class="text-xs text-slate-400">Daftar kode klasifikasi Dewey Decimal</p>
+                            </div>
+                        </div>
+                        <button id="btn-open-add-ddc" class="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Tambah DDC
+                        </button>
+                    </div>
+
+                    <!-- List DDC -->
+                    <div class="overflow-y-auto max-h-96 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 uppercase">
+                                <tr>
+                                    <th class="px-4 py-2.5">Kode</th>
+                                    <th class="px-4 py-2.5">Nama Klasifikasi</th>
+                                    <th class="px-4 py-2.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="master-ddc-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-700 text-[11px] text-slate-400">
+                    <span>*Kode DDC 000-900 merupakan standar internasional yang digunakan secara nasional.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="pengaturan.js"></script>
+</body>
+
+</html>

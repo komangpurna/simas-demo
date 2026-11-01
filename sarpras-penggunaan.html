@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Sirkulasi & Penggunaan Sarpras - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300 min-h-screen">
+
+    <!-- KONTAINER LAYOUT GLOBAL -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA -->
+    <main class="hidden fade-in pb-16 lg:pb-12 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3">
+        
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-spin text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                    <span>Sirkulasi & Penggunaan Sarpras</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Peminjaman aset/ruangan dan permohonan Barang Milik Habis Pakai (BMHP).
+                </p>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <button type="button" id="btn-refresh" onclick="window.refreshActiveTabData?.()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Segarkan Data" aria-label="Segarkan">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span>Segarkan</span>
+                </button>
+                <button type="button" id="btn-tab-action" onclick="window.handleMainTabAction?.()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span id="btn-tab-action-label">Ajukan Peminjaman</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Switcher Navigation -->
+        <div class="flex items-center gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-xs mb-6 overflow-x-auto no-scrollbar">
+            <button type="button" id="tab-btn-loans" onclick="window.switchTab?.('loans')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-emerald-500 text-slate-950 shadow-xs">
+                <i class="fa-solid fa-handshake"></i>
+                <span>Peminjaman Sarana & Ruang</span>
+            </button>
+            <button type="button" id="tab-btn-bmhp" onclick="window.switchTab?.('bmhp')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Barang Milik Habis Pakai (BMHP / ATK)</span>
+            </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2. PANEL TAB 1: PEMINJAMAN SARANA & RUANGAN    -->
+        <!-- ============================================== -->
+        <section id="panel-tab-loans" class="space-y-4">
+            <!-- 4 Kartu KPI Peminjaman -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Sedang Dipinjam</p>
+                        <h3 id="kpi-loans-borrowed" class="text-base sm:text-xl font-black text-indigo-600 dark:text-indigo-400 leading-tight">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Menunggu Persetujuan</p>
+                        <h3 id="kpi-loans-pending" class="text-base sm:text-xl font-black text-amber-600 dark:text-amber-400 leading-tight">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Telah Dikembalikan</p>
+                        <h3 id="kpi-loans-returned" class="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-list-ol"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Total Peminjaman</p>
+                        <h3 id="kpi-loans-total" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Filter Peminjaman -->
+            <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <div class="flex-1">
+                    <input type="text" id="filter-loan-search" placeholder="Cari kode pinjam, peminjam, objek sarana/ruang, keperluan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium placeholder:text-slate-400">
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <select id="filter-loan-type" class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Tipe</option>
+                        <option value="room">Peminjaman Ruang / Aula</option>
+                        <option value="item">Peminjaman Sarana Bergerak</option>
+                    </select>
+
+                    <select id="filter-loan-status" class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Status</option>
+                        <option value="pending">Menunggu Persetujuan</option>
+                        <option value="approved">Disetujui (Siap Ambil)</option>
+                        <option value="borrowed">Sedang Dipinjam</option>
+                        <option value="returned">Telah Dikembalikan</option>
+                        <option value="rejected">Ditolak</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabel Data Peminjaman -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-100/75 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/80 uppercase tracking-wider text-[11px] font-bold">
+                                <th class="py-3 px-3 sm:px-4">Kode & Tipe</th>
+                                <th class="py-3 px-3 sm:px-4">Peminjam</th>
+                                <th class="py-3 px-3 sm:px-4">Objek Fasilitas</th>
+                                <th class="py-3 px-3 sm:px-4">Jadwal Penggunaan</th>
+                                <th class="py-3 px-3 sm:px-4">Keperluan</th>
+                                <th class="py-3 px-3 sm:px-4">Status & Fisik</th>
+                                <th class="py-3 px-3 sm:px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-loans-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-500 mb-2"></i>
+                                    <p class="text-xs">Memuat data peminjaman...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 3. PANEL TAB 2: BARANG MILIK HABIS PAKAI (BMHP)-->
+        <!-- ============================================== -->
+        <section id="panel-tab-bmhp" class="hidden space-y-4">
+            <!-- 4 Kartu KPI BMHP -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Katalog Barang</p>
+                        <h3 id="kpi-bmhp-total" class="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-tight">0 Item</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Stok Kritis / Habis</p>
+                        <h3 id="kpi-bmhp-low" class="text-base sm:text-xl font-black text-rose-600 dark:text-rose-400 leading-tight">0 Item</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-dolly"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Persediaan Aman</p>
+                        <h3 id="kpi-bmhp-safe" class="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">0 Item</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider truncate">Mutasi Terakhir</p>
+                        <h3 id="kpi-bmhp-recent-trx" class="text-base sm:text-xl font-black text-purple-600 dark:text-purple-400 leading-tight">0 Trx</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Filter BMHP & Tombol Aksi -->
+            <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <div class="flex-1">
+                    <input type="text" id="filter-bmhp-search" placeholder="Cari nama barang ATK, kode, catatan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium placeholder:text-slate-400">
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <select id="filter-bmhp-cat" class="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700 dark:text-slate-200">
+                        <option value="">Semua Kategori</option>
+                        <option value="ATK">ATK (Kertas/Spidol)</option>
+                        <option value="Kebersihan">Kebersihan</option>
+                        <option value="Kelistrikan">Kelistrikan</option>
+                        <option value="Kesehatan/P3K">Kesehatan / P3K</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+
+                    <button type="button" id="btn-toggle-low-stock" onclick="window.toggleLowStockFilter?.()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-filter text-amber-500"></i>
+                        <span id="label-toggle-low-stock">Hanya Stok Kritis</span>
+                    </button>
+
+                    <button type="button" id="btn-open-bmhp-item-modal" onclick="window.openCreateBmhpItemModal?.()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5 shrink-0 shadow-xs">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Tambah Item BMHP</span>
+                    </button>
+                    <button type="button" onclick="window.openBmhpHistoryModal?.()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 shrink-0 shadow-xs">
+                        <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                        <span>Log Mutasi</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Katalog BMHP -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-100/75 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/80 uppercase tracking-wider text-[11px] font-bold">
+                                <th class="py-3 px-3 sm:px-4">Kode & Kategori</th>
+                                <th class="py-3 px-3 sm:px-4">Nama Barang Habis Pakai</th>
+                                <th class="py-3 px-3 sm:px-4 text-center">Satuan</th>
+                                <th class="py-3 px-3 sm:px-4 text-center">Stok Saat Ini</th>
+                                <th class="py-3 px-3 sm:px-4 text-center">Batas Minimum</th>
+                                <th class="py-3 px-3 sm:px-4 text-right">Harga Satuan (Rp)</th>
+                                <th class="py-3 px-3 sm:px-4 text-center">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-bmhp-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-500 mb-2"></i>
+                                    <p class="text-xs">Memuat katalog stok BMHP...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- 4. DIALOG MODAL (TOP-LEVEL SIBLINGS DI LUAR MAIN - ANTI NESTING) -->
+    <!-- ================================================================= -->
+
+    <!-- MODAL 1: FORM PENGAJUAN PEMINJAMAN SARANA & RUANG -->
+    <div id="modal-loan-form" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h3 id="modal-loan-form-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Ajukan Peminjaman Sarana / Ruangan</h3>
+                </div>
+                <button type="button" onclick="window.closeLoanFormModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-loan" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="loan-form-id" value="">
+
+                <!-- Tipe Peminjaman -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-emerald-600"></i>
+                        <span>Tipe Fasilitas yang Dipinjam *</span>
+                    </label>
+                    <select id="loan-input-type" onchange="window.handleLoanTypeChange?.(this.value)" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                        <option value="room">Peminjaman Ruangan / Aula / Lab</option>
+                        <option value="item">Peminjaman Sarana Bergerak (Proyektor, Sound, Kamera, Meja/Kursi)</option>
+                    </select>
+                </div>
+
+                <!-- Objek Ruangan (Jika Tipe Ruang) -->
+                <div id="wrapper-loan-room">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-door-open text-blue-600"></i>
+                        <span>Pilih Ruangan Fasilitas *</span>
+                    </label>
+                    <select id="loan-input-room" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        <option value="">-- Pilih Ruangan / Fasilitas --</option>
+                    </select>
+                </div>
+
+                <!-- Objek Sarana (Jika Tipe Item) -->
+                <div id="wrapper-loan-item" class="hidden">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tv text-indigo-600"></i>
+                        <span>Pilih Sarana / Aset Bergerak *</span>
+                    </label>
+                    <select id="loan-input-item" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        <option value="">-- Pilih Sarana Bergerak Tersedia --</option>
+                    </select>
+                    <div class="mt-2">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Jumlah Unit Dipinjam</label>
+                        <input type="number" id="loan-input-qty" min="1" value="1" class="w-28 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold">
+                    </div>
+                </div>
+
+                <!-- Rentang Waktu (Mulai & Selesai) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day text-emerald-600"></i>
+                            <span>Waktu Mulai Penggunaan *</span>
+                        </label>
+                        <input type="datetime-local" id="loan-input-start" required onchange="window.triggerConflictCheck?.()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-check text-rose-600"></i>
+                            <span>Waktu Selesai / Pengembalian *</span>
+                        </label>
+                        <input type="datetime-local" id="loan-input-end" required onchange="window.triggerConflictCheck?.()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    </div>
+                </div>
+
+                <!-- Alert Bentrok Jadwal Realtime -->
+                <div id="loan-conflict-alert" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
+                    <i class="fa-solid fa-triangle-exclamation text-base mt-0.5 shrink-0"></i>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-bold text-xs uppercase tracking-wide">Jadwal Bentrok Terdeteksi!</p>
+                        <p id="loan-conflict-message" class="text-xs mt-0.5 leading-relaxed">-</p>
+                    </div>
+                </div>
+
+                <!-- Kontak Telepon & Keperluan Kegiatan -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-phone text-slate-600"></i>
+                        <span>Nomor Kontak WhatsApp Peminjam</span>
+                    </label>
+                    <input type="tel" id="loan-input-phone" placeholder="Contoh: 081234567890" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-align-left text-slate-600"></i>
+                        <span>Keperluan Kegiatan / Acara *</span>
+                    </label>
+                    <textarea id="loan-input-purpose" required rows="3" placeholder="Contoh: Rapat Koordinasi OSIS, Gladi Bersih Pentas Seni, Kegiatan Ujian Praktik..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeLoanFormModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-loan" id="btn-save-loan" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Ajukan Peminjaman</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SERAH TERIMA FISIK & PENGEMBALIAN (PETUGAS SARPRAS) -->
+    <div id="modal-loan-status" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-loan-status-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Proses Serah Terima & Status</h3>
+                        <p id="loan-status-code-display" class="text-xs text-slate-400 font-mono">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeLoanStatusModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-loan-status" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="loan-status-id" value="">
+
+                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <p class="text-xs text-slate-400">Peminjam: <span id="status-borrower-name" class="font-bold text-slate-800 dark:text-white">-</span></p>
+                    <p class="text-xs text-slate-400">Fasilitas: <span id="status-target-name" class="font-bold text-emerald-600 dark:text-emerald-400">-</span></p>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tasks text-emerald-600"></i>
+                        <span>Aksi Status *</span>
+                    </label>
+                    <select id="loan-status-action" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                        <option value="approve">Setujui Permohonan (Approved)</option>
+                        <option value="borrow">Serah Terima Fisik Barang / Kunci (Borrowed)</option>
+                        <option value="return">Pemeriksaan Kembali & Selesai (Returned)</option>
+                        <option value="reject">Tolak Permohonan (Rejected)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Kondisi Fisik Awal</label>
+                        <select id="loan-condition-initial" class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium">
+                            <option value="Baik">Baik</option>
+                            <option value="Rusak Ringan">Rusak Ringan</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Kondisi Pasca Pengembalian</label>
+                        <select id="loan-condition-return" class="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium">
+                            <option value="Baik">Baik Lengkap</option>
+                            <option value="Rusak Ringan">Rusak Ringan</option>
+                            <option value="Rusak Berat">Rusak Berat / Hilang</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment text-slate-600"></i>
+                        <span>Catatan Serah Terima / Cek Fisik</span>
+                    </label>
+                    <textarea id="loan-handover-notes" rows="3" placeholder="Kelengkapan kabel, remote, remote proyektor, kebersihan ruangan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeLoanStatusModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-loan-status" id="btn-save-loan-status" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Perbarui Status</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TAMBAH / EDIT MASTER ITEM BMHP -->
+    <div id="modal-bmhp-item" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <h3 id="modal-bmhp-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Master Barang Habis Pakai (BMHP)</h3>
+                </div>
+                <button type="button" onclick="window.closeBmhpItemModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-bmhp-item" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="bmhp-input-id" value="">
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-box text-emerald-600"></i>
+                        <span>Nama Barang Habis Pakai *</span>
+                    </label>
+                    <input type="text" id="bmhp-input-name" required placeholder="Contoh: Kertas HVS A4 80 GSM Sinar Dunia, Spidol Snowman..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-tags text-blue-600"></i>
+                            <span>Kategori</span>
+                        </label>
+                        <select id="bmhp-input-category" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                            <option value="ATK">ATK (Kertas/Spidol)</option>
+                            <option value="Kebersihan">Kebersihan</option>
+                            <option value="Kelistrikan">Kelistrikan</option>
+                            <option value="Kesehatan/P3K">Kesehatan / P3K</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-ruler text-purple-600"></i>
+                            <span>Satuan</span>
+                        </label>
+                        <input type="text" id="bmhp-input-unit" required value="Pcs" placeholder="Rim, Kotak, Pcs, Botol" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Stok Awal</label>
+                        <input type="number" id="bmhp-input-stock" min="0" value="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Batas Minimum Peringatan</label>
+                        <input type="number" id="bmhp-input-min" min="0" value="5" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Estimasi Harga Satuan (Rp)</label>
+                    <input type="number" id="bmhp-input-price" min="0" step="500" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeBmhpItemModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-bmhp-item" id="btn-save-bmhp-item" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Master BMHP</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CATAT MUTASI STOK BMHP (MASUK / KELUAR) -->
+    <div id="modal-bmhp-trx" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div id="trx-modal-icon-badge" class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-trx-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Mutasi Stok BMHP</h3>
+                        <p id="trx-item-name-display" class="text-xs text-slate-400 font-medium truncate max-w-[260px]">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeBmhpTrxModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-bmhp-trx" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="trx-item-id" value="">
+                <input type="hidden" id="trx-type" value="out">
+
+                <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                    <span class="text-xs text-slate-400">Sisa Stok Saat Ini:</span>
+                    <span id="trx-current-stock-display" class="font-black text-slate-800 dark:text-white text-sm">0 Unit</span>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-calculator text-emerald-600"></i>
+                        <span>Jumlah Mutasi *</span>
+                    </label>
+                    <input type="number" id="trx-quantity" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-sm">
+                </div>
+
+                <div id="trx-requester-wrapper">
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user text-blue-600"></i>
+                        <span>Nama Peminta / Unit Kerja</span>
+                    </label>
+                    <input type="text" id="trx-requester" placeholder="Contoh: Guru Matematika / Lab Komputer..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment-dots text-slate-600"></i>
+                        <span>Keperluan / Catatan</span>
+                    </label>
+                    <textarea id="trx-notes" rows="2" placeholder="Keperluan pemakaian atau nomor faktur restock..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeBmhpTrxModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-bmhp-trx" id="btn-save-trx" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span id="btn-save-trx-label">Simpan Mutasi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: LOG RIWAYAT MUTASI BMHP -->
+    <div id="modal-bmhp-history" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Riwayat Mutasi Stok BMHP</h3>
+                </div>
+                <button type="button" onclick="window.closeBmhpHistoryModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto flex-1">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase font-bold">
+                            <th class="p-2">Waktu</th>
+                            <th class="p-2">Barang</th>
+                            <th class="p-2 text-center">Tipe</th>
+                            <th class="p-2 text-center">Jumlah</th>
+                            <th class="p-2">Penerima / Peminta</th>
+                            <th class="p-2">Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-bmhp-history-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-slate-400">Memuat riwayat transaksi...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeBmhpHistoryModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="js/global.js"></script>
+    <script type="module" src="js/page-sarpras-penggunaan.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Perencanaan Anggaran RKAS Sarpras - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <!-- SheetJS CDN untuk Ekspor Spreadsheet XLSX -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-rkas-area, #printable-rkas-area * {
+                visibility: visible;
+            }
+            #printable-rkas-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 15mm;
+                background: white !important;
+                color: black !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300 min-h-screen">
+
+    <!-- KONTAINER LAYOUT GLOBAL -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA -->
+    <main class="hidden fade-in pb-16 lg:pb-12 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3">
+        
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-file-invoice-dollar text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                        <span>Perencanaan Anggaran RKAS Sarpras</span>
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        TA <span id="header-fiscal-year-badge">2026</span>
+                    </span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Rencana Kegiatan & Anggaran Sekolah - Belanja & Pemeliharaan Sarana Prasarana.
+                </p>
+            </div>
+
+            <!-- Tombol Aksi & Filter Tahun -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <div class="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs shadow-xs">
+                    <i class="fa-solid fa-calendar-days text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Tahun:</span>
+                    <select id="header-select-fiscal-year" onchange="window.handleFiscalYearChange?.(this.value)" class="bg-transparent text-slate-800 dark:text-white font-bold focus:outline-none cursor-pointer">
+                        <option value="2026" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">2026</option>
+                        <option value="2027" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">2027</option>
+                        <option value="2025" class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white">2025</option>
+                    </select>
+                </div>
+                <button type="button" id="btn-export-excel" onclick="window.exportRkasToExcel?.()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Ekspor Excel (XLSX)">
+                    <i class="fa-solid fa-file-excel text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                    <span>Ekspor Excel</span>
+                </button>
+                <button type="button" id="btn-print-rkas" onclick="window.openPrintRkasModal?.()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Cetak Lembar Kerja RKAS Standar Dinas">
+                    <i class="fa-solid fa-print text-xs"></i>
+                    <span>Cetak Lembar Kerja</span>
+                </button>
+                <button type="button" id="btn-create-rkas-item" onclick="window.openCreateRkasModal?.()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap" aria-label="Tambah Rencana Belanja">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Tambah Rencana</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2. GRID KARTU STATISTIK (KPI ANGGARAN)         -->
+        <!-- ============================================== -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+            <!-- Metric 1: Total Usulan Pagu -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-xs transition flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Usulan Pagu</p>
+                        <h3 id="kpi-total-budget" class="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight mt-1">Rp 0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base border border-emerald-100 dark:border-emerald-800/60 shrink-0">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span id="kpi-total-items-desc" class="text-slate-500 dark:text-slate-400 font-medium">0 item rencana belanja</span>
+                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">100% Pagu</span>
+                </div>
+            </div>
+
+            <!-- Metric 2: Alokasi BOS Reguler / Kinerja -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-xs transition flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Alokasi Dana BOS</p>
+                        <h3 id="kpi-bos-budget" class="text-lg sm:text-2xl font-black text-blue-600 dark:text-blue-400 leading-tight mt-1">Rp 0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center text-base border border-blue-100 dark:border-blue-800/60 shrink-0">
+                        <i class="fa-solid fa-school"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span id="kpi-bos-items-desc" class="text-slate-500 dark:text-slate-400 font-medium">Reguler & Kinerja</span>
+                    <span class="text-blue-600 dark:text-blue-400 font-bold">Dana Pusat</span>
+                </div>
+            </div>
+
+            <!-- Metric 3: Alokasi Komite & DAK -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-xs transition flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Komite & DAK Fisik</p>
+                        <h3 id="kpi-komite-budget" class="text-lg sm:text-2xl font-black text-purple-600 dark:text-purple-400 leading-tight mt-1">Rp 0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base border border-purple-100 dark:border-purple-800/60 shrink-0">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span id="kpi-komite-items-desc" class="text-slate-500 dark:text-slate-400 font-medium">Masyarakat / Daerah</span>
+                    <span class="text-purple-600 dark:text-purple-400 font-bold">Swadaya/DAK</span>
+                </div>
+            </div>
+
+            <!-- Metric 4: Realisasi & Persetujuan -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-xs transition flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1">
+                        <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tingkat Persetujuan</p>
+                        <h3 id="kpi-approval-rate" class="text-lg sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight mt-1">0%</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base border border-emerald-100 dark:border-emerald-800/60 shrink-0">
+                        <i class="fa-solid fa-stamp"></i>
+                    </div>
+                </div>
+                <!-- Progress bar -->
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-1">
+                        <div id="kpi-approval-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p id="kpi-approval-items-desc" class="text-[10px] text-slate-400 truncate">0 dari 0 item disetujui Kepsek</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 3. TOOLBAR FILTER & PENCARIAN                  -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs mb-5 flex flex-col gap-3">
+            <!-- Row 1: Search and Dropdowns -->
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5">
+                <!-- Search Input: Anti-Overlapping Compliant -->
+                <div class="relative flex-1">
+                    <input type="text" id="filter-search" placeholder="Cari nama barang, spesifikasi, ruang target, pengusul..." class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400">
+                </div>
+
+                <!-- Dropdown Filters Group -->
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    <!-- Filter Prioritas -->
+                    <select id="filter-priority" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <option value="">Semua Prioritas</option>
+                        <option value="1">Prioritas 1 (Mendesak)</option>
+                        <option value="2">Prioritas 2 (Penting)</option>
+                        <option value="3">Prioritas 3 (Tambahan)</option>
+                    </select>
+
+                    <!-- Filter Sumber Dana -->
+                    <select id="filter-funding" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <option value="">Semua Sumber Dana</option>
+                        <option value="BOS Reguler">BOS Reguler</option>
+                        <option value="BOS Kinerja">BOS Kinerja</option>
+                        <option value="Komite">Dana Komite</option>
+                        <option value="DAK">DAK Fisik</option>
+                        <option value="Hibah/Lainnya">Hibah / Lainnya</option>
+                    </select>
+
+                    <!-- Filter Status -->
+                    <select id="filter-status" class="px-3 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 outline-none text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <option value="">Semua Status</option>
+                        <option value="proposed">Draft Usulan</option>
+                        <option value="verified_waka">Terverifikasi Waka</option>
+                        <option value="approved_kepsek">Disetujui Kepsek</option>
+                        <option value="realized">Terealisasi</option>
+                        <option value="cancelled">Dibatalkan</option>
+                    </select>
+
+                    <!-- Reset Filter Button -->
+                    <button type="button" onclick="window.resetRkasFilters?.()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1.5 shrink-0" title="Reset seluruh filter">
+                        <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: Quick Filter Chips -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 text-xs custom-scrollbar">
+                <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                    <i class="fa-solid fa-filter text-[10px]"></i> Cepat:
+                </span>
+                <button type="button" onclick="window.applyQuickFilter?.('all')" data-chip="all" class="chip-filter active px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80 whitespace-nowrap transition">
+                    Semua Usulan
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('p1')" data-chip="p1" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 transition">
+                    🚨 P1 Mendesak
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('bos_reguler')" data-chip="bos_reguler" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/40 transition">
+                    📘 BOS Reguler
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('bos_kinerja')" data-chip="bos_kinerja" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 transition">
+                    ⭐ BOS Kinerja
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('komite')" data-chip="komite" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-purple-950/40 transition">
+                    🤝 Komite
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('approved_kepsek')" data-chip="approved_kepsek" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-950/40 transition">
+                    ✅ Disetujui Kepsek
+                </button>
+                <button type="button" onclick="window.applyQuickFilter?.('proposed')" data-chip="proposed" class="chip-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40 transition">
+                    ⏳ Draft Usulan
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 4. TABEL MATRIKS USULAN RKAS                   -->
+        <!-- ============================================== -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-100/75 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/80 uppercase tracking-wider text-[11px] font-bold">
+                            <th class="py-3 px-3 sm:px-4 text-center">Prio</th>
+                            <th class="py-3 px-3 sm:px-4">Barang & Spesifikasi</th>
+                            <th class="py-3 px-3 sm:px-4">Sasaran Ruang</th>
+                            <th class="py-3 px-3 sm:px-4 text-center">Volume</th>
+                            <th class="py-3 px-3 sm:px-4 text-right">Harga Satuan (Rp)</th>
+                            <th class="py-3 px-3 sm:px-4 text-right">Total Pagu (Rp)</th>
+                            <th class="py-3 px-3 sm:px-4">Sumber Dana & Standar</th>
+                            <th class="py-3 px-3 sm:px-4">Status Alur</th>
+                            <th class="py-3 px-3 sm:px-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-rkas-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                        <tr>
+                            <td colspan="9" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-500 mb-2"></i>
+                                <p class="text-xs">Memuat data perencanaan RKAS...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Rekapitulasi Tabel -->
+            <div class="p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30">
+                <span id="rkas-counter-text" class="font-medium">Menampilkan 0 rencana belanja</span>
+                <div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span>Subtotal Terfilter:</span>
+                    <span id="rkas-filtered-total" class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-black">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- 5. DIALOG MODAL (TOP-LEVEL SIBLINGS DI LUAR MAIN - ANTI NESTING) -->
+    <!-- ================================================================= -->
+
+    <!-- MODAL 1: FORM TAMBAH / EDIT ITEM RKAS -->
+    <div id="modal-rkas-form" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <!-- Modal Header -->
+            <div class="px-5 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base font-bold shadow-2xs">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-rkas-form-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Tambah Rencana Belanja RKAS</h3>
+                        <p class="text-slate-400 text-[11px]">Masukkan estimasi anggaran dan justifikasi pengadaan sarpras</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeRkasFormModal?.()" class="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="form-rkas" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm custom-scrollbar">
+                <input type="hidden" id="rkas-form-id" value="">
+
+                <!-- Section 1: Informasi Barang & Sasaran Ruangan -->
+                <div class="bg-slate-50/70 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <i class="fa-solid fa-box text-emerald-500"></i>
+                        <span>1. Identitas Usulan & Sasaran</span>
+                    </h4>
+
+                    <!-- Tahun Anggaran & Semester -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Tahun Anggaran <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="number" id="rkas-input-year" required min="2024" max="2035" value="2026" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Semester Realisasi <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="rkas-input-semester" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <option value="1">Semester 1 (Ganjil / Juli-Des)</option>
+                                <option value="2">Semester 2 (Genap / Jan-Jun)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Nama Barang -->
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Nama Barang / Rencana Pekerjaan <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="rkas-input-name" required placeholder="Contoh: Pengadaan Smart TV 75 Inch, Perbaikan Atap Lab Komputer..." class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-800 dark:text-white placeholder:text-slate-400">
+                    </div>
+
+                    <!-- Spesifikasi Teknis -->
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Spesifikasi Teknis & Rincian Belanja
+                        </label>
+                        <textarea id="rkas-input-spec" rows="2" placeholder="Merk/tipe, spesifikasi daya, dimensi, kelengkapan bracket, dsb..." class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400"></textarea>
+                    </div>
+
+                    <!-- Sasaran Ruangan -->
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Target Ruang Penempatan (Opsional)
+                        </label>
+                        <select id="rkas-input-room" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+                            <option value="">-- Seluruh Sekolah / Fasilitas Umum --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: Volume, Estimasi Biaya & Sumber Dana -->
+                <div class="bg-slate-50/70 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <i class="fa-solid fa-calculator text-emerald-500"></i>
+                        <span>2. Estimasi Anggaran & Sumber Dana</span>
+                    </h4>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Volume <span class="text-rose-500">*</span></label>
+                            <input type="number" id="rkas-input-qty" required min="1" value="1" oninput="window.calcRkasTotal?.()" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Satuan <span class="text-rose-500">*</span></label>
+                            <input type="text" id="rkas-input-unit" required value="Unit" placeholder="Unit/Set/Paket" oninput="window.calcRkasTotal?.()" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 dark:text-white">
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Skala Prioritas</label>
+                            <select id="rkas-input-priority" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <option value="1">Prio 1 (Mendesak)</option>
+                                <option value="2" selected>Prio 2 (Penting)</option>
+                                <option value="3">Prio 3 (Tambahan)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Harga Satuan & Realtime Preview Card -->
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Estimasi Harga Satuan (Rp) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="rkas-input-price" required min="0" step="1000" placeholder="Contoh: 5000000" oninput="window.calcRkasTotal?.()" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800 dark:text-white">
+                        </div>
+
+                        <!-- Real-time calculation banner -->
+                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/30 p-3.5 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">Total Estimasi Pagu RKAS:</span>
+                                <p id="rkas-calc-total-display" class="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-300 leading-tight">Rp 0</p>
+                            </div>
+                            <div class="text-right text-[11px] text-emerald-700/80 dark:text-emerald-400/80 font-medium">
+                                <span id="rkas-calc-formula-display">1 Unit × Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sumber Dana & SNP -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Sumber Dana <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="rkas-input-funding" required class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <option value="BOS Reguler">BOS Reguler</option>
+                                <option value="BOS Kinerja">BOS Kinerja</option>
+                                <option value="Komite">Dana Komite</option>
+                                <option value="DAK">DAK Fisik</option>
+                                <option value="Hibah/Lainnya">Hibah / Lainnya</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Standar SNP
+                            </label>
+                            <select id="rkas-input-snp" class="w-full px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <option value="Standar 5 - Sarana dan Prasarana" selected>Standar 5 - Sarana & Prasarana</option>
+                                <option value="Standar 1 - Kompetensi Lulusan">Standar 1 - Kompetensi Lulusan</option>
+                                <option value="Standar 2 - Isi Pembelajaran">Standar 2 - Isi Pembelajaran</option>
+                                <option value="Standar 3 - Proses Pembelajaran">Standar 3 - Proses Pembelajaran</option>
+                                <option value="Standar 8 - Pembiayaan">Standar 8 - Pembiayaan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Modal Footer -->
+            <div class="px-5 sm:px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5 bg-slate-50 dark:bg-slate-800/40 shrink-0">
+                <button type="button" onclick="window.closeRkasFormModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all active:scale-95">
+                    Batal
+                </button>
+                <button type="submit" form="form-rkas" id="btn-save-rkas" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Usulan RKAS</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PERSETUJUAN BERTINGKAT RKAS (WAKA & KEPALA SEKOLAH) -->
+    <div id="modal-rkas-approval" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-stamp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Persetujuan Usulan RKAS</h3>
+                        <p id="approval-item-title" class="text-xs text-slate-400 font-medium truncate max-w-[280px]">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeRkasApprovalModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-rkas-approval" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="approval-rkas-id" value="">
+
+                <!-- Ringkasan Anggaran Item -->
+                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Total Pagu:</span>
+                        <span id="approval-item-total" class="font-black text-emerald-600 dark:text-emerald-400 text-sm">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Sumber Dana:</span>
+                        <span id="approval-item-funding" class="font-semibold text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400">Sasaran Ruang:</span>
+                        <span id="approval-item-room" class="font-medium text-slate-700 dark:text-slate-200">-</span>
+                    </div>
+                </div>
+
+                <!-- Pilihan Aksi Persetujuan -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-signature text-emerald-600"></i>
+                        <span>Keputusan / Aksi *</span>
+                    </label>
+                    <select id="approval-action-select" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        <option value="verify_waka">Verifikasi Awal Waka Sarpras (verified_waka)</option>
+                        <option value="approve_kepsek">Persetujuan Akhir Kepala Sekolah (approved_kepsek)</option>
+                        <option value="realize">Tandai Belanja Telah Terealisasi (realized)</option>
+                        <option value="reject">Batalkan / Tolak Usulan (cancelled)</option>
+                    </select>
+                </div>
+
+                <!-- Catatan / Pertimbangan -->
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment-dots text-slate-600"></i>
+                        <span>Catatan Keputusan / Pertimbangan</span>
+                    </label>
+                    <textarea id="approval-notes" rows="3" placeholder="Tuliskan catatan verifikasi atau arahan pengadaan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeRkasApprovalModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-rkas-approval" id="btn-save-approval" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Keputusan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CETAK LEMBAR KERJA RKAS RESMI STANDAR DINAS (A4) -->
+    <div id="modal-print-rkas" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-print"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Pratinjau Lembar Kerja RKAS Sarpras Resmi</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="window.executePrintRkas?.()" class="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-xs transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-print text-xs"></i>
+                        <span>Cetak Dokumen (A4)</span>
+                    </button>
+                    <button type="button" onclick="window.closePrintRkasModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Container -->
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-200/60 dark:bg-slate-950 flex justify-center">
+                <div id="printable-rkas-area" class="bg-white text-slate-900 w-full max-w-[210mm] p-8 shadow-md rounded-lg text-xs leading-normal">
+                    <!-- Kop Sekolah Standar Kedinasan -->
+                    <div class="flex items-center gap-4 pb-3 border-b-2 border-slate-900 text-center relative mb-4">
+                        <img src="assets/logo-sekolah.png" alt="Logo" class="w-16 h-16 object-contain absolute left-0 top-0">
+                        <div class="w-full">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-600" id="kop-instansi">PEMERINTAH PROVINSI BALI - DINAS PENDIDIKAN</h4>
+                            <h2 class="font-black text-base uppercase text-slate-900 tracking-wide" id="kop-nama-sekolah">SMA NEGERI 1 ABANG</h2>
+                            <p class="text-[10px] text-slate-500" id="kop-alamat">Jl. Raya Culik - Amed, Abang, Karangasem, Bali 80852</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-5">
+                        <h3 class="font-black text-sm uppercase tracking-wide underline">RENCANA KEBUTUHAN DAN PENGANGGARAN SARANA & PRASARANA (RKAS)</h3>
+                        <p class="text-xs font-bold text-slate-700 mt-1">TAHUN ANGGARAN <span id="print-rkas-fiscal-year">2026</span></p>
+                    </div>
+
+                    <!-- Tabel Cetak Resmi -->
+                    <table class="w-full border-collapse border border-slate-800 text-[10px] mb-6">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-900 font-bold text-center border-b border-slate-800">
+                                <th class="border border-slate-800 p-1.5 w-8">No</th>
+                                <th class="border border-slate-800 p-1.5">Nama Barang / Belanja & Spesifikasi</th>
+                                <th class="border border-slate-800 p-1.5">Sasaran Ruang</th>
+                                <th class="border border-slate-800 p-1.5 w-12">Vol</th>
+                                <th class="border border-slate-800 p-1.5 w-12">Satuan</th>
+                                <th class="border border-slate-800 p-1.5 text-right w-24">Harga Satuan</th>
+                                <th class="border border-slate-800 p-1.5 text-right w-24">Total Pagu</th>
+                                <th class="border border-slate-800 p-1.5 w-20">Sumber Dana</th>
+                                <th class="border border-slate-800 p-1.5 w-14">Prioritas</th>
+                            </tr>
+                        </thead>
+                        <tbody id="print-rkas-table-body">
+                            <!-- Render baris cetak -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-bold bg-slate-50 border-t border-slate-800">
+                                <td colspan="6" class="border border-slate-800 p-1.5 text-right">TOTAL RENCANA ANGGARAN:</td>
+                                <td id="print-rkas-grand-total" class="border border-slate-800 p-1.5 text-right font-black">Rp 0</td>
+                                <td colspan="2" class="border border-slate-800 p-1.5"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Kolom Tanda Tangan Resmi Dual -->
+                    <div class="flex justify-between items-start pt-4 text-center text-xs">
+                        <div class="w-56">
+                            <p class="text-slate-600">Mengetahui,</p>
+                            <p class="font-bold text-slate-800">Kepala SMA Negeri 1 Abang</p>
+                            <div class="h-20"></div>
+                            <p class="font-bold underline text-slate-900" id="print-kepsek-name">I Made Dwi Semaraputra, S.Pd., M.Pd.</p>
+                            <p class="text-[10px] text-slate-500" id="print-kepsek-nip">NIP. 19800512 200501 1 008</p>
+                        </div>
+
+                        <div class="w-56">
+                            <p class="text-slate-600">Abang, <span id="print-date-display">-</span></p>
+                            <p class="font-bold text-slate-800">Wakasek Bidang Sarpras</p>
+                            <div class="h-20"></div>
+                            <p class="font-bold underline text-slate-900" id="print-waka-name">Penanggung Jawab Sarpras</p>
+                            <p class="text-[10px] text-slate-500" id="print-waka-nip">NIP. -</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="js/global.js"></script>
+    <script type="module" src="js/page-sarpras-rkas.js"></script>
+</body>
+
+</html>

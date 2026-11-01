@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link rel="manifest" href="../manifest.json">
+  <meta charset="utf-8">
+  <title>Mengalihkan ke SIMAS SMAGESA...</title>
+  <script>
+    (function () {
+      var currentUrl = new URL(window.location.href);
+      var isJurnalOld = currentUrl.hostname.indexOf('jurnal-smagesa') !== -1;
+      var targetBase = 'https://simas-demo-5ead3.web.app';
+      var targetPath = isJurnalOld && (currentUrl.pathname === '/' || currentUrl.pathname === '') 
+        ? '/jurnal.html' 
+        : currentUrl.pathname;
+      var targetFull = targetBase + targetPath + currentUrl.search + currentUrl.hash;
+      window.location.replace(targetFull);
+    })();
+  </script>
+  <meta http-equiv="refresh" content="0; url=https://simas-demo-5ead3.web.app/jurnal.html">
+  <link rel="canonical" href="https://simas-demo-5ead3.web.app/jurnal.html">
+</head>
+<body>
+  <p>Mengalihkan secara otomatis ke <a href="https://simas-demo-5ead3.web.app/jurnal.html">https://simas-demo-5ead3.web.app/jurnal.html</a>...</p>
+</body>
+</html>

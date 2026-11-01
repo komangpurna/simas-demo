@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Pemeliharaan Sarpras & Tiket Servis - Sistem Informasi & Manajemen Sekolah</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300 min-h-screen">
+
+    <!-- KONTAINER LAYOUT GLOBAL -->
+    <div id="app-layout"></div>
+
+    <!-- KONTEN UTAMA -->
+    <main class="hidden fade-in pb-16 lg:pb-12 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3">
+        
+        <!-- 1. HEADER HALAMAN -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-screwdriver-wrench text-amber-500 shrink-0"></i>
+                    <span>Pemeliharaan Sarpras & Tiket Servis</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    Pengelolaan tiket perbaikan fasilitas fisik dan pemeliharaan sarana berkala.
+                </p>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex items-center gap-2 flex-wrap shrink-0">
+                <button type="button" id="btn-refresh" onclick="window.refreshActiveTabData?.()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs" title="Segarkan Data" aria-label="Segarkan">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span>Segarkan</span>
+                </button>
+                <button type="button" id="btn-tab-action" onclick="window.handleMainTabAction?.()" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow transition-all active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span id="btn-tab-action-label">Buat Tiket Servis</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Switcher Navigation -->
+        <div class="flex items-center gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800 shadow-xs mb-6 overflow-x-auto no-scrollbar">
+            <button type="button" id="tab-btn-tickets" onclick="window.switchTab?.('tickets')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 bg-amber-500 text-slate-950 shadow-xs">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Tiket Servis & Perbaikan Fisik</span>
+            </button>
+            <button type="button" id="tab-btn-schedules" onclick="window.switchTab?.('schedules')" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Jadwal Servis Berkala (Preventif)</span>
+            </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2. PANEL TAB 1: TIKET SERVIS & PERBAIKAN FISIK -->
+        <!-- ============================================== -->
+        <section id="panel-tab-tickets" class="space-y-4">
+            <!-- 4 Kartu KPI Tiket Pemeliharaan -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Tiket Aktif / Berjalan</p>
+                        <h3 id="kpi-active-tickets" class="text-base sm:text-lg font-black text-slate-800 dark:text-white tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Prioritas Darurat/Tinggi</p>
+                        <h3 id="kpi-urgent-tickets" class="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400 tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Perbaikan Selesai</p>
+                        <h3 id="kpi-completed-tickets" class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Realisasi Biaya Servis</p>
+                        <h3 id="kpi-total-cost" class="text-base sm:text-lg font-black text-slate-800 dark:text-white tracking-tight mt-0.5">Rp 0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Toolbar Tiket -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                <div class="flex flex-wrap items-center gap-2 flex-1">
+                    <!-- Filter Status -->
+                    <select id="filter-ticket-status" onchange="window.filterTickets?.()" class="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="">Semua Status Tiket</option>
+                        <option value="scheduled">Terjadwal (Scheduled)</option>
+                        <option value="in_progress">Sedang Dikerjakan (In Progress)</option>
+                        <option value="completed">Selesai (Completed)</option>
+                        <option value="cancelled">Dibatalkan</option>
+                    </select>
+
+                    <!-- Filter Tipe Pemeliharaan -->
+                    <select id="filter-ticket-type" onchange="window.filterTickets?.()" class="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="">Semua Tipe Pekerjaan</option>
+                        <option value="corrective">Perbaikan Kerusakan (Korektif)</option>
+                        <option value="preventive">Servis Rutin (Preventif)</option>
+                        <option value="emergency">Darurat (Emergency)</option>
+                    </select>
+
+                    <!-- Filter Prioritas -->
+                    <select id="filter-ticket-priority" onchange="window.filterTickets?.()" class="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-500">
+                        <option value="">Semua Prioritas</option>
+                        <option value="darurat">Darurat</option>
+                        <option value="tinggi">Tinggi</option>
+                        <option value="sedang">Sedang</option>
+                        <option value="rendah">Rendah</option>
+                    </select>
+                </div>
+
+                <!-- Input Pencarian Kata Kunci -->
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="search-ticket-keyword" oninput="window.filterTickets?.()" placeholder="Cari tiket, fasilitas, teknisi..." class="w-full px-3 py-1.5 pr-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-400">
+                    <button type="button" onclick="document.getElementById('search-ticket-keyword').value = ''; window.filterTickets?.();" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs" aria-label="Reset pencarian">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Tiket Pemeliharaan -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold">
+                                <th class="py-3 px-4">No. Tiket & Tgl</th>
+                                <th class="py-3 px-4">Fasilitas / Objek</th>
+                                <th class="py-3 px-4">Uraian Pekerjaan</th>
+                                <th class="py-3 px-4">Teknisi / Vendor</th>
+                                <th class="py-3 px-4 text-right">Biaya (Est / Riil)</th>
+                                <th class="py-3 px-4 text-center">Prioritas & Status</th>
+                                <th class="py-3 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-ticket-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl text-amber-500 mb-2"></i>
+                                    <p class="text-xs">Memuat daftar tiket pemeliharaan...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 3. PANEL TAB 2: JADWAL PREVENTIF BERKALA       -->
+        <!-- ============================================== -->
+        <section id="panel-tab-schedules" class="hidden space-y-4">
+            <!-- 4 Kartu KPI Jadwal Preventif -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Total Program Rutin</p>
+                        <h3 id="kpi-total-schedules" class="text-base sm:text-lg font-black text-slate-800 dark:text-white tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Jatuh Tempo (30 Hari)</p>
+                        <h3 id="kpi-due-schedules" class="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400 tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Jadwal Aktif</p>
+                        <h3 id="kpi-active-schedules" class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tracking-tight mt-0.5">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm sm:text-base shrink-0">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-slate-400 font-medium truncate">Est. Pagu Rutin/Tahun</p>
+                        <h3 id="kpi-est-annual-cost" class="text-base sm:text-lg font-black text-slate-800 dark:text-white tracking-tight mt-0.5">Rp 0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Jadwal Preventif -->
+            <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Jadwal Servis Berkala Sekolah: AC, Genset, Proyektor, Pompa Air & Kebersihan Rutin</span>
+                </div>
+
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="search-schedule-keyword" oninput="window.filterSchedules?.()" placeholder="Cari nama program / vendor..." class="w-full px-3 py-1.5 pr-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-slate-400">
+                    <button type="button" onclick="document.getElementById('search-schedule-keyword').value = ''; window.filterSchedules?.();" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs" aria-label="Reset pencarian">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Jadwal Servis Preventif -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-bold">
+                                <th class="py-3 px-4">Nama Program Pemeliharaan</th>
+                                <th class="py-3 px-4">Fasilitas / Sasaran</th>
+                                <th class="py-3 px-4 text-center">Frekuensi</th>
+                                <th class="py-3 px-4">Teknisi / Rekanan</th>
+                                <th class="py-3 px-4">Terakhir Dilakukan</th>
+                                <th class="py-3 px-4">Jatuh Tempo Servis</th>
+                                <th class="py-3 px-4 text-right">Est. Biaya Servis</th>
+                                <th class="py-3 px-4 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-schedule-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
+                            <tr>
+                                <td colspan="8" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl text-amber-500 mb-2"></i>
+                                    <p class="text-xs">Memuat jadwal servis preventif...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================================================================= -->
+    <!-- 4. DIALOG MODAL (TOP-LEVEL SIBLINGS DI LUAR MAIN - ANTI NESTING) -->
+    <!-- ================================================================= -->
+
+    <!-- MODAL 1: BUAT / EDIT TIKET PEMELIHARAAN -->
+    <div id="modal-ticket-form" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-ticket-form-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Buat Tiket Pemeliharaan</h3>
+                        <p id="ticket-form-subtitle" class="text-xs text-slate-400">Form order perbaikan sarpras & penugasan teknisi</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeTicketFormModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-ticket" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="ticket-input-id" value="">
+                <input type="hidden" id="ticket-input-source-report-id" value="">
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-heading text-amber-600"></i>
+                        <span>Judul Pekerjaan Pemeliharaan *</span>
+                    </label>
+                    <input type="text" id="ticket-input-title" required placeholder="Contoh: Perbaikan AC Bocor di Lab Komputer 1, Penggantian Saklar..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wrench text-blue-600"></i>
+                            <span>Tipe Pemeliharaan *</span>
+                        </label>
+                        <select id="ticket-input-type" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
+                            <option value="corrective">Korektif (Perbaikan Kerusakan)</option>
+                            <option value="preventive">Preventif (Servis Rutin / Cek Fisik)</option>
+                            <option value="emergency">Emergency / Darurat (Bahaya)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+                            <span>Tingkat Prioritas *</span>
+                        </label>
+                        <select id="ticket-input-priority" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
+                            <option value="sedang">Sedang (Standar)</option>
+                            <option value="tinggi">Tinggi (Mendesak)</option>
+                            <option value="darurat">Darurat (Fatal / Berhenti Operasional)</option>
+                            <option value="rendah">Rendah (Dapat Ditunda)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Objek Fasilitas (Ruangan / Barang) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-door-open text-emerald-600"></i>
+                            <span>Lokasi Ruangan</span>
+                        </label>
+                        <select id="ticket-input-room" onchange="window.handleTicketRoomChange?.(this.value)" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                            <option value="">-- Pilih Ruangan / Lokasi --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-desktop text-indigo-600"></i>
+                            <span>Item Barang / Aset Spesifik (Opsional)</span>
+                        </label>
+                        <select id="ticket-input-item" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                            <option value="">-- Umum / Fasilitas Ruang --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Penugasan Teknisi & Tanggal -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-gear text-slate-600"></i>
+                            <span>Nama Teknisi / Rekanan Vendor</span>
+                        </label>
+                        <input type="text" id="ticket-input-technician" placeholder="Contoh: Pak Wayan (Internal) / CV Tirta AC..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium placeholder:text-slate-400">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day text-amber-600"></i>
+                            <span>Target Tanggal Pengerjaan</span>
+                        </label>
+                        <input type="date" id="ticket-input-scheduled-date" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                    </div>
+                </div>
+
+                <!-- Estimasi Anggaran & Sumber Dana -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                            <span>Estimasi Biaya Pengerjaan (Rp)</span>
+                        </label>
+                        <input type="number" id="ticket-input-cost-est" min="0" step="5000" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wallet text-purple-600"></i>
+                            <span>Rencana Sumber Dana</span>
+                        </label>
+                        <select id="ticket-input-funding" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                            <option value="BOS Reguler">BOS Reguler (Pemeliharaan)</option>
+                            <option value="BOS Kinerja">BOS Kinerja</option>
+                            <option value="Komite">Dana Komite Sekolah</option>
+                            <option value="Lainnya">Lainnya / Kas Mandiri</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-align-left text-slate-600"></i>
+                        <span>Deskripsi Masalah & Rincian Perbaikan</span>
+                    </label>
+                    <textarea id="ticket-input-desc" rows="3" placeholder="Jelaskan detail kerusakan, spare part yang perlu diganti, atau instruksi khusus perbaikan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeTicketFormModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-ticket" id="btn-save-ticket" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Terbitkan Tiket</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PENYELESAIAN TIKET SERVIS (BAP / REALISASI BIAYA & BUKTI) -->
+    <div id="modal-ticket-complete" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-sm sm:text-base leading-tight">Selesaikan Pekerjaan Pemeliharaan</h3>
+                        <p id="complete-ticket-code" class="text-xs text-slate-400 font-mono">-</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.closeTicketCompleteModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-ticket-complete" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="complete-ticket-id" value="">
+
+                <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <p class="text-xs text-slate-400">Pekerjaan: <span id="complete-job-title" class="font-bold text-slate-800 dark:text-white">-</span></p>
+                    <p class="text-xs text-slate-400">Fasilitas: <span id="complete-facility-name" class="font-bold text-amber-600 dark:text-amber-400">-</span></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-check text-emerald-600"></i>
+                            <span>Tanggal Selesai *</span>
+                        </label>
+                        <input type="date" id="complete-date" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-receipt text-blue-600"></i>
+                            <span>Realisasi Biaya Aktual (Rp) *</span>
+                        </label>
+                        <input type="number" id="complete-actual-cost" required min="0" step="1000" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-brands fa-google-drive text-emerald-600"></i>
+                        <span>Tautan Bukti Nota / Foto Selesai (Google Drive)</span>
+                    </label>
+                    <input type="url" id="complete-proof-url" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment text-slate-600"></i>
+                        <span>Catatan Hasil Pekerjaan / Berita Acara</span>
+                    </label>
+                    <textarea id="complete-notes" rows="3" placeholder="Hasil pengujian fungsi, masa garansi perbaikan teknisi, komponen yang diganti..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeTicketCompleteModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-ticket-complete" id="btn-save-complete" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Tandai Selesai (Completed)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TAMBAH / EDIT JADWAL PREVENTIF BERKALA -->
+    <div id="modal-schedule-form" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-all duration-200">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <h3 id="modal-schedule-title" class="font-bold text-slate-800 dark:text-white text-sm sm:text-base">Jadwal Pemeliharaan Preventif</h3>
+                </div>
+                <button type="button" onclick="window.closeScheduleFormModal?.()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-sm transition-all" aria-label="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-schedule" class="p-5 overflow-y-auto space-y-4 flex-1 text-xs sm:text-sm">
+                <input type="hidden" id="sched-input-id" value="">
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tag text-purple-600"></i>
+                        <span>Nama Program Pemeliharaan *</span>
+                    </label>
+                    <input type="text" id="sched-input-name" required placeholder="Contoh: Servis Rutin AC Tiap 3 Bulan, Cek Filter Proyektor..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-medium placeholder:text-slate-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-repeat text-blue-600"></i>
+                            <span>Frekuensi Servis *</span>
+                        </label>
+                        <select id="sched-input-freq" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-semibold">
+                            <option value="monthly">Bulanan (Tiap 1 Bulan)</option>
+                            <option value="quarterly" selected>Triwulanan (Tiap 3 Bulan)</option>
+                            <option value="biannual">Semesteran (Tiap 6 Bulan)</option>
+                            <option value="annual">Tahunan (Tiap 1 Tahun)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-day text-rose-600"></i>
+                            <span>Tanggal Jatuh Tempo *</span>
+                        </label>
+                        <input type="date" id="sched-input-due" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-door-open text-emerald-600"></i>
+                        <span>Sasaran Lokasi Ruangan</span>
+                    </label>
+                    <select id="sched-input-room" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                        <option value="">-- Seluruh Lingkungan Sekolah / Umum --</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-handshake text-slate-600"></i>
+                            <span>Vendor / Teknisi Langganan</span>
+                        </label>
+                        <input type="text" id="sched-input-vendor" placeholder="Contoh: CV Tirta Sejuk AC" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-medium placeholder:text-slate-400">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                            <i class="fa-solid fa-coins text-amber-600"></i>
+                            <span>Est. Biaya per Servis (Rp)</span>
+                        </label>
+                        <input type="number" id="sched-input-cost" min="0" step="5000" placeholder="0" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-comment text-slate-600"></i>
+                        <span>Catatan Tambahan & Prosedur</span>
+                    </label>
+                    <textarea id="sched-input-notes" rows="2" placeholder="Item yang harus diperiksa, checklist komponen..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-medium placeholder:text-slate-400"></textarea>
+                </div>
+            </form>
+
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50 dark:bg-slate-800/40">
+                <button type="button" onclick="window.closeScheduleFormModal?.()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-xs sm:text-sm transition-all">
+                    Batal
+                </button>
+                <button type="submit" form="form-schedule" id="btn-save-schedule" class="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all flex items-center gap-1.5">
+                    <i class="fa-solid fa-check text-xs"></i>
+                    <span>Simpan Jadwal Rutin</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="js/global.js"></script>
+    <script type="module" src="js/page-sarpras-pemeliharaan.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Dashboard Admin Kapsul Waktu Digital - {{schoolName}}">
+    <title>Admin Kapsul Waktu | SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==================== RESET & BASE ==================== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #d4a843;
+            --gold-light: #f5d17a;
+            --gold-dark: #b8912e;
+            --navy: #0b1829;
+            --navy-light: #132240;
+            --navy-card: #162a4a;
+            --navy-hover: #1d3560;
+            --accent-green: #34d399;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-rose: #fb7185;
+            --text-primary: #e8e4dc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(212, 168, 67, 0.12);
+            --border-light: rgba(255, 255, 255, 0.06);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--navy);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Login Screen Telah Dihapus */
+        /* ==================== ACCESS DENIED ==================== */
+        .access-denied {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .access-denied .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .access-denied h2 {
+            color: var(--accent-rose);
+            margin-bottom: 8px;
+        }
+
+        .access-denied p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            padding: 10px 24px;
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* ==================== LOADING ==================== */
+        .loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ==================== DASHBOARD ==================== */
+        .dashboard {
+            display: none;
+        }
+
+        /* Header */
+        .header {
+            background: var(--navy-light);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left .logo {
+            font-size: 28px;
+        }
+
+        .header-left h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .header-left .badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            background: rgba(212, 168, 67, 0.15);
+            color: var(--gold);
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-right .user-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn-logout {
+            padding: 7px 16px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: var(--accent-rose);
+            color: var(--accent-rose);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Year Selector */
+        .year-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .year-selector label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .year-selector select {
+            padding: 8px 32px 8px 12px;
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4a843' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        .year-selector select option {
+            background: var(--navy);
+        }
+
+        /* Top Actions & Toggle */
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: var(--radius);
+        }
+
+        .year-selector {
+            margin-bottom: 0;
+        }
+
+        .form-settings {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-settings .toggle-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--navy-light);
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: rgba(212, 168, 67, 0.2);
+            border-color: var(--gold);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+            background-color: var(--gold);
+            box-shadow: 0 0 8px rgba(212, 168, 67, 0.6);
+        }
+
+        input:disabled+.slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-rose);
+            min-width: 60px;
+        }
+
+        .status-text.active {
+            color: var(--gold);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(212, 168, 67, 0.3);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.green {
+            background: rgba(52, 211, 153, 0.12);
+        }
+
+        .stat-icon.blue {
+            background: rgba(96, 165, 250, 0.12);
+        }
+
+        .stat-icon.purple {
+            background: rgba(167, 139, 250, 0.12);
+        }
+
+        .stat-info .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        /* Section */
+        .section {
+            background: var(--navy-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .icon {
+            font-size: 18px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            position: relative;
+        }
+
+        .search-bar input {
+            padding: 8px 12px 8px 34px;
+            background: var(--navy);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            width: 240px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar input:focus {
+            border-color: var(--gold);
+        }
+
+        .search-bar::before {
+            content: '🔍';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-align: left;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
+        tbody tr:hover {
+            background: rgba(212, 168, 67, 0.03);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .class-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(96, 165, 250, 0.12);
+            color: var(--accent-blue);
+        }
+
+        .count-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--accent-green);
+        }
+
+        .text-truncate {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Action Buttons */
+        .btn-edit {
+            padding: 5px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--accent-blue);
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-edit:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        /* ==================== MODAL ==================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: rgba(11, 24, 41, 0.9);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 16px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--navy-light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: var(--shadow);
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .btn-close-modal {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-close-modal:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-body .form-group {
+            margin-bottom: 14px;
+        }
+
+        .modal-body label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .modal-body input,
+        .modal-body textarea,
+        .modal-body select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--navy);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-body input:focus,
+        .modal-body textarea:focus,
+        .modal-body select:focus {
+            border-color: var(--gold);
+        }
+
+        .modal-body textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .modal-body select option {
+            background: var(--navy);
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            padding: 9px 20px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-update {
+            padding: 9px 24px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--navy);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-update:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .main {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-left h1 {
+                font-size: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .search-bar input {
+                width: 180px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-info .stat-value {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-bar input {
+                width: 100%;
+            }
+        }
+
+        /* ==================== SCROLLBAR ==================== */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--navy);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--navy-hover);
+            border-radius: 4px;
+        }
+        /* ==================== DROPDOWN ==================== */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Bridge the gap so hover doesn't drop */
+        .dropdown::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -12px;
+            height: 12px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            background-color: var(--navy-card);
+            min-width: 160px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            z-index: 101;
+            overflow: hidden;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-content a {
+            color: var(--text-primary);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 12px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.2s;
+            font-weight: 500;
+        }
+
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-content a:hover {
+            background-color: rgba(212, 168, 67, 0.1);
+            color: var(--gold);
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+</head>
+
+<body>
+
+    <!-- 1. Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Login Screen Telah Dihapus - Dialihkan ke {{appName}} App Index -->
+    <!-- 3. Access Denied -->
+    <div class="access-denied" id="accessDenied">
+        <div>
+            <div class="icon">🚫</div>
+            <h2>Akses Ditolak</h2>
+            <p>Hanya Admin yang dapat mengakses halaman ini.</p>
+            <button class="btn-back" id="btnLogoutDenied">Logout & Kembali</button>
+        </div>
+    </div>
+
+    <!-- 4. Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left" style="flex-wrap: wrap;">
+                <span class="logo">⏳</span>
+                <h1>Admin Kapsul Waktu</h1>
+                <span class="badge" style="margin-right: 12px;">{{schoolShortName}}</span>
+
+                <!-- Year Selector dipindah ke sini -->
+                <div class="year-selector" style="margin-bottom: 0;">
+                    <select id="yearSelect"
+                        style="padding: 6px 30px 6px 12px; font-size: 13px; background-color: rgba(10, 22, 40, 0.5);">
+                        <!-- Akan diisi oleh JS -->
+                    </select>
+                </div>
+
+                <!-- Class Selector -->
+                <div class="year-selector" style="margin-bottom: 0;">
+                    <select id="classSelect"
+                        style="padding: 6px 30px 6px 12px; font-size: 13px; background-color: rgba(10, 22, 40, 0.5);">
+                        <option value="">&mdash; Pilih Kelas &mdash;</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-right" style="display: flex; gap: 12px; align-items: center;">
+                <span class="user-info" id="userEmail"></span>
+                <div class="dropdown">
+                    <button style="padding: 6px 14px; background: rgba(212, 168, 67, 0.1); border: 1px solid var(--gold); border-radius: var(--radius-sm); color: var(--gold); font-size: 12px; transition: 0.2s; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        Tautan Kapsul <span style="font-size: 9px;">▼</span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="timecapsule.html" target="_blank">Buka Kapsul ↗</a>
+                        <a href="wordcloud.html" target="_blank">Wordcloud Live ↗</a>
+                        <a href="test-wordcloud.html" target="_blank">Test Wordcloud ↗</a>
+                    </div>
+                </div>
+                <button class="btn-logout" id="btnLogout">Logout</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="top-actions">
+                <!-- Form Settings & Angkatan -->
+                <div class="form-settings" style="flex-wrap: wrap; gap: 20px;">
+                    <!-- Konfigurasi Form Status -->
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="toggle-label">Status Form Pengisian:</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleFormStatus" disabled>
+                            <span class="slider"></span>
+                        </label>
+                        <span class="status-text" id="statusText">Memuat...</span>
+                    </div>
+
+                    <!-- Konfigurasi Nama Angkatan -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="toggle-label">Angkatan:</span>
+                        <input type="text" id="inputNamaAngkatan"
+                            style="padding: 6px 12px; background: var(--navy); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--gold); outline: none; font-size: 13px; font-weight: 600; width: 200px;"
+                            placeholder="Cth: Adyatama Mahardika">
+                        <button id="btnSaveAngkatan"
+                            style="padding: 6px 16px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: var(--radius-sm); color: var(--accent-green); cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s;">Simpan</button>
+                    </div>
+
+                    <!-- Konfigurasi Tanggal Buka -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="toggle-label">Tanggal Buka:</span>
+                        <input type="datetime-local" id="inputTanggalBuka"
+                            style="padding: 6px 12px; background: var(--navy); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--gold); outline: none; font-size: 13px; font-weight: 600; width: 180px;">
+                        <button id="btnSaveTanggalBuka"
+                            style="padding: 6px 16px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: var(--radius-sm); color: var(--accent-green); cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s;">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">📝</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Total Pengisi</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue">🏫</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Kelas</div>
+                        <div class="stat-value" id="statClasses" style="font-size:14px;">-</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">📬</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Terakhir Submit</div>
+                        <div class="stat-value" id="statLast" style="font-size:14px; color:var(--text-secondary);">-
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Detail Data -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <span class="icon">📋</span> Data Detail Siswa
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Cari nama siswa...">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Lengkap</th>
+                                <th>Kelas</th>
+                                <th>Email</th>
+                                <th>WhatsApp</th>
+                                <th>Tiga Kata</th>
+                                <th>Tanggal Input</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailBody">
+                            <tr>
+                                <td colspan="8" class="empty-state"><span class="icon">📭</span>Belum ada data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>✏️ Edit Data Kapsul Waktu</h2>
+                <button class="btn-close-modal" id="btnCloseEdit">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editDocId">
+
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="editNama">
+                </div>
+                <div class="form-group">
+                    <label>Kelas</label>
+                    <select id="editKelas">
+                        <option value="XII-1">XII-1</option>
+                        <option value="XII-2">XII-2</option>
+                        <option value="XII-3">XII-3</option>
+                        <option value="XII-4">XII-4</option>
+                        <option value="XII-5">XII-5</option>
+                        <option value="XII-6">XII-6</option>
+                        <option value="XII-7">XII-7</option>
+                        <option value="XII-8">XII-8</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editEmail">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="tel" inputmode="tel" id="editWa">
+                </div>
+                <div class="form-group">
+                    <label>Media Sosial</label>
+                    <input type="text" id="editMedsos">
+                </div>
+                <div class="form-group">
+                    <label>Tiga Kata untuk {{schoolShortName}}</label>
+                    <input type="text" id="editTigaKata">
+                </div>
+                <div class="form-group">
+                    <label>Memori di {{schoolShortName}}</label>
+                    <textarea id="editMemori"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Lagu Favorit</label>
+                    <input type="text" id="editLagu">
+                </div>
+                <div class="form-group">
+                    <label>Refleksi Diri</label>
+                    <textarea id="editRefleksi"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Sosok Berpengaruh</label>
+                    <textarea id="editSosok"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Target Besar 2031</label>
+                    <textarea id="editTarget"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prinsip Hidup</label>
+                    <textarea id="editPrinsip"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Pesan Pengingat</label>
+                    <textarea id="editPesan"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Harapan untuk {{schoolShortName}}</label>
+                    <textarea id="editHarapan"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCancelEdit">Batal</button>
+                <button class="btn-update" id="btnUpdate">💾 Update Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="admin-kapsul.js"></script>
+</body>
+
+</html>

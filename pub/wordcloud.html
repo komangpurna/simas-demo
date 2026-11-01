@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="description" content="Live Word Cloud - Kata-kata untuk {{schoolShortName}}">
+    <title>Live Word Cloud - SMAGESA</title>
+    <link rel="icon" type="image/png" href="../assets/logo-sekolah.png">
+    <link rel="manifest" href="../manifest.json">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- D3.js (Force-Directed Graph) -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+    <style>
+        /* ==================== RESET & BASE ==================== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold-light: #f5d17a;
+            --gold: #d4a843;
+            --gold-dark: #b8912e;
+            --navy: #0a1628;
+            --navy-light: #132240;
+            --text-primary: #e8e0d0;
+            --text-secondary: #a09880;
+            --glass-bg: rgba(19, 34, 64, 0.6);
+            --glass-border: rgba(212, 168, 67, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--navy);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            /* Mencegah scroll, murni layar penuh */
+            display: flex;
+            flex-direction: column;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect x='7' y='2' width='6' height='16' rx='3' ry='3' fill='none' stroke='%23d4a843' stroke-width='1.2' opacity='0.7'/%3E%3Cline x1='7' y1='7' x2='13' y2='7' stroke='%23d4a843' stroke-width='0.8' opacity='0.5'/%3E%3Cline x1='7' y1='13' x2='13' y2='13' stroke='%23d4a843' stroke-width='0.8' opacity='0.5'/%3E%3C/svg%3E") 10 10, crosshair;
+        }
+
+        /* ==================== ANIMATED BACKGROUND ==================== */
+        .bg-wrapper {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(212, 168, 67, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(94, 169, 160, 0.06) 0%, transparent 40%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgShift {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-5%, 3%) rotate(3deg);
+            }
+        }
+
+        /* ==================== HEADER ==================== */
+        header {
+            position: absolute;
+            top: 16px;
+            left: 24px;
+            z-index: 10;
+            text-align: left;
+            pointer-events: none; /* Biarkan klik tembus ke bawah */
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(16px, 2vw, 26px);
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 300;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ==================== LOGO SEKOLAH (Klik untuk Export) ==================== */
+        .school-logo {
+            position: absolute;
+            top: 16px;
+            right: 24px;
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .school-logo img {
+            width: clamp(44px, 5vw, 68px);
+            height: auto;
+            opacity: 0.75;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+            transition: opacity 0.3s ease, transform 0.2s ease;
+        }
+
+        .school-logo:hover img {
+            opacity: 1;
+            transform: scale(1.08);
+        }
+
+        .school-logo:active img {
+            transform: scale(0.95);
+        }
+
+        .stats-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            color: var(--gold);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            /* Warna hijau indikator live */
+            border-radius: 50%;
+            box-shadow: 0 0 10px #2ecc71;
+            animation: pulseLive 1.5s infinite;
+        }
+
+        @keyframes pulseLive {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ==================== QR OVERLAY ==================== */
+        .qr-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.3s ease;
+            
+            /* Agar bisa di-resize manual */
+            resize: both;
+            overflow: hidden;
+            width: 110px;
+            height: 110px;
+            min-width: 60px;
+            min-height: 60px;
+            max-width: 500px;
+            max-height: 500px;
+        }
+
+        .qr-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            background: white;
+            padding: 4px;
+            pointer-events: none; /* Mencegah drag gambar standar browser */
+        }
+
+        /* ==================== TOOLTIP ==================== */
+        .wc-tooltip {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+            white-space: nowrap;
+        }
+
+
+        /* ==================== WORD CLOUD CONTAINER ==================== */
+        main {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #wordcloud-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Container untuk D3 SVG */
+        }
+
+        /* Styling teks D3 SVG (Dianimasikan oleh d3.transition) */
+        text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect x='7' y='2' width='6' height='16' rx='3' ry='3' fill='none' stroke='%23d4a843' stroke-width='1.2' opacity='0.7'/%3E%3Cline x1='7' y1='7' x2='13' y2='7' stroke='%23d4a843' stroke-width='0.8' opacity='0.5'/%3E%3Cline x1='7' y1='13' x2='13' y2='13' stroke='%23d4a843' stroke-width='0.8' opacity='0.5'/%3E%3C/svg%3E") 10 10, crosshair;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: fill 0.3s ease, filter 0.3s ease;
+        }
+
+        text:hover {
+            filter: brightness(1.2) drop-shadow(0 0 10px rgba(212, 168, 67, 0.5));
+            z-index: 100;
+        }
+
+        /* Loading State */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--gold);
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ==================== INTRO: QR FULLSCREEN ==================== */
+        .intro-qr-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            display: none;
+            background: var(--navy);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .intro-qr-screen.show {
+            display: flex;
+        }
+
+        .intro-qr-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .intro-qr-screen::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 40%, rgba(212, 168, 67, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(94, 169, 160, 0.08) 0%, transparent 40%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        .intro-qr-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .intro-qr-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: introFadeUp 1s ease 0.3s forwards;
+        }
+
+        .intro-qr-subtitle {
+            font-size: clamp(12px, 1.5vw, 16px);
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            opacity: 0;
+            animation: introFadeUp 1s ease 0.6s forwards;
+        }
+
+        .intro-qr-box {
+            background: white;
+            padding: clamp(12px, 3vw, 24px);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 0 60px rgba(212, 168, 67, 0.2), 0 0 120px rgba(212, 168, 67, 0.08);
+            opacity: 0;
+            animation: introFadeUp 1s ease 0.9s forwards;
+        }
+
+        .intro-qr-box img {
+            width: clamp(250px, 55vmin, 520px);
+            height: clamp(250px, 55vmin, 520px);
+            display: block;
+        }
+
+        .qr-logo-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(36px, 8vmin, 64px);
+            background: white;
+            border-radius: 12px;
+            padding: 6px 10px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+        }
+
+        .btn-intro-next {
+            margin-top: 20px;
+            padding: 10px 28px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border: none;
+            border-radius: 50px;
+            color: var(--navy);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            animation: introFadeUp 1s ease 1.5s forwards;
+        }
+
+        .btn-intro-next::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-intro-next:hover::before {
+            left: 100%;
+        }
+
+        .btn-intro-next:active {
+            transform: scale(0.96);
+        }
+
+        @keyframes introFadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== INTRO: SLIDESHOW ==================== */
+        .intro-slides-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: var(--navy);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .intro-slides-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Transition slide (QR → Wordcloud) */
+        .intro-transition-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 4500;
+            background: var(--navy);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .intro-transition-screen::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 50% 50%, rgba(212, 168, 67, 0.1) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .intro-transition-screen.show {
+            display: flex;
+        }
+
+        .intro-transition-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .intro-slides-screen::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(212, 168, 67, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(94, 169, 160, 0.06) 0%, transparent 40%);
+            animation: bgShift 15s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        .slides-wrapper {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px 60px;
+            max-width: 960px;
+            width: 100%;
+        }
+
+        .slides-container {
+            display: grid;
+            place-items: center;
+            min-height: 420px;
+        }
+
+        .wc-slide {
+            grid-area: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.7s ease, transform 0.7s ease, visibility 0.7s;
+            transform: translateY(30px) scale(0.95);
+        }
+
+        .wc-slide.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .wc-slide .s-icon {
+            font-size: clamp(80px, 10vw, 120px);
+            filter: drop-shadow(0 4px 30px rgba(212, 168, 67, 0.4));
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        @keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .wc-slide .s-sub {
+            font-size: clamp(14px, 1.5vw, 20px);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--gold);
+            opacity: 0.8;
+        }
+
+        .wc-slide .s-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 4.5vw, 56px);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.3;
+        }
+
+        .wc-slide .s-desc {
+            font-size: clamp(16px, 1.8vw, 24px);
+            color: var(--text-secondary);
+            line-height: 1.9;
+            max-width: 720px;
+        }
+
+        .wc-slide .s-desc em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 28px;
+        }
+
+        .s-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(212, 168, 67, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .s-dot.active {
+            background: var(--gold);
+            width: 24px;
+            border-radius: 4px;
+            box-shadow: 0 0 12px rgba(212, 168, 67, 0.4);
+        }
+
+        .slide-progress {
+            margin-top: 20px;
+            width: 200px;
+            height: 3px;
+            background: rgba(212, 168, 67, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .slide-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+
+        .btn-back-qr {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 10;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(19, 34, 64, 0.6);
+            border: 1px solid rgba(212, 168, 67, 0.2);
+            border-radius: 50px;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back-qr:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(212, 168, 67, 0.1);
+        }
+
+        /* Hide wordcloud UI elements during intro */
+        body.intro-active header,
+        body.intro-active .school-logo,
+        body.intro-active .qr-overlay,
+        body.intro-active .stats-badge,
+        body.intro-active main {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        body.wordcloud-ready header,
+        body.wordcloud-ready .school-logo,
+        body.wordcloud-ready .qr-overlay,
+        body.wordcloud-ready .stats-badge,
+        body.wordcloud-ready main {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 0.8s ease 0.3s;
+        }
+    </style>
+    <script type="module" src="../js/school-config.js"></script>
+</head>
+
+<body class="intro-active">
+
+    <!-- ===== PHASE 2: QR CODE FULLSCREEN (hidden initially) ===== -->
+    <div class="intro-qr-screen" id="introQrScreen">
+        <div class="intro-qr-content">
+            <h1 class="intro-qr-title">{{schoolShortName}} Time Capsule</h1>
+            <p class="intro-qr-subtitle">Scan QR untuk mengisi kapsul waktu <span id="introYear"></span></p>
+            <div class="intro-qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&ecc=H&data=https://smagesa.web.app/pub/timecapsule.html" alt="Scan QR Code">
+                <div class="qr-logo-overlay">⏳</div>
+            </div>
+            <button class="btn-intro-next" id="btnQrNext">Lanjut ke Word Cloud ✦</button>
+        </div>
+    </div>
+
+    <!-- ===== PHASE 3: TRANSITION SLIDE (QR → Wordcloud) ===== -->
+    <div class="intro-transition-screen" id="introTransitionScreen">
+        <div class="slides-wrapper">
+            <div class="slides-container">
+                <div class="wc-slide active">
+                    <span class="s-icon">🌟</span>
+                    <span class="s-sub">Terima Kasih Sudah Berpartisipasi</span>
+                    <h2 class="s-title">Sekarang, Mari Lihat Apa Kata Angkatanmu</h2>
+                    <p class="s-desc"><em>Kata-kata yang sudah terkumpul dari seluruh siswa...</em></p>
+                </div>
+            </div>
+            <div class="slide-progress">
+                <div class="slide-progress-fill" id="transitionProgressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PHASE 1: AUTO SLIDESHOW (visible first) ===== -->
+    <div class="intro-slides-screen" id="introSlidesScreen">
+        <div class="slides-wrapper">
+            <div class="slides-container">
+                <div class="wc-slide active" data-slide="0">
+                    <span class="s-icon">🎓</span>
+                    <span class="s-sub">Angkatan 2026</span>
+                    <h2 class="s-title">Hari Ini Bukan Hari Biasa</h2>
+                    <p class="s-desc"><em>Ini adalah salah satu hari terakhirmu sebagai anak SMA.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="1">
+                    <span class="s-icon">🏫</span>
+                    <span class="s-sub">Tiga Tahun Lalu</span>
+                    <h2 class="s-title">Kamu Masuk ke Gerbang Ini untuk Pertama Kali</h2>
+                    <p class="s-desc"><em>Grogi, bingung, belum kenal siapa-siapa.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="2">
+                    <span class="s-icon">💛</span>
+                    <span class="s-sub">Lalu Semuanya Berubah</span>
+                    <h2 class="s-title">Orang Asing Jadi Orang Paling Berarti</h2>
+                    <p class="s-desc"><em>Teman sebangku, sahabat, dan orang-orang yang bikin hari terasa pendek.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="3">
+                    <span class="s-icon">⏳</span>
+                    <span class="s-sub">Tapi Waktu Terus Berjalan</span>
+                    <h2 class="s-title">Besok, Bangku Ini Sudah Milik Orang Lain</h2>
+                    <p class="s-desc"><em>Dan kamu nggak bisa menekan tombol replay.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="4">
+                    <span class="s-icon">🤔</span>
+                    <span class="s-sub">Sebelum Semuanya Berakhir</span>
+                    <h2 class="s-title">Ada Satu Hal yang Belum Kamu Lakukan</h2>
+                    <p class="s-desc"><em>Menuliskan apa yang kamu rasakan, hari ini, detik ini.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="5">
+                    <span class="s-icon">💭</span>
+                    <span class="s-sub">Satu Kesempatan</span>
+                    <h2 class="s-title">Kalau Bisa Kirim Pesan ke Masa Depan...</h2>
+                    <p class="s-desc"><em>...apa yang ingin kamu sampaikan pada dirimu 5 tahun dari sekarang?</em></p>
+                </div>
+                <div class="wc-slide" data-slide="6">
+                    <span class="s-icon">📦</span>
+                    <span class="s-sub">{{schoolShortName}} Time Capsule</span>
+                    <h2 class="s-title">Kapsul Waktu Digital untuk Angkatanmu</h2>
+                    <p class="s-desc"><em>Tulis pesanmu hari ini. Buka lagi saat kamu sudah jadi orang yang berbeda.</em></p>
+                </div>
+                <div class="wc-slide" data-slide="7">
+                    <span class="s-icon">📱</span>
+                    <span class="s-sub">Siap?</span>
+                    <h2 class="s-title">Scan QR dan Tuliskan Ceritamu</h2>
+                    <p class="s-desc"><em>Kamu cuma perlu 3 menit. Tapi pesanmu bertahan selamanya.</em></p>
+                </div>
+            </div>
+
+            <div class="slide-progress">
+                <div class="slide-progress-fill" id="slideProgressFill"></div>
+            </div>
+        </div>
+        <button class="btn-back-qr" id="btnPlaySlides">▶ Play</button>
+    </div>
+
+    <div class="bg-wrapper"></div>
+
+    <header>
+        <h1>Kata-kata untuk {{schoolShortName}}</h1>
+        <p class="subtitle">Kapsul Waktu Digital <span id="displayYear"></span></p>
+    </header>
+
+    <div class="school-logo" id="btnExport" title="Klik untuk download screenshot">
+        <img src="../assets/logo-sekolah.png" alt="Logo {{schoolShortName}}">
+    </div>
+
+    <div class="qr-overlay" title="Tarik ujung kanan bawah untuk merubah ukuran QR">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=https://smagesa.web.app/pub/timecapsule.html" alt="Scan QR">
+    </div>
+
+    <div class="stats-badge">
+        <div class="dot"></div>
+        <span id="participantCount">Menunggu data...</span>
+    </div>
+
+    <div id="tooltip" class="wc-tooltip"></div>
+
+    <main>
+        <div id="wordcloud-container">
+            <div class="loading" id="loadingText">Menganalisis Kata...</div>
+        </div>
+    </main>
+
+    <!-- Library Tambahan -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <!-- Intro Flow Controller -->
+    <script>
+        // Set tahun
+        document.getElementById('introYear').textContent = new Date().getFullYear();
+
+        const SLIDE_DURATION = 8000; // 8 detik per slide
+        const TOTAL_SLIDES = 8;
+        let currentSlide = 0;
+        let slideTimer = null;
+        let isPlaying = false;
+
+        // FLOW: Slides (menunggu Play) → QR Screen → Wordcloud
+        // Slide pertama tampil sebagai teaser, tapi tidak auto-advance
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll('#introSlidesScreen .wc-slide');
+            slides.forEach(s => s.classList.remove('active'));
+            slides[index].classList.add('active');
+
+            // Reset & animate progress bar (hanya jika playing)
+            const fill = document.getElementById('slideProgressFill');
+            if (isPlaying) {
+                fill.style.transition = 'none';
+                fill.style.width = '0%';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        fill.style.transition = `width ${SLIDE_DURATION}ms linear`;
+                        fill.style.width = '100%';
+                    });
+                });
+            }
+        }
+
+        function autoAdvance() {
+            clearInterval(slideTimer);
+            slideTimer = setInterval(() => {
+                currentSlide++;
+                if (currentSlide >= TOTAL_SLIDES) {
+                    clearInterval(slideTimer);
+                    isPlaying = false;
+                    transitionToQR();
+                    return;
+                }
+                showSlide(currentSlide);
+            }, SLIDE_DURATION);
+        }
+
+        // Slides selesai → tampilkan QR screen
+        function transitionToQR() {
+            const slidesScreen = document.getElementById('introSlidesScreen');
+            slidesScreen.classList.add('hide');
+
+            setTimeout(() => {
+                slidesScreen.style.display = 'none';
+                const qrScreen = document.getElementById('introQrScreen');
+                qrScreen.classList.add('show');
+            }, 800);
+        }
+
+        // Tombol Play: admin klik untuk mulai slideshow
+        const btnPlay = document.getElementById('btnPlaySlides');
+        btnPlay.addEventListener('click', () => {
+            if (!isPlaying) {
+                isPlaying = true;
+                btnPlay.textContent = '▶ Skip ke QR';
+                showSlide(currentSlide); // trigger progress bar
+                autoAdvance();
+            } else {
+                // Jika sudah playing, skip ke QR
+                clearInterval(slideTimer);
+                isPlaying = false;
+                transitionToQR();
+            }
+        });
+
+        // QR screen → Transition slide → Wordcloud
+        document.getElementById('btnQrNext').addEventListener('click', () => {
+            const qrScreen = document.getElementById('introQrScreen');
+            qrScreen.classList.add('hide');
+
+            setTimeout(() => {
+                qrScreen.style.display = 'none';
+
+                // Tampilkan transition slide
+                const transScreen = document.getElementById('introTransitionScreen');
+                transScreen.classList.add('show');
+
+                // Animate progress bar
+                const fill = document.getElementById('transitionProgressFill');
+                fill.style.transition = 'none';
+                fill.style.width = '0%';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        fill.style.transition = 'width 5000ms linear';
+                        fill.style.width = '100%';
+                    });
+                });
+
+                // Setelah 5 detik, transisi ke wordcloud
+                setTimeout(() => {
+                    transScreen.classList.add('hide');
+                    setTimeout(() => {
+                        transScreen.style.display = 'none';
+                        document.body.classList.remove('intro-active');
+                        document.body.classList.add('wordcloud-ready');
+                        window.dispatchEvent(new CustomEvent('introComplete'));
+                    }, 800);
+                }, 5000);
+            }, 800);
+        });
+    </script>
+
+    <!-- Script Logika Word Cloud -->
+    <script type="module" src="wordcloud.js?v=2"></script>
+</body>
+
+</html>

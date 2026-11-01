@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uji impor soal LMS</title><link rel="stylesheet" href="/css/tailwind.css">
+<script src="/js/vendor/jszip.min.js"></script><script src="/js/vendor/jspdf.umd.min.js"></script></head>
+<body class="bg-slate-100 text-slate-800 p-4"><main class="max-w-3xl mx-auto space-y-4">
+<h1 class="text-xl font-bold">Uji impor soal LMS · data lokal</h1><p id="notice" role="status"></p>
+<section class="lms-material-card bg-white p-4 rounded-xl space-y-3">
+<input class="lms-quiz-kkm" type="number" value="70" aria-label="Ketuntasan"><input class="lms-quiz-time" type="number" value="0" aria-label="Waktu">
+<button id="import" class="border rounded-lg px-3 py-2">Impor soal</button><button id="save" class="border rounded-lg px-3 py-2">Baca hasil editor</button>
+<div class="lms-quiz-questions-list space-y-3"></div></section><pre id="result"></pre></main>
+<script type="module">
+import { installQuizBuilder } from '/js/lms-quiz-ui.mjs';
+import { createQuizAiImporter } from '/js/lms-quiz-import-ai.mjs';
+const hasTestKey = new URL(location.href).searchParams.get('savedKey') === '1';
+installQuizBuilder({ notify: (title, message) => { document.getElementById('notice').textContent = `${title}: ${message}`; }, aiImport: createQuizAiImporter({
+    getUserId: () => 'teacher-demo', getApiKeys: async () => hasTestKey ? ['fake-import-key-for-browser-test'] : [],
+    getConfig: async () => ({ model: 'gemini-test-model' }),
+    requestWithFallback: async (request, options) => ({ response: await request(options.keys[0]) })
+}) });
+const card = document.querySelector('.lms-material-card');
+window.addLmsQuizQuestion(card);
+document.getElementById('import').onclick = () => window.openLmsQuizImport(card);
+document.getElementById('save').onclick = () => { document.getElementById('result').textContent = window.serializeLmsQuizPayload(card); };
+window.demoReady = true;
+</script></body></html>

@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Pengaturan Sistem - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in space-y-8">
+
+        <div id="admin-tools-section">
+            <!-- SECTION: PEMELIHARAAN SISTEM -->
+            <div id="section-pemeliharaan">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-screwdriver-wrench text-slate-400"></i> Pemeliharaan Sistem
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Sinkronisasi Metadata + Hapus Alumni (gabung dalam 1 card) -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-7 h-7 rounded-lg bg-slate-600 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-database text-xs"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 text-sm">Utilitas Data</span>
+                        </div>
+                        <div class="space-y-2">
+                            <!-- Sinkronisasi Metadata -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-blue-50 border border-blue-100">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-slate-700 text-xs">Sync Metadata</span>
+                                        <p class="text-[9px] text-slate-500">Perbaiki dropdown kelas</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.syncClasses()"
+                                    class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                            </div>
+                            <!-- Pindah Kelas Siswa -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-indigo-50 border border-indigo-100">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-right-left text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-slate-700 text-xs">Pindah Kelas Siswa</span>
+                                        <p class="text-[9px] text-slate-500">Pindah kelas + histori presensi</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.openTransferClassModal()"
+                                    class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold hover:bg-indigo-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-play"></i>
+                                </button>
+                            </div>
+                            <!-- Reset Data Tahunan (Gabungan Hapus Alumni & Kenaikan Kelas) -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                                        <i class="fa-solid fa-calendar-check text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-semibold text-slate-800 text-xs">Reset Data Tahunan</span>
+                                            <span class="text-[8px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300">Tahunan</span>
+                                        </div>
+                                        <p class="text-[9px] text-slate-500">Pembersihan alumni lama & kenaikan tingkat kelas</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.triggerAnnualReset()"
+                                    class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-all active:scale-95 shadow-sm flex items-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Mulai
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup Data (Super Admin Only) -->
+                    <div id="card-backup-data"
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-emerald-300 transition-colors">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-cloud-arrow-down text-xs"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 text-sm">Backup Data</span>
+                        </div>
+                        <div class="space-y-2">
+                            <!-- Backup Semua Data -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-emerald-50 border border-emerald-100">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-download text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-slate-700 text-xs">Backup Semua</span>
+                                        <p class="text-[9px] text-slate-500">Export seluruh data ke JSON</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.backupAllData()" id="btn-backup-all"
+                                    class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                            </div>
+                            <!-- Backup Per Koleksi -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-blue-50 border border-blue-100">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-list-check text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-slate-700 text-xs">Pilih Koleksi</span>
+                                        <p class="text-[9px] text-slate-500">Backup koleksi tertentu saja</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.openBackupModal()"
+                                    class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-bold hover:bg-blue-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </button>
+                            </div>
+                            <!-- Restore Data -->
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-amber-50 border border-amber-100">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-6 h-6 rounded bg-amber-600 text-white flex items-center justify-center">
+                                        <i class="fa-solid fa-upload text-[10px]"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-slate-700 text-xs">Restore Data</span>
+                                        <p class="text-[9px] text-slate-500">Import dari file backup JSON</p>
+                                    </div>
+                                </div>
+                                <button onclick="window.openRestoreModal()"
+                                    class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-[10px] font-bold hover:bg-amber-700 transition-all active:scale-95">
+                                    <i class="fa-solid fa-upload"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- SECTION: KONFIGURASI UMUM -->
+            <div id="section-config-umum" class="mt-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-slate-400"></i> Konfigurasi Umum
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Toggle Show Alumni -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-blue-300 transition-colors">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 mb-1">Tampilkan Data Alumni</h3>
+                                <p class="text-xs text-slate-500">Jika aktif, data alumni akan muncul di pencarian dan
+                                    dropdown kelas.</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded-full text-blue-600">
+                                <i class="fa-solid fa-user-graduate text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                            <span id="status-alumni" class="text-xs text-slate-500 font-medium">Nonaktif</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-show-alumni" class="sr-only peer"
+                                    onchange="window.saveGeneralConfig()">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Toggle Two-Step Permission -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-green-300 transition-colors">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                                    Persetujuan Permisi 2 Tahap
+                                    <span
+                                        class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">Baru</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Siswa mengajukan permisi dari portal, lalu disetujui
+                                    wali kelas sebelum ke guru piket.</p>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded-full text-green-600">
+                                <i class="fa-solid fa-clipboard-check text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                            <span id="status-two-step" class="text-xs text-slate-500 font-medium">Nonaktif</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-two-step-permission" class="sr-only peer"
+                                    onchange="window.saveGeneralConfig()">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Toggle Maintenance Mode -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-red-300 transition-colors">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                                    Mode Pemeliharaan (Maintenance)
+                                    <span
+                                        class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase">Kritis</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Jika aktif, semua user selain Super Admin tidak akan bisa mengakses aplikasi dan akan dialihkan ke halaman pemeliharaan.</p>
+                            </div>
+                            <div class="bg-red-50 p-3 rounded-full text-red-600">
+                                <i class="fa-solid fa-ban text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                            <span id="status-maintenance" class="text-xs text-slate-500 font-medium">Nonaktif</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-maintenance" class="sr-only peer"
+                                    onchange="window.saveGeneralConfig()">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Toggle Allow Student Login -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-300 transition-colors">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                                    Izinkan Siswa Login
+                                    <span
+                                        class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase">Siswa</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Jika dinonaktifkan, siswa tidak akan bisa login ke Portal Siswa (misal saat mempersiapkan rilis pengumuman/data baru).</p>
+                            </div>
+                            <div class="bg-indigo-50 p-3 rounded-full text-indigo-600">
+                                <i class="fa-solid fa-user-lock text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+                            <span id="status-allow-student-login" class="text-xs text-slate-500 font-medium">Aktif</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-allow-student-login" class="sr-only peer"
+                                    onchange="window.saveGeneralConfig()">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Konfigurasi Model AI Gemini (Khusus Super Admin - Compact) -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-purple-300 transition-colors flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                    Model AI Gemini
+                                    <span
+                                        class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold uppercase">Super Admin</span>
+                                </h3>
+                                <p class="text-[11px] text-slate-500">Atur Model ID & Nama Tampilan Gemini AI.</p>
+                            </div>
+                            <div class="bg-purple-50 p-2 rounded-lg text-purple-600 flex-shrink-0">
+                                <i class="fa-solid fa-robot text-base"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Model ID</label>
+                                    <input type="text" id="ai-model-id" placeholder="Model ID resmi Google AI..."
+                                        class="w-full px-2 py-1 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-purple-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Display Name</label>
+                                    <input type="text" id="ai-model-display-name" placeholder="Nama Tampilan AI..."
+                                        class="w-full px-2 py-1 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-purple-500 outline-none">
+                                </div>
+                            </div>
+                            <button onclick="window.saveAiModelConfig()"
+                                class="w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-floppy-disk text-[10px]"></i> Simpan Model AI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card Bobot EWS (Samping Gemini AI) -->
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-indigo-300 transition-colors flex flex-col justify-between">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                    Bobot EWS Kedisiplinan
+                                    <span class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase">Sistem</span>
+                                </h3>
+                                <p class="text-[11px] text-slate-500">Atur bobot indikator risiko EWS (Total = 100%).</p>
+                            </div>
+                            <div class="bg-indigo-50 p-2 rounded-lg text-indigo-600 flex-shrink-0">
+                                <i class="fa-solid fa-sliders text-base"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <div>
+                                    <label for="input-ews-w-absent" class="block text-[9px] font-bold text-slate-600 mb-0.5">Absen %</label>
+                                    <input type="number" inputmode="numeric" id="input-ews-w-absent" min="0" max="100" value="40" class="w-full text-xs p-1 border border-slate-200 rounded-md focus:ring-1 focus:ring-indigo-500 text-center font-bold text-slate-800">
+                                </div>
+                                <div>
+                                    <label for="input-ews-w-bk" class="block text-[9px] font-bold text-slate-600 mb-0.5">Poin BK %</label>
+                                    <input type="number" inputmode="numeric" id="input-ews-w-bk" min="0" max="100" value="45" class="w-full text-xs p-1 border border-slate-200 rounded-md focus:ring-1 focus:ring-indigo-500 text-center font-bold text-slate-800">
+                                </div>
+                                <div>
+                                    <label for="input-ews-w-perm" class="block text-[9px] font-bold text-slate-600 mb-0.5">Permisi %</label>
+                                    <input type="number" inputmode="numeric" id="input-ews-w-perm" min="0" max="100" value="15" class="w-full text-xs p-1 border border-slate-200 rounded-md focus:ring-1 focus:ring-indigo-500 text-center font-bold text-slate-800">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-[10px] text-slate-500">Total: <b id="ews-total-weight-label" class="text-emerald-600">100%</b></span>
+                                <button id="btn-save-ews-config" onclick="window.saveEwsConfig()" class="py-1 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                    <i class="fa-solid fa-floppy-disk text-[10px]"></i> Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Kelas Aktif Sistem -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:border-amber-300 transition-colors md:col-span-2">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                                    Kelas Aktif Sistem
+                                    <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold uppercase">Global</span>
+                                </h3>
+                                <p class="text-xs text-slate-500">Pilih kelas yang aktif di seluruh modul sistem (presensi, siswa, input nilai, e-lab, e-rapor, rekap, dll). Un-check kelas yang tidak aktif (misal: XII yang sudah selesai ujian).</p>
+                            </div>
+                            <div class="bg-amber-50 p-3 rounded-full text-amber-600 flex-shrink-0">
+                                <i class="fa-solid fa-list-check text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <span id="active-classes-count" class="text-xs text-slate-500 font-medium">Memuat...</span>
+                                <div class="flex gap-2">
+                                    <button onclick="window.toggleAllAttendanceClasses(true)" class="text-[10px] font-bold text-blue-600 hover:text-blue-700 px-2 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                        <i class="fa-solid fa-check-double mr-1"></i>Pilih Semua
+                                    </button>
+                                    <button onclick="window.toggleAllAttendanceClasses(false)" class="text-[10px] font-bold text-slate-500 hover:text-slate-700 px-2 py-1 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                                        <i class="fa-solid fa-xmark mr-1"></i>Hapus Semua
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="checklist-active-classes" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-1.5 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-lg border border-slate-200 custom-scrollbar">
+                                <p class="col-span-full text-center text-slate-400 text-xs py-2"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Memuat daftar kelas...</p>
+                            </div>
+                            <div class="flex items-center justify-between mt-3">
+                                <p class="text-[10px] text-slate-400"><i class="fa-solid fa-info-circle mr-1"></i>Kelas yang tidak dicentang tidak akan muncul di dropdown seluruh modul sistem</p>
+                                <button onclick="window.saveActiveClassesConfig()" class="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-all active:scale-95 shadow-sm">
+                                    <i class="fa-solid fa-save mr-1"></i>Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: PENGATURAN VIDEO LOGIN & KALENDER -->
+            <div id="section-login-video" class="mt-8 space-y-4">
+                <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-desktop text-blue-500"></i> Konten Halaman Login
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 1. Video Carousel & Idle Settings -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center text-rose-600 dark:text-rose-400">
+                                        <i class="fa-solid fa-play text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-slate-800 dark:text-white text-sm">Video Carousel</h3>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Putar YouTube saat idle</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span id="status-login-video" class="text-[11px] font-bold text-slate-500 dark:text-slate-400">Nonaktif</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="toggle-login-video" class="sr-only peer" onchange="window.saveLoginVideoConfig()">
+                                        <div class="w-9 h-5 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-600 dark:text-slate-300 mb-0.5">Delay Video (dtk)</label>
+                                    <input type="number" inputmode="numeric" id="input-video-delay" min="3" max="60" value="10"
+                                        class="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-white outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-600 dark:text-slate-300 mb-0.5">Waktu Idle (mnt)</label>
+                                    <input type="number" inputmode="numeric" id="input-idle-timeout" min="1" max="120" value="30"
+                                        class="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-white outline-none">
+                                </div>
+                            </div>
+                            <p class="text-[9px] text-slate-400 dark:text-slate-500">
+                                Idle aktif: <b id="label-idle-timeout" class="text-amber-600 dark:text-amber-400">30</b> mnt.
+                            </p>
+                            <div class="flex gap-2 pt-1">
+                                <button onclick="window.saveLoginVideoConfig()"
+                                    class="flex-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                    <i class="fa-solid fa-save text-[10px]"></i> Simpan Video
+                                </button>
+                                <button onclick="window.saveCalendarConfig()"
+                                    class="flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                    <i class="fa-solid fa-clock text-[10px]"></i> Simpan Idle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tambah Video Card -->
+                    <div class="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-slate-800 dark:to-slate-800/80 p-4 rounded-xl border border-rose-100 dark:border-rose-500/20 flex flex-col justify-between">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-6 h-6 rounded-md bg-rose-600 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                            </div>
+                            <span class="font-bold text-slate-700 dark:text-white text-xs">Tambah Video Youtube</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <input type="text" id="input-video-url" placeholder="Link YouTube..."
+                                class="w-full px-2.5 py-1 text-xs border border-rose-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 outline-none"
+                                oninput="window.previewVideoURL(this.value)">
+                            <input type="text" id="input-video-title" placeholder="Judul video (opsional)"
+                                class="w-full px-2.5 py-1 text-xs border border-rose-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 outline-none">
+                            <div id="video-preview-area" class="hidden">
+                                <div class="relative rounded-md overflow-hidden border border-slate-200 dark:border-slate-600 bg-black">
+                                    <img id="video-preview-thumb" src="" alt="Preview" class="w-full h-16 object-cover">
+                                </div>
+                                <p id="video-preview-id" class="text-[9px] text-slate-400 mt-0.5">ID: -</p>
+                            </div>
+                            <button onclick="window.addLoginVideo()"
+                                class="w-full py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Tambah Video
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Daftar Video (Grid 2-Kolom di dalam Grid 2-Kolom Utama) -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 md:col-span-2">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-list-ol text-[10px]"></i>
+                                </div>
+                                <span class="font-bold text-slate-700 dark:text-white text-xs">Daftar Video Active</span>
+                            </div>
+                            <span id="video-count" class="text-[9px] bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">0 Video</span>
+                        </div>
+                        <div id="login-video-list" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[320px] overflow-y-auto custom-scrollbar">
+                            <div class="col-span-full text-center text-slate-400 text-xs py-3 italic">
+                                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Memuat...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </main>
+
+
+
+
+    <!-- MODAL RESET DATA TAHUNAN (WIZARD 2-TAHAP: BERSIH ALUMNI + KENAIKAN KELAS) -->
+    <div id="modal-annual-reset"
+        class="hidden fixed inset-0 z-[125] bg-black/80 flex items-center justify-center p-4 backdrop-blur-md fade-in">
+        <div
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all border-t-4 border-emerald-500 flex flex-col max-h-[92vh]">
+            
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-calendar-check text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+                            Reset Data Tahunan
+                            <span class="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Tahun Ajaran Baru</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Pembersihan alumni lama & kenaikan tingkat kelas siswa</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-annual-reset').classList.add('hidden')"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Step Wizard Indicator -->
+            <div class="px-5 py-3 bg-slate-100/70 border-b border-slate-200/80 flex items-center justify-between text-xs">
+                <!-- Step 1 Tab -->
+                <div id="annual-indicator-step-1" class="flex items-center gap-2 font-bold text-emerald-700 transition-colors">
+                    <span id="annual-badge-step-1" class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] shadow-sm">1</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs leading-none">Tahap 1: Bersih Alumni</span>
+                        <span class="text-[10px] font-normal text-slate-500">Pembersihan data angkatan lama</span>
+                    </div>
+                </div>
+
+                <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+
+                <!-- Step 2 Tab -->
+                <div id="annual-indicator-step-2" class="flex items-center gap-2 font-semibold text-slate-400 transition-colors">
+                    <span id="annual-badge-step-2" class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[11px]">2</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs leading-none">Tahap 2: Kenaikan Kelas</span>
+                        <span class="text-[10px] font-normal text-slate-400">Promosi jenjang & lulus XII</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body Content Scrollable -->
+            <div class="p-5 overflow-y-auto custom-scrollbar space-y-4">
+                <details class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+                    <summary class="cursor-pointer font-semibold text-slate-600">Riwayat reset &amp; backup pemulihan</summary>
+                    <div class="mt-3 space-y-2">
+                        <label class="sr-only" for="annual-history-select">Pilih riwayat reset</label>
+                        <select id="annual-history-select" class="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs">
+                            <option value="">Memuat riwayat...</option>
+                        </select>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="annual-history-download" type="button" onclick="window.downloadAnnualResetHistory()" disabled
+                                class="rounded-lg border border-slate-300 bg-white px-3 py-2 font-bold text-slate-700 disabled:opacity-50">Unduh backup</button>
+                            <button id="annual-history-resume" type="button" onclick="window.resumeAnnualReset()"
+                                class="hidden rounded-lg bg-emerald-600 px-3 py-2 font-bold text-white disabled:opacity-50">Lanjutkan penyelesaian</button>
+                        </div>
+                        <p class="text-[10px] text-slate-500">Salinan backup di server tersedia 30 hari. Simpan file unduhan untuk pemulihan jangka panjang. Penyelesaian akun wali kelas dapat dilanjutkan tanpa mengulang kenaikan siswa.</p>
+                    </div>
+                </details>
+                
+                <!-- STEP 1 CONTAINER: BERSIH ALUMNI -->
+                <div id="annual-step-1" class="space-y-4">
+                    <div class="bg-amber-50 p-3.5 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+                        <i class="fa-solid fa-circle-info text-amber-600 text-sm mt-0.5"></i>
+                        <div>
+                            <p class="font-bold mb-0.5">Pembersihan Data Alumni (Sebelum Kenaikan Kelas)</p>
+                            <p class="text-[11px] leading-relaxed text-amber-800">
+                                Bersihkan data kelas alumni lama agar database Cloudflare D1 tetap optimal dan tidak bertumpuk sebelum siswa kelas XII dipromosikan menjadi alumni baru.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Status Deteksi Alumni Kosong -->
+                    <div id="annual-alumni-empty-box" class="hidden p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-base">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <p class="font-bold text-xs text-emerald-800">Tidak Ada Kelas Alumni Lama yang Terdeteksi</p>
+                        <p class="text-[11px] text-emerald-600">Database bersih dari data alumni masa lalu. Anda dapat langsung melanjutkan ke tahap Kenaikan Kelas Siswa.</p>
+                    </div>
+
+                    <!-- Pilihan Target Kelas Alumni -->
+                    <div id="annual-alumni-select-box" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Target Kelas Alumni yang Akan Dihapus:</label>
+                            <select id="annual-select-alumni-class"
+                                class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-slate-50 font-semibold text-slate-800 focus:ring-2 focus:ring-red-500 outline-none">
+                                <option value="">-- Memuat Daftar Alumni... --</option>
+                            </select>
+                            <p class="text-[10px] text-slate-500 mt-1">Pilih kelas tertentu atau opsi <i>[SEMUA KELAS ALUMNI]</i> untuk membersihkan seluruh data alumni sekaligus.</p>
+                        </div>
+
+                        <!-- OPSI HAPUS GRANULAR -->
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
+                            <p class="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-slate-600"></i> Lingkup Data yang Akan Dihapus:
+                            </p>
+                            
+                            <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider"><i class="fa-solid fa-lock mr-1"></i>Selalu Dihapus Bersama Siswa (Wajib Cloudflare D1)</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-600">
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-red-500 text-[10px]"></i> Profil Siswa & Poin Disiplin</span>
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-red-500 text-[10px]"></i> Nilai Rapor Kelas XII</span>
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-red-500 text-[10px]"></i> Pengajuan Permisi Siswa</span>
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-red-500 text-[10px]"></i> Guru Wali & Catatan Rapor</span>
+                            </div>
+
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider pt-2 border-t border-slate-200"><i class="fa-solid fa-sliders mr-1"></i>Opsi Tambahan (Cloudflare D1)</p>
+                            <div class="space-y-1 text-xs">
+                                <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                                    <input type="checkbox" id="annual-check-del-records" checked class="accent-red-600 w-3.5 h-3.5">
+                                    <span>Hapus Riwayat Perilaku (Pelanggaran/Prestasi) Siswa</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-slate-700">
+                                    <input type="checkbox" id="annual-check-del-bk" checked class="accent-red-600 w-3.5 h-3.5">
+                                    <span>Hapus Catatan Layanan Bimbingan Konseling (BK)</span>
+                                </label>
+                            </div>
+
+                            <div class="bg-blue-50 p-2 rounded-lg border border-blue-200 text-[11px] text-blue-800 flex items-start gap-1.5 mt-2">
+                                <i class="fa-solid fa-shield-halved text-blue-600 text-xs mt-0.5"></i>
+                                <span><b>Backup sebelum penghapusan:</b> Snapshot hingga 11 tabel D1, termasuk angket peminatan dan token notifikasi siswa, disimpan dan diunduh sebelum data dihapus. Checkbox menentukan apakah riwayat perilaku/BK ikut dihapus dan dicadangkan. Siswa aktif dalam kelas campuran tetap dilindungi. Presensi dan SPP di Supabase mengikuti retensi terpisah.</span>
+                            </div>
+                        </div>
+
+                        <!-- Konfirmasi Ketik DELETE -->
+                        <div class="bg-red-50 p-3 rounded-xl border border-red-200 text-xs">
+                            <label class="block font-bold text-red-900 mb-1">
+                                Ketik <span class="underline">DELETE</span> untuk mengonfirmasi pembersihan alumni:
+                            </label>
+                            <input type="text" id="annual-input-delete-confirm"
+                                class="w-full p-2 border border-red-300 rounded-lg text-center font-bold tracking-wider placeholder:font-normal outline-none uppercase bg-white focus:ring-2 focus:ring-red-500 text-xs"
+                                placeholder="Ketik DELETE" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2 CONTAINER: KENAIKAN KELAS -->
+                <div id="annual-step-2" class="hidden space-y-4">
+                    <!-- Status Transisi Rombel -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs space-y-2.5">
+                        <p class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-split-up-and-left text-emerald-600"></i> Alur Perubahan Jenjang Kelas:
+                        </p>
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                                <span class="font-bold text-slate-700">Kelas XII (Tingkat Akhir)</span>
+                                <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">Lulus Menjadi Alumni Baru</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                                <span class="font-bold text-slate-700">Kelas XI</span>
+                                <span class="text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-[11px]">Naik ke Kelas XII</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                                <span class="font-bold text-slate-700">Kelas X</span>
+                                <span class="text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 text-[11px]">Naik ke Kelas XI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Tahun Ajaran Kelulusan Alumni -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Tahun Ajaran Kelulusan Kelas XII (Label Alumni Baru):
+                        </label>
+                        <input type="text" id="annual-input-academic-year"
+                            class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-white font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none"
+                            placeholder="Contoh: 2025/2026">
+                        <p class="text-[10px] text-slate-500 mt-1">Siswa kelas XII akan ditandai dengan label: <i>Alumni [Nama Kelas] ([Tahun Ajaran])</i>.</p>
+                    </div>
+
+                    <!-- Info Proteksi & Preservasi Data -->
+                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs text-blue-800 space-y-1">
+                        <div class="flex items-center gap-1.5 font-bold">
+                            <i class="fa-solid fa-shield-halved text-blue-600"></i>
+                            <span>Data Siswa 100% Aman & Dipertahankan:</span>
+                        </div>
+                        <p class="text-[11px] leading-relaxed text-blue-700">
+                            • Seluruh catatan perilaku, perwalian, dan nilai rapor tetap utuh di Cloudflare D1.<br>
+                            • Hanya siswa aktif yang naik; siswa keluar, mutasi, dan alumni tidak diproses.<br>
+                            • Penugasan Wali Kelas dikosongkan; role tambahan lainnya dipertahankan.<br>
+                            • Backup siswa dan penugasan guru disiapkan sebelum promosi. Tahun ajaran yang sudah diproses tidak dinaikkan ulang.
+                        </p>
+                    </div>
+
+                    <!-- Konfirmasi Ketik NAIK KELAS -->
+                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                        <label class="block text-xs font-bold text-emerald-900 mb-1">
+                            Ketik <span class="underline">NAIK KELAS</span> untuk konfirmasi final:
+                        </label>
+                        <input type="text" id="annual-input-promote-confirm"
+                            class="w-full p-2 border border-emerald-300 rounded-lg text-center font-bold tracking-wider placeholder:font-normal outline-none uppercase bg-white focus:ring-2 focus:ring-emerald-500 text-sm"
+                            placeholder="Ketik NAIK KELAS" autocomplete="off">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Area Navigasi & Aksi -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between gap-3">
+                <button onclick="document.getElementById('modal-annual-reset').classList.add('hidden')"
+                    class="px-4 py-2 rounded-lg font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 shadow-sm transition-all text-xs">
+                    Batal
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <!-- Tombol Navigasi Step 1 -->
+                    <div id="annual-footer-step-1" class="flex items-center gap-2">
+                        <button type="button" onclick="window.setAnnualResetStep(2)" id="btn-annual-skip-step-1"
+                            class="px-3.5 py-2 rounded-lg font-bold text-slate-600 bg-slate-200/80 hover:bg-slate-300 transition-all text-xs flex items-center gap-1.5">
+                            Lewati Pembersihan Alumni <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                        <button type="button" onclick="window.executeAnnualAlumniCleanup()" id="btn-exec-annual-cleanup" disabled
+                            class="px-4 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 shadow-md shadow-red-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-1.5 text-xs">
+                            <i class="fa-solid fa-trash-can"></i> Hapus & Lanjut ke Step 2
+                        </button>
+                    </div>
+
+                    <!-- Tombol Navigasi Step 2 -->
+                    <div id="annual-footer-step-2" class="hidden flex items-center gap-2">
+                        <button type="button" onclick="window.setAnnualResetStep(1)"
+                            class="px-3.5 py-2 rounded-lg font-bold text-slate-600 bg-slate-200/80 hover:bg-slate-300 transition-all text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-left text-[10px]"></i> Kembali
+                        </button>
+                        <button type="button" onclick="window.executeAnnualClassPromotion()" id="btn-exec-annual-promote" disabled
+                            class="px-5 py-2 rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-arrow-up-right-dots"></i> Proses Kenaikan Kelas
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL PINDAH KELAS SISWA (REVISED UI) -->
+    <div id="modal-transfer-class"
+        class="hidden fixed inset-0 z-[126] bg-black/80 flex items-center justify-center p-4 backdrop-blur-md fade-in">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all border-t-4 border-indigo-600">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-3 text-indigo-600">
+                    <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                        <i class="fa-solid fa-right-left text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Mutasi / Pindah Kelas</h3>
+                        <p class="text-xs text-slate-500">Pindahkan siswa ke kelas lain dalam satu angkatan</p>
+                    </div>
+                </div>
+                <button onclick="window.closeTransferClassModal()"
+                    class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 bg-slate-50/50">
+                <!-- STEP 1: PILIH SISWA -->
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">
+                        <i class="fa-solid fa-magnifying-glass mr-1 text-slate-500"></i>1. Cari & Pilih Siswa
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="relative group shadow-sm rounded-lg overflow-hidden border border-slate-300 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all bg-white">
+                            <input type="text" id="input-transfer-student-search"
+                                onfocus="window.initTransferStudentList()"
+                                oninput="window.filterTransferStudentList(this.value)"
+                                class="w-full px-4 py-3 text-sm border-none focus:ring-0 outline-none placeholder:text-slate-400"
+                                placeholder="Ketik Nama, NIS, atau Kelas..." autocomplete="off">
+                        </div>
+
+                        <!-- Dropdown melayang -->
+                        <div id="transfer-student-dropdown"
+                            class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg z-30 custom-scrollbar">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1 ml-1">*Daftar muncul saat input diklik/diisi, lalu hilang setelah dipilih</p>
+                </div>
+
+                <!-- STEP 2: TRANSFER AREA (2 COLUMNS) -->
+                <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center mb-6">
+                    <!-- KOLOM KIRI: ASAL -->
+                    <div class="md:col-span-5">
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 ml-1">Dari Kelas (Asal)</label>
+                        <div id="transfer-origin-info"
+                            class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm bg-slate-100 text-slate-500 font-medium flex items-center gap-3 select-none">
+                            <i class="fa-solid fa-location-dot text-slate-400 flex-shrink-0"></i>
+                            <span class="truncate">-</span>
+                        </div>
+                    </div>
+
+                    <!-- ICON PANAH TENGAH -->
+                    <div class="md:col-span-1 flex justify-center pt-6 md:pt-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-arrow-right md:rotate-0 rotate-90"></i>
+                        </div>
+                    </div>
+
+                    <!-- KOLOM KANAN: TUJUAN -->
+                    <div class="md:col-span-5">
+                        <label class="block text-xs font-bold text-indigo-600 mb-1.5 ml-1">
+                            <i class="fa-solid fa-location-crosshairs mr-1 text-indigo-500"></i>Ke Kelas (Tujuan)
+                        </label>
+                        <div class="relative">
+                            <select id="select-transfer-target-class"
+                                class="w-full pl-4 pr-8 py-3 border border-indigo-200 rounded-lg text-sm bg-indigo-50/50 text-slate-800 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none cursor-pointer shadow-sm transition-all hover:bg-white hover:border-indigo-300 appearance-none relative z-0">
+                                <option value="">-- Pilih --</option>
+                            </select>
+                            <div
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-indigo-400">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFO BOX -->
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3 text-xs text-blue-800">
+                    <i class="fa-solid fa-circle-info text-blue-500 text-lg mt-0.5"></i>
+                    <div class="space-y-1">
+                        <p class="font-bold">Informasi Sistem:</p>
+                        <ul class="list-disc list-inside space-y-0.5 text-blue-700/80">
+                            <li>Pemindahan hanya diperbolehkan dalam <b>satu angkatan</b> (misal: X ke X).</li>
+                            <li>Seluruh <b>riwayat presensi</b> siswa di kelas asal akan dimigrasikan otomatis.</li>
+                            <li>Data keuangan & pelanggaran siswa <b>tidak berubah</b> (tetap melekat pada siswa).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-white border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="window.closeTransferClassModal()"
+                    class="px-5 py-2.5 rounded-lg font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+                    Batal
+                </button>
+                <button onclick="window.executeTransferClass()" id="btn-exec-transfer-class" disabled
+                    class="px-6 py-2.5 rounded-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-shuffle"></i> Proses Mutasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modal-confirm"
+        class="hidden fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 animate-pulse">
+                    <i class="fa-solid fa-magnifying-glass-chart text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-lg mb-2">Scan Database?</h3>
+                <p class="text-sm text-slate-500 mb-6">Sistem akan memindai seluruh data siswa untuk memperbarui daftar
+                    kelas secara otomatis.</p>
+
+                <div class="flex gap-3 justify-center">
+                    <button onclick="document.getElementById('modal-confirm').classList.add('hidden')"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 hover:bg-slate-100 border border-slate-200 transition-colors">
+                        Batal
+                    </button>
+                    <button onclick="window.executeSync()"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg transition-transform active:scale-95">
+                        Ya, Scan Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[110] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="alert-icon-bg"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600">
+                    <i id="alert-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+                <h3 id="alert-title" class="font-bold text-slate-800 text-lg mb-2">Berhasil!</h3>
+                <div id="alert-msg" class="text-sm text-slate-500 mb-6">Aksi berhasil dilakukan.</div>
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-lg transition-transform active:scale-95">
+                    OK, Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: KONFIRMASI GENERIK (Pengganti confirm()) -->
+    <div id="modal-generic-confirm"
+        class="hidden fixed inset-0 z-[140] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="confirm-icon-bg"
+                    class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600">
+                    <i id="confirm-icon" class="fa-solid fa-question text-3xl"></i>
+                </div>
+                <h3 id="confirm-title" class="font-bold text-slate-800 text-lg mb-2">Konfirmasi</h3>
+                <div id="confirm-msg" class="text-sm text-slate-500 mb-6">Apakah Anda yakin?</div>
+                <div class="flex gap-3 justify-center">
+                    <button id="btn-confirm-cancel"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 hover:bg-slate-100 border border-slate-200 transition-colors">
+                        Batal
+                    </button>
+                    <button id="btn-confirm-ok"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg transition-transform active:scale-95">
+                        Ya, Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: BACKUP DATA (PILIH KOLEKSI / TABEL SSOT 3-TIER) -->
+    <div id="modal-backup-data"
+        class="hidden fixed inset-0 z-[130] bg-black/50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            
+            <!-- Header Modal -->
+            <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shadow-sm shrink-0">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base sm:text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                            Backup Database Terpadu
+                            <span class="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">SSOT 3-Tier</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Pilih tabel & modul yang ingin diekspor ke snapshot JSON</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-backup-data').classList.add('hidden')"
+                    class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Toolbar: Search Box, Database Tabs & Quick Select -->
+            <div class="p-3 sm:p-4 bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-700 space-y-3">
+                <!-- Search Box -->
+                <div class="relative">
+                    <input type="text" id="backup-search-input"
+                        placeholder="Cari tabel / data (misal: siswa, buku, kas, rapor, jurnal)..."
+                        oninput="window.filterBackupSearch(this.value)"
+                        class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                </div>
+
+                <!-- Tabs Database Filter & Quick Actions -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                    <!-- Filter Pills -->
+                    <div class="flex flex-wrap items-center gap-1.5" id="backup-tab-filters">
+                        <button type="button" onclick="window.filterBackupCategory('all')" id="tab-btn-all"
+                            class="backup-tab-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 text-white shadow-sm transition-all">
+                            Semua (<span id="tab-count-all">56</span>)
+                        </button>
+                        <button type="button" onclick="window.filterBackupCategory('d1')" id="tab-btn-d1"
+                            class="backup-tab-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                            <i class="fa-solid fa-cloud text-blue-500 mr-1"></i>Cloudflare D1 (<span id="tab-count-d1">24</span>)
+                        </button>
+                        <button type="button" onclick="window.filterBackupCategory('firestore')" id="tab-btn-firestore"
+                            class="backup-tab-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                            <i class="fa-solid fa-fire text-amber-500 mr-1"></i>Firestore (<span id="tab-count-firestore">5</span>)
+                        </button>
+                        <button type="button" onclick="window.filterBackupCategory('supabase')" id="tab-btn-supabase"
+                            class="backup-tab-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                            <i class="fa-solid fa-bolt text-emerald-500 mr-1"></i>Supabase (<span id="tab-count-supabase">27</span>)
+                        </button>
+                    </div>
+
+                    <!-- Counter & Toggle Actions -->
+                    <div class="flex items-center gap-2 text-xs ml-auto">
+                        <span class="text-slate-500 dark:text-slate-400 text-[11px]">
+                            Terpilih: <b id="backup-selected-count" class="text-emerald-600 dark:text-emerald-400 font-bold">56</b>
+                        </span>
+                        <span class="text-slate-300 dark:text-slate-600">|</span>
+                        <button type="button" onclick="window.toggleAllBackupChecks(true)"
+                            class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:underline">
+                            Pilih Semua
+                        </button>
+                        <button type="button" onclick="window.toggleAllBackupChecks(false)"
+                            class="text-[11px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+                            Hapus Pilihan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body: Daftar Item Checklist (Scrollable Grid) -->
+            <div id="backup-items-container" class="p-3 sm:p-4 overflow-y-auto space-y-4 flex-1 max-h-[380px]">
+                
+                <!-- SEKSI 1: CLOUDFLARE D1 -->
+                <div id="backup-group-d1" class="backup-section-group space-y-2">
+                    <div class="flex items-center justify-between pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <span class="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-cloud text-xs"></i> Cloudflare D1 Serverless SQL (Master SSOT & Akademik)
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-mono">24 Tabel</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Item D1 1..24 -->
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="siswa student dapodik students kesiswaan">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="students" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-user-graduate text-blue-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Data Master Siswa</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">students (48 atribut)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="guru staff ptk gtk teachers pegawai">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="gtk" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-chalkboard-user text-indigo-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Data Guru & Tenaga Kependidikan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">gtk (21 atribut Dapodik)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="pelanggaran prestasi bk records disiplin poin">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="records" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-clipboard-list text-orange-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Catatan Pelanggaran & Prestasi</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">records (BK Kedisiplinan)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="agregat poin rekap ews student_aggregates akumulasi">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="student_aggregates" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-chart-pie text-cyan-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Rekapitulasi Poin Disiplin</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">student_aggregates</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="layanan pembinaan konseling bk bk_actions tindakan">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="bk_actions" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-hand-holding-heart text-pink-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Layanan & Pembinaan Guru BK</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">bk_actions</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="jenis pelanggaran bobot poin violation_types master">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="violation_types" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-gavel text-rose-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Jenis Pelanggaran BK</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">violation_types</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="perwalian penugasan guru_wali_assignments wali murid">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_wali_assignments" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-user-tie text-amber-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Penugasan Guru Wali</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_wali_assignments</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="catatan bimbingan guru_wali_notes wali">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_wali_notes" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book-bookmark text-amber-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Catatan Bimbingan Guru Wali</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_wali_notes</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="rapor walikelas catatan karakter walikelas_notes">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="walikelas_notes" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-file-signature text-purple-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Catatan Karakter Rapor Wali Kelas</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">walikelas_notes</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="permisi izin siswa piket permisi_requests keluar">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="permisi_requests" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-door-open text-teal-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Riwayat Permisi Siswa 2-Tahap</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">permisi_requests</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="nilai e-rapor asesmen rapor_scores rapor">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="rapor_scores" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-award text-emerald-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Nilai Asesmen & E-Rapor</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">rapor_scores</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="laboratorium e-lab labs master lab">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="labs" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-flask text-violet-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Ruang E-Laboratorium</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">labs</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="peminjaman jadwal reservasi lab_bookings e-lab">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lab_bookings" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-calendar-plus text-violet-400 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Peminjaman & Reservasi Lab</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lab_bookings</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="jurnal mengajar guru kbm jurnal_guru">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="jurnal_guru" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book-open-reader text-sky-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Jurnal Mengajar Harian Guru</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">jurnal_guru</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="mata pelajaran kurikulum mapel master_mapel">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="master_mapel" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book text-sky-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Mata Pelajaran KBM</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">master_mapel</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="ruang kelas lokasi mengajar master_lokasi">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="master_lokasi" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-location-dot text-sky-700 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Ruang Kelas & Lokasi KBM</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">master_lokasi</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="agenda kalender kegiatan calendar_events">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="calendar_events" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-calendar-days text-teal-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Kalender Agenda Sekolah</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">calendar_events</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="dokumen berkas lampiran agenda_documents">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="agenda_documents" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-file-lines text-teal-700 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Berkas & Dokumen Agenda</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">agenda_documents</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="peminatan kuesioner angket jadwal peminatan_config">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="peminatan_config" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-sliders text-indigo-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Konfigurasi Angket Peminatan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">peminatan_config</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="respon hasil pilihan peminatan_responses peminatan">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="peminatan_responses" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-square-poll-vertical text-indigo-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Hasil & Respon Peminatan Siswa</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">peminatan_responses</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="game edukasi kuis soal pid_games pid">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="pid_games" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-gamepad text-fuchsia-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Game Edukatif & Bank Soal PID</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">pid_games</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="d1" data-search="pengaturan edge metadata jadwal xml system_settings">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="system_settings" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-gear text-slate-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Pengaturan Sistem Edge D1</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">system_settings (Metadata, XML)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">D1</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="riwayat log sesi login user login_history">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="login_history" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-clock-rotate-left text-slate-400 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Log Riwayat Sesi Login Pengguna</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">login_history (Telemetri)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="log audit keamanan owasp asvs audit_logs">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="audit_logs" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-shield-halved text-red-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Log Audit Keamanan Sistem</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">audit_logs (Standar ASVS)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+
+                    </div>
+                </div>
+
+                <!-- SEKSI 2: FIREBASE FIRESTORE -->
+                <div id="backup-group-firestore" class="backup-section-group space-y-2">
+                    <div class="flex items-center justify-between pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <span class="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-fire text-xs"></i> Firebase Firestore (Auth, RBAC & Brankas Kredensial)
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-mono">5 Koleksi</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Item FS 1..5 -->
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="firestore" data-search="akun login pengguna user rbac hak akses users">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="users" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-users-gear text-purple-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Akun Pengguna & Hak Akses</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">users (RBAC Multi-Role)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">Firestore</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="firestore" data-search="kunci rahasia passkey webauthn api key user_secrets">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="user_secrets" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-key text-amber-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Kunci Rahasia & Passkey</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">user_secrets (Vault)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">Firestore</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="firestore" data-search="pengaturan darurat switch wa config vault settings">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="settings" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-sliders text-slate-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Pengaturan Darurat & Vault WA</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">settings (system_config, wa_config)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">Firestore</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="firestore" data-search="mutasi pindah kelas log audit class_transfers">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="class_transfers" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-right-left text-blue-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Log Audit Mutasi Kelas Siswa</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">class_transfers</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">Firestore</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="firestore" data-search="kapsul waktu pesan masa depan kapsul_waktu">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="kapsul_waktu" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-hourglass-half text-amber-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Pesan Kapsul Waktu Digital</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">kapsul_waktu</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">Firestore</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- SEKSI 3: SUPABASE POSTGRESQL -->
+                <div id="backup-group-supabase" class="backup-section-group space-y-2">
+                    <div class="flex items-center justify-between pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt text-xs"></i> Supabase PostgreSQL (Presensi, Keuangan & Perpustakaan)
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-mono">27 Tabel</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <!-- Item SB 1..27 -->
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="presensi siswa harian siswa_presensi_harian absensi">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="siswa_presensi_harian" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-clipboard-user text-emerald-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Presensi Siswa Harian Terkini</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">siswa_presensi_harian</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="arsip presensi siswa multi-tahun siswa_presensi riwayat">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="siswa_presensi" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-calendar-check text-emerald-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Arsip Presensi Siswa Multi-Tahun</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">siswa_presensi</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="presensi guru ptk kehadiran guru_presensi">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_presensi" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-user-check text-emerald-700 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Presensi Harian Guru & PTK</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_presensi</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="transaksi pembayaran spp komite finance_transactions keuangan">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="finance_transactions" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-receipt text-yellow-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Transaksi Pembayaran SPP Siswa</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">finance_transactions</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="buku kas umum arus kas finance_cashflow komite">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="finance_cashflow" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-money-bill-wave text-green-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Buku Kas & Arus Kas Komite</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">finance_cashflow</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="tutup buku kas rekap bulanan finance_closings">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="finance_closings" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book-bookmark text-yellow-700 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Rekap Tutup Buku Kas Bulanan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">finance_closings</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="ringkasan harian penerimaan spp finance_daily_summary">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="finance_daily_summary" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-chart-line text-amber-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Ringkasan Harian Keuangan SPP</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">finance_daily_summary</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="tarif spp rekening bank finance_config konfigurasi">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="finance_config" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-coins text-yellow-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Konfigurasi Tarif & Rekening SPP</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">finance_config</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="buku nilai guru mapel gradebook guru_mapel_gradebooks">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_mapel_gradebooks" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book-open text-blue-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Buku Nilai Guru Mapel</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_mapel_gradebooks</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="komponen asesmen bobot guru_mapel_components">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_mapel_components" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-list-check text-indigo-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Komponen Asesmen Guru Mapel</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_mapel_components</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="nilai asesmen harian siswa guru_mapel_scores">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_mapel_scores" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-pen-to-square text-cyan-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Nilai Siswa Asesmen Guru Mapel</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_mapel_scores</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="rekap leger nilai akhir guru_mapel_summaries">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="guru_mapel_summaries" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-table-list text-blue-700 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Leger & Rekap Nilai Guru Mapel</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">guru_mapel_summaries</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="katalog buku perpustakaan widya shakti lib_buku perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_buku" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-book-atlas text-rose-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Katalog Buku Perpustakaan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_buku</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="eksemplar barcode buku fisik lib_eksemplar perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_eksemplar" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-barcode text-slate-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Eksemplar Fisik & Barcode Buku</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_eksemplar</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="sirkulasi peminjaman pengembalian buku lib_sirkulasi perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_sirkulasi" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-arrows-rotate text-emerald-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Sirkulasi Peminjaman Buku</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_sirkulasi</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="buku tamu pengunjung perpustakaan lib_pengunjung perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_pengunjung" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-users text-teal-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Buku Tamu Kunjungan Perpustakaan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_pengunjung</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="bebas pustaka surat keterangan kelulusan lib_bebas_pustaka">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_bebas_pustaka" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-file-circle-check text-green-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Surat Keterangan Bebas Pustaka</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_bebas_pustaka</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="klasifikasi dewey decimal ddc lib_kategori_ddc perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_kategori_ddc" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-sitemap text-violet-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Master Klasifikasi Dewey Decimal (DDC)</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_kategori_ddc</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="pengaturan denda masa pinjam lib_config perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_config" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-screwdriver-wrench text-slate-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Pengaturan Denda & Masa Pinjam</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_config</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="hari libur perpustakaan lib_hari_libur perpus">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="lib_hari_libur" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-calendar-xmark text-red-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Kalender Hari Libur Perpustakaan</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">lib_hari_libur</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="aspirasi aduan kritik saran masukkan_saran masukan">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="masukkan_saran" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-comment-dots text-orange-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Aspirasi & Pengaduan Warga Sekolah</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">masukkan_saran</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="kandidat calon duta shakti smagesa duta_kandidat">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="duta_kandidat" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-crown text-amber-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Profil Kandidat Duta SMAGESA</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">duta_kandidat</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="suara voting pemilihan duta duta_suara_masuk">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="duta_suara_masuk" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-check-to-slot text-emerald-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Rekap Suara E-Voting Duta</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">duta_suara_masuk</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="iuran sosial suka duka tarif sukaduka_config">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="sukaduka_config" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-handshake-angle text-indigo-500 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Konfigurasi Iuran Suka Duka Guru</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">sukaduka_config</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="buku kas dana sosial suka duka sukaduka_kas">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="sukaduka_kas" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-wallet text-emerald-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Buku Kas Dana Sosial Suka Duka</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">sukaduka_kas</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="iuran anggota suka duka riwayat sukaduka_iuran">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="sukaduka_iuran" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-hand-holding-dollar text-teal-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Riwayat Pembayaran Iuran Suka Duka</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">sukaduka_iuran</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                        <label class="backup-item-card p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/80 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-between gap-2" data-db="supabase" data-search="tutup buku kas suka duka sukaduka_closings">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <input type="checkbox" class="backup-col-check accent-emerald-600 w-3.5 h-3.5 rounded cursor-pointer shrink-0" value="sukaduka_closings" checked onchange="window.updateBackupSelectedCount()">
+                                <i class="fa-solid fa-file-invoice text-blue-600 w-4 text-center shrink-0 text-xs"></i>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">Tutup Buku Kas Suka Duka Guru</p>
+                                    <p class="text-[10px] text-slate-400 font-mono truncate">sukaduka_closings</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0">Supabase</span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer: Progress Bar & Action Buttons -->
+            <div class="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 space-y-3">
+                <!-- Progress Bar -->
+                <div id="backup-progress-wrapper" class="hidden">
+                    <div class="flex items-center justify-between mb-1">
+                        <span id="backup-progress-label"
+                            class="text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate mr-2">Memproses...</span>
+                        <span id="backup-progress-pct" class="text-[11px] font-bold text-emerald-600">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="backup-progress-bar"
+                            class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-[11px] text-slate-400 hidden sm:inline">
+                        <i class="fa-solid fa-shield-halved text-emerald-500 mr-1"></i>Pencadangan berurutan ramah kuota (Zero Quota Spike)
+                    </span>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button onclick="document.getElementById('modal-backup-data').classList.add('hidden')"
+                            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                            Batal
+                        </button>
+                        <button onclick="window.backupSelectedData()" id="btn-backup-selected"
+                            class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-1.5">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download Backup</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: RESTORE DATA -->
+    <div id="modal-restore-data"
+        class="hidden fixed inset-0 z-[130] bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4 text-amber-600 dark:text-amber-400">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white">Restore Data</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Import data dari file backup JSON</p>
+                    </div>
+                </div>
+
+                <!-- Step 1: Upload File -->
+                <div id="restore-step-upload">
+                    <label for="restore-file-input"
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl cursor-pointer hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-slate-700 transition-colors">
+                        <i class="fa-solid fa-file-arrow-up text-3xl text-slate-400 mb-2"></i>
+                        <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Klik untuk pilih file
+                            backup (.json)</span>
+                        <span id="restore-file-name" class="text-xs text-slate-400 mt-1"></span>
+                        <input id="restore-file-input" type="file" accept=".json" class="hidden"
+                            onchange="window.previewRestoreFile(this)">
+                    </label>
+                </div>
+
+                <!-- Step 2: Preview (disembunyikan dulu) -->
+                <div id="restore-step-preview" class="hidden">
+                    <!-- Info File -->
+                    <div
+                        class="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300"><i
+                                    class="fa-solid fa-file-code mr-1"></i> Info Backup</span>
+                            <button onclick="window.resetRestoreModal()"
+                                class="text-[10px] text-red-500 hover:text-red-600"><i
+                                    class="fa-solid fa-xmark mr-1"></i>Ganti File</button>
+                        </div>
+                        <div id="restore-meta-info" class="text-[10px] text-slate-500 dark:text-slate-400 space-y-0.5">
+                        </div>
+                    </div>
+
+                    <!-- Pilih Koleksi untuk Restore -->
+                    <div id="restore-collections-list"
+                        class="space-y-1 max-h-48 overflow-y-auto mb-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                    </div>
+
+                    <!-- Pilih Mode -->
+                    <div
+                        class="mb-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2"><i
+                                class="fa-solid fa-code-merge mr-1"></i> Mode Restore</span>
+                        <div class="space-y-1.5">
+                            <label
+                                class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer p-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-transparent has-[:checked]:border-amber-400 has-[:checked]:bg-amber-100 dark:has-[:checked]:bg-amber-900/40">
+                                <input type="radio" name="restore-mode" value="merge" class="accent-amber-600 mt-0.5"
+                                    checked>
+                                <div>
+                                    <span class="font-bold">Merge (Gabung)</span>
+                                    <p class="text-[9px] text-slate-500">Data ditambahkan / di-update. Data lama yang
+                                        tidak ada di backup TIDAK dihapus.</p>
+                                </div>
+                            </label>
+                            <label
+                                class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300 cursor-pointer p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent has-[:checked]:border-red-400 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-red-900/30">
+                                <input type="radio" name="restore-mode" value="overwrite" class="accent-red-600 mt-0.5">
+                                <div>
+                                    <span class="font-bold text-red-600">Overwrite (Timpa)</span>
+                                    <p class="text-[9px] text-red-400">⚠️ Semua data lama di koleksi terpilih akan
+                                        DIHAPUS lalu diganti data backup.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="restore-progress-wrapper" class="hidden mb-4">
+                    <div class="flex items-center justify-between mb-1">
+                        <span id="restore-progress-label"
+                            class="text-[10px] font-bold text-slate-600 dark:text-slate-300">Memproses...</span>
+                        <span id="restore-progress-pct" class="text-[10px] font-bold text-amber-600">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div id="restore-progress-bar" class="bg-amber-500 h-2 rounded-full transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end">
+                    <button
+                        onclick="document.getElementById('modal-restore-data').classList.add('hidden'); window.resetRestoreModal();"
+                        class="px-4 py-2 rounded-lg font-medium text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Batal</button>
+                    <button onclick="window.executeRestore()" id="btn-exec-restore" disabled
+                        class="px-4 py-2 rounded-lg font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-upload mr-1"></i> Restore
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-settings.js"></script>
+</body>
+
+</html>

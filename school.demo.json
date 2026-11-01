@@ -1,0 +1,53 @@
+{
+  "school": {
+    "schoolName": "SMA Negeri Nusantara",
+    "schoolShortName": "SMANTARA",
+    "schoolNPSN": "99887766",
+    "schoolAddress": "Jl. Nusantara No. 1, Denpasar",
+    "schoolCity": "Denpasar",
+    "schoolProvince": "Bali",
+    "schoolPostalCode": "80234",
+    "schoolWebsite": "https://simas-demo-5ead3.web.app",
+    "emailDomain": "smanusantara.sch.id",
+    "primaryDomain": "simas-demo-5ead3.web.app",
+    "schoolVisiAcronym": "CERDAS",
+    "schoolVisiDesc": "Cendekia • Empati • Religius • Disiplin • Adaptif • Santun",
+    "headmasterName": "Dr. I Wayan Sudarsana, M.Pd.",
+    "headmasterNIP": "197501012000031001",
+    "telegramBotUser": "simas_demo_bot",
+    "schoolAccreditation": "A (Unggul)",
+    "defaultSuratKeteranganNo": "B.10.400.7.22.1/001/SMAN-NUSANTARA/2026"
+  },
+  "firebase": {
+    "apiKey": "AIzaSyDphzPKM2poA6U6RyXu798j7_ITgxN07nI",
+    "authDomain": "simas-demo-5ead3.firebaseapp.com",
+    "projectId": "simas-demo-5ead3",
+    "storageBucket": "simas-demo-5ead3.firebasestorage.app",
+    "messagingSenderId": "246723731558",
+    "appId": "1:246723731558:web:073b3b2005997f45730da7"
+  },
+  "supabase": {
+    "url": "https://wwvtthoeknizglicrhor.supabase.co",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind3dnR0aG9la25pemdsaWNyaG9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjAzOTgsImV4cCI6MjEwMjM5NjM5OH0.opR-NvBZYWawcRdUeqX2M-jyJBRhcL2ggeTBVQbQTvo"
+  },
+  "cloudflare": {
+    "workerUrl": "https://simas-smagesa-api.komangpurna1.workers.dev",
+    "workerName": "simas-smagesa-api",
+    "databaseName": "simas-demo-db",
+    "databaseId": "5ab663e4-b504-4c82-adeb-52f8471c5063",
+    "studentPhotosBucket": "simas-demo-student-photos",
+    "gtkPhotosBucket": "simas-demo-gtk-photos"
+  },
+  "appsScript": {
+    "jurnal": "https://script.google.com/macros/s/AKfycbyI2jzx01oTvumQRWA1LDVwT-IGU-SYVlscwrmzUubxYiV_DmsyweHzo5Y6G32ahSFW/exec",
+    "ekinerja": "https://script.google.com/macros/s/AKfycbwGwYmeLUiJUAI-FHK3cDUAddFLtpmnIKRfKX5PyeJRpktj6KlqnAqeKd6ImW3k-x0m/exec",
+    "studentDocs": "https://script.google.com/macros/s/AKfycbxrCFTVk6eFmNGa3AK-_kb4qFb1AxU7ztEsdE3ijoejF6yRYbnqF0yz-yDpzzpxxjegsg/exec"
+  },
+  "hosting": {
+    "site": "simas-demo-5ead3",
+    "stagingSite": "",
+    "aliasSites": []
+  },
+  "financeStartDate": "2026-07-01",
+  "analyticsId": ""
+}

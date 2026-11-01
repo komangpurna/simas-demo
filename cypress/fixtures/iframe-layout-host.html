@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>Iframe layout regression host</title>
+</head>
+<body>
+  <iframe
+    id="outer-frame"
+    title="Outer test frame"
+  ></iframe>
+  <script>
+    const caseId = new URLSearchParams(window.location.search).get('case') || 'default';
+    document.getElementById('outer-frame').src =
+      `/cypress/fixtures/iframe-layout-middle.html?case=${encodeURIComponent(caseId)}`;
+  </script>
+</body>
+</html>

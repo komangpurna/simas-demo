@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Data GTK & Tenaga Kependidikan - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors font-inter">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-10">
+        <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-4 gap-3">
+
+            <div class="flex-1">
+                <h1 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chalkboard-user text-indigo-600 dark:text-indigo-400"></i>
+                    Data Pendidik & Tenaga Kependidikan (GTK)
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Database Master Guru, Tenaga Kependidikan, Tata Usaha, dan Staf Sekolah (Pure SSOT).</p>
+            </div>
+
+            <div class="w-full md:w-64">
+                <input type="text" id="search-input" placeholder="Cari nama, NIP, NUPTK, jenis PTK..."
+                    class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-500 outline-none transition-all shadow-sm">
+            </div>
+
+            <div class="flex gap-2">
+                <button id="btn-submissions" onclick="window.openGtkSubmissionsModal && window.openGtkSubmissionsModal()"
+                    class="hidden bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow transition-colors flex items-center gap-1.5 relative">
+                    <i class="fa-solid fa-user-clock"></i> Antrean Pendaftaran
+                    <span id="badge-submissions-count" class="hidden ml-1 px-1.5 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-extrabold shadow-sm animate-pulse">0</span>
+                </button>
+                <button id="btn-import-teacher"
+                    onclick="document.getElementById('modal-import').classList.remove('hidden')"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-excel"></i> Import Excel
+                </button>
+                <button id="btn-add-teacher" onclick="document.getElementById('modal-add').classList.remove('hidden')"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Tambah GTK
+                </button>
+            </div>
+        </div>
+
+        <div class="text-right text-[10px] text-slate-400 dark:text-slate-500 mb-1" id="data-count">Memuat...</div>
+
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                    <thead
+                        class="bg-slate-800 dark:bg-slate-900/90 text-white font-bold uppercase border-b dark:border-slate-700/50">
+                        <tr>
+                            <th class="px-3 py-3 w-12 text-center whitespace-nowrap">No</th>
+                            <th class="px-4 py-3 min-w-[180px]">Nama Lengkap & Gelar</th>
+                            <th class="px-4 py-3 whitespace-nowrap">NIP / NUPTK / NIK</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Jenis PTK / Status</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Kontak</th>
+                            <th id="th-aksi" class="px-3 py-3 w-24 sm:w-28 text-center whitespace-nowrap">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacher-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-slate-400 dark:text-slate-500"><i
+                                    class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data GTK...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Tambah Guru Baru (19 Kolom Lengkap Dapodik) -->
+    <div id="modal-add"
+        class="hidden fixed inset-0 z-[60] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-indigo-50 dark:bg-indigo-950/40 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-indigo-600 dark:text-indigo-400"></i>
+                        Tambah Pendidik / Tenaga Kependidikan (GTK) Baru
+                    </h3>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-0.5">Lengkapi formulir sesuai format data pokok pendidikan (Dapodik).</p>
+                </div>
+                <button onclick="document.getElementById('modal-add').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form id="form-add-teacher" class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+                <!-- A. Identitas PTK -->
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-card"></i> A. Identitas Pendidik & Tenaga Kependidikan
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Nama Lengkap & Gelar <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" required placeholder="Contoh: I Made Suarta, S.Pd., M.Pd."
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-bold dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Jenis Kelamin</label>
+                            <select name="gender"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="L">Laki-laki (L)</option>
+                                <option value="P">Perempuan (P)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NIK (16 Digit KTP)</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="nik" placeholder="Contoh: 5107010101850001"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NUPTK (16 Digit)</label>
+                            <input type="text" name="nuptk" placeholder="Contoh: 1234567890123456"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NIP (18 Digit)</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="nip" placeholder="Contoh: 198501012010011001 / Kosongkan jika Non-PNS"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Agama</label>
+                            <select name="agama"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="Hindu">Hindu</option>
+                                <option value="Islam">Islam</option>
+                                <option value="Kristen">Kristen</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tempat Lahir</label>
+                            <input type="text" name="birth_place" placeholder="Kota / Kabupaten Lahir"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tanggal Lahir</label>
+                            <input type="date" name="birth_date"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B. Kepegawaian & Penugasan -->
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-briefcase"></i> B. Status Kepegawaian & Penugasan
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Status Kepegawaian</label>
+                            <input type="text" name="status_kepegawaian" placeholder="PNS / PPPK / Honorer / GTT"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Jenis PTK</label>
+                            <input type="text" name="jenis_ptk" placeholder="Guru Mapel / Guru BK / Tenaga Administrasi / Satpam"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tugas Tambahan / Jabatan</label>
+                            <input type="text" name="tugas_tambahan" placeholder="Wakasek / Wali Kelas / Kepala Lab"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- C. Alamat Domisili -->
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot"></i> C. Alamat Domisili
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-4">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Alamat Jalan / Tempat Tinggal</label>
+                            <input type="text" name="alamat" placeholder="Nama jalan, nomor rumah"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">RT</label>
+                            <input type="text" name="rt" placeholder="Contoh: 01"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">RW</label>
+                            <input type="text" name="rw" placeholder="Contoh: 02"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Nama Dusun / Banjar</label>
+                            <input type="text" name="dusun" placeholder="Nama Dusun / Banjar Dinas"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Desa / Kelurahan</label>
+                            <input type="text" name="kelurahan" placeholder="Desa / Kelurahan"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Kecamatan</label>
+                            <input type="text" name="kecamatan" placeholder="Kecamatan"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Kode Pos</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="kode_pos" placeholder="80852"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- D. Kontak & Integrasi Notifikasi -->
+                <div>
+                    <h4 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-phone"></i> D. Kontak & Integrasi Notifikasi
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">No. HP / WhatsApp (Aktif)</label>
+                            <input type="tel" inputmode="tel" name="phone" placeholder="Contoh: 08123456789"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Email</label>
+                            <input type="email" name="email" placeholder="nama@guru.sma.belajar.id"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-bold text-slate-600 dark:text-slate-400">Telegram Chat ID (Opsional)</label>
+                                <a href="https://t.me/{{telegramBotUser}}" target="_blank" rel="noopener noreferrer"
+                                    class="link-telegram-bot text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-semibold">
+                                    <i class="fa-brands fa-telegram text-sky-500"></i> Buka Bot Telegram
+                                </a>
+                            </div>
+                            <input type="text" name="telegramChatId" placeholder="Kosongkan jika belum ada (cth: 198160734)"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <p class="text-telegram-bot-hint text-[10px] text-slate-400 dark:text-slate-500 mt-1">Dapatkan notifikasi personal via Bot Telegram {{appName}}.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
+                    <button type="button" onclick="document.getElementById('modal-add').classList.add('hidden')"
+                        class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">Batal</button>
+                    <button type="submit"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-save"></i> Simpan Data GTK
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Guru (20 Kolom Lengkap Dapodik) -->
+    <div id="modal-edit"
+        class="hidden fixed inset-0 z-[60] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-orange-950/40 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-orange-900 dark:text-orange-300 flex items-center gap-2">
+                        <i class="fa-solid fa-user-pen text-orange-600 dark:text-orange-400"></i>
+                        Edit Data GTK & Tenaga Kependidikan
+                    </h3>
+                    <p class="text-xs text-orange-600 dark:text-orange-400 mt-0.5">Perbarui biodata pendidik dan tenaga kependidikan.</p>
+                </div>
+                <button onclick="document.getElementById('modal-edit').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form id="form-edit-teacher" class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+                <input type="hidden" name="id" id="edit-id">
+
+                <!-- A. Identitas PTK -->
+                <div>
+                    <h4 class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-card"></i> A. Identitas Pendidik & Tenaga Kependidikan
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Nama Lengkap & Gelar <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" id="edit-name" required
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-bold dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Jenis Kelamin</label>
+                            <select name="gender" id="edit-gender"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="L">Laki-laki (L)</option>
+                                <option value="P">Perempuan (P)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NIK (16 Digit KTP)</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="nik" id="edit-nik" placeholder="Contoh: 5107010101850001"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NUPTK (16 Digit)</label>
+                            <input type="text" name="nuptk" id="edit-nuptk" placeholder="NUPTK"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">NIP (18 Digit)</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="nip" id="edit-nip" placeholder="NIP"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Agama</label>
+                            <select name="agama" id="edit-agama"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="Hindu">Hindu</option>
+                                <option value="Islam">Islam</option>
+                                <option value="Kristen">Kristen</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tempat Lahir</label>
+                            <input type="text" name="birth_place" id="edit-birth_place" placeholder="Kota / Kabupaten Lahir"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tanggal Lahir</label>
+                            <input type="date" name="birth_date" id="edit-birth_date"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B. Kepegawaian & Penugasan -->
+                <div>
+                    <h4 class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-briefcase"></i> B. Status Kepegawaian & Penugasan
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Status Kepegawaian</label>
+                            <input type="text" name="status_kepegawaian" id="edit-status_kepegawaian" placeholder="PNS / PPPK / Honorer"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Jenis PTK</label>
+                            <input type="text" name="jenis_ptk" id="edit-jenis_ptk" placeholder="Guru Mapel / Tenaga Administrasi / Satpam"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Tugas Tambahan / Jabatan</label>
+                            <input type="text" name="tugas_tambahan" id="edit-tugas_tambahan" placeholder="Wakasek / Wali Kelas"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- C. Alamat Domisili -->
+                <div>
+                    <h4 class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot"></i> C. Alamat Domisili
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-4">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Alamat Jalan / Tempat Tinggal</label>
+                            <input type="text" name="alamat" id="edit-alamat" placeholder="Nama jalan, nomor rumah"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">RT</label>
+                            <input type="text" name="rt" id="edit-rt" placeholder="01"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">RW</label>
+                            <input type="text" name="rw" id="edit-rw" placeholder="02"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Nama Dusun / Banjar</label>
+                            <input type="text" name="dusun" id="edit-dusun" placeholder="Dusun / Banjar"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Desa / Kelurahan</label>
+                            <input type="text" name="kelurahan" id="edit-kelurahan" placeholder="Kelurahan"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Kecamatan</label>
+                            <input type="text" name="kecamatan" id="edit-kecamatan" placeholder="Kecamatan"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Kode Pos</label>
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" name="kode_pos" id="edit-kode_pos" placeholder="Kode Pos"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- D. Kontak & Integrasi Notifikasi -->
+                <div>
+                    <h4 class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider mb-3 border-b pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-phone"></i> D. Kontak & Integrasi Notifikasi
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">No. HP / WhatsApp</label>
+                            <input type="tel" inputmode="tel" name="phone" id="edit-phone" placeholder="No. WA"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 dark:text-slate-400 mb-1">Email</label>
+                            <input type="email" name="email" id="edit-email" placeholder="Email"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block font-bold text-slate-600 dark:text-slate-400">Telegram Chat ID (Opsional)</label>
+                                <a href="https://t.me/{{telegramBotUser}}" target="_blank" rel="noopener noreferrer"
+                                    class="link-telegram-bot text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-semibold">
+                                    <i class="fa-brands fa-telegram text-sky-500"></i> Buka Bot Telegram
+                                </a>
+                            </div>
+                            <input type="text" name="telegramChatId" id="edit-telegram" placeholder="Telegram Chat ID"
+                                class="w-full p-2.5 border dark:border-slate-600 rounded-lg font-mono dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500">
+                            <p class="text-telegram-bot-hint text-[10px] text-slate-400 dark:text-slate-500 mt-1">Dapatkan notifikasi personal via Bot Telegram {{appName}}.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- E. Foto Profil GTK (Khusus Super Admin) -->
+                <div id="gtk-photo-edit-section" class="hidden p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-camera"></i> E. Foto Profil GTK
+                        </h4>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-200 dark:bg-orange-900/60 text-orange-800 dark:text-orange-300">
+                            Akses Super Admin
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-xl font-bold shadow-inner shrink-0 overflow-hidden border-2 border-orange-300 dark:border-orange-600">
+                            <span id="gtk-edit-photo-placeholder">?</span>
+                            <img id="gtk-edit-photo-img" src="" alt="Foto GTK" class="hidden w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 mb-2 leading-tight">
+                                Foto disimpan di Cloudflare R2 & D1 (terpisah dari siswa). Otomatis dikompres ke WebP.
+                            </p>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 active:scale-95">
+                                    <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                                    <span id="btn-label-edit-gtk-photo">Pilih Foto</span>
+                                    <input type="file" id="input-edit-gtk-photo" accept="image/jpeg,image/png,image/webp" class="hidden">
+                                </label>
+                                <button type="button" id="btn-delete-edit-gtk-photo" class="hidden px-2.5 py-1.5 rounded-lg border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold hover:bg-red-50 dark:hover:bg-red-900/30 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-trash text-xs"></i> Hapus Foto
+                                </button>
+                            </div>
+                            <p id="gtk-edit-photo-status" class="text-[10px] text-slate-500 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t dark:border-slate-700">
+                    <button type="button" onclick="document.getElementById('modal-edit').classList.add('hidden')"
+                        class="px-4 py-2.5 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">Batal</button>
+                    <button type="submit"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition-colors flex items-center gap-1.5">
+                        <i class="fa-solid fa-save"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Biodata Lengkap Guru / GTK -->
+    <div id="modal-detail"
+        class="hidden fixed inset-0 z-[60] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <!-- Header Detail -->
+            <div class="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <div id="detail-avatar"
+                        class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-lg font-bold shadow-md border-2 border-white/20 shrink-0">
+                        ?
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="detail-name" class="font-bold text-base sm:text-lg truncate">Nama GTK</h3>
+                        <div class="flex items-center gap-2 text-xs text-indigo-200 mt-0.5">
+                            <span id="detail-status" class="bg-indigo-800/60 px-2 py-0.5 rounded font-semibold border border-indigo-700/50">Status</span>
+                            <span id="detail-jenis-ptk" class="text-slate-300">Jenis PTK</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-detail').classList.add('hidden')"
+                    class="w-8 h-8 rounded-full bg-white/10 hover:bg-red-600 transition-colors flex items-center justify-center text-slate-300 hover:text-white shrink-0">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body Detail Grid -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+                <!-- Grid Informasi Profil -->
+                <div id="detail-profile-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- Footer Detail -->
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <a id="detail-link-wa" href="#" target="_blank" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs items-center gap-1.5 transition-colors">
+                        <i class="fa-brands fa-whatsapp"></i> Hubungi WA
+                    </a>
+                    <a id="detail-link-email" href="#" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs items-center gap-1.5 transition-colors">
+                        <i class="fa-solid fa-envelope"></i> Kirim Email
+                    </a>
+                </div>
+                <button onclick="document.getElementById('modal-detail').classList.add('hidden')"
+                    class="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-lg transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import Excel (21 Kolom Lengkap Dapodik & {{appName}} dengan NIK di Kolom A & Telegram ID di Kolom U) -->
+    <div id="modal-import"
+        class="hidden fixed inset-0 z-[60] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-5xl overflow-hidden fade-in flex flex-col h-[85vh]">
+            <div
+                class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-emerald-50 dark:bg-emerald-950/30 shrink-0">
+                <div>
+                    <h3 class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel text-emerald-600 dark:text-emerald-400"></i>
+                        Import Data GTK (Format 21 Kolom Excel Dapodik & {{appName}})
+                    </h3>
+                    <p class="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Salin baris data langsung dari tabel Excel Dapodik dan tempel di bawah ini (Kolom A adalah NIK, Kolom U adalah Telegram ID).</p>
+                </div>
+                <button onclick="document.getElementById('modal-import').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                <!-- Panduan Chip 21 Kolom (A s.d. U) -->
+                <div
+                    class="bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-indigo-500"></i> Urutan Kolom Excel (A s.d. U - 21 Kolom Standar Dapodik & {{appName}}):
+                        </span>
+                        <span class="text-[10px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-0.5 rounded-full">21 Kolom</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 text-[11px] font-mono">
+                        <span class="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 rounded font-bold border border-rose-200 dark:border-rose-800">A. NIK</span>
+                        <span class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded font-bold border border-blue-200 dark:border-blue-800">B. Nama</span>
+                        <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 rounded font-bold border border-indigo-200 dark:border-indigo-800">C. NUPTK</span>
+                        <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-600">D. JK</span>
+                        <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-600">E. Tempat Lahir</span>
+                        <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-600">F. Tanggal Lahir</span>
+                        <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 rounded font-bold border border-indigo-200 dark:border-indigo-800">G. NIP</span>
+                        <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded font-bold border border-amber-200 dark:border-amber-800">H. Status Kepegawaian</span>
+                        <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 rounded font-bold border border-amber-200 dark:border-amber-800">I. Jenis PTK</span>
+                        <span class="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded border border-slate-300 dark:border-slate-600">J. Agama</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800">K. Alamat Jalan</span>
+                        <span class="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 rounded font-bold border border-rose-200 dark:border-rose-800">L. RT</span>
+                        <span class="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 rounded font-bold border border-rose-200 dark:border-rose-800">M. RW</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800">N. Nama Dusun</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800">O. Desa/Kelurahan</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800">P. Kecamatan</span>
+                        <span class="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded border border-emerald-200 dark:border-emerald-800">Q. Kode Pos</span>
+                        <span class="px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/40 text-cyan-800 dark:text-cyan-300 rounded font-bold border border-cyan-200 dark:border-cyan-800">R. HP</span>
+                        <span class="px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/40 text-cyan-800 dark:text-cyan-300 rounded font-bold border border-cyan-200 dark:border-cyan-800">S. Email</span>
+                        <span class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 rounded font-bold border border-purple-200 dark:border-purple-800">T. Tugas Tambahan</span>
+                        <span class="px-2 py-0.5 bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 rounded font-bold border border-sky-200 dark:border-sky-800"><i class="fa-brands fa-telegram text-sky-500 mr-0.5"></i> U. Telegram ID</span>
+                    </div>
+                </div>
+
+                <textarea id="import-paste-area"
+                    class="w-full h-40 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-3 font-mono text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 focus:border-emerald-500 dark:focus:border-emerald-500 outline-none transition-colors"
+                    placeholder="Tempel (Paste) data tabel dari Excel di sini (Header otomatis diabaikan)..."></textarea>
+
+                <!-- Opsi Proteksi / Preservasi Data Lama (Nama & Kontak) -->
+                <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-2.5">
+                    <label class="flex items-start sm:items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="chk-preserve-names" checked
+                            class="w-4 h-4 mt-0.5 sm:mt-0 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer accent-emerald-600">
+                        <div>
+                            <span class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-graduate text-emerald-600 dark:text-emerald-400"></i>
+                                Pertahankan Nama & Gelar Lama di Database (Rekomendasi)
+                            </span>
+                            <span class="text-[11px] text-emerald-700 dark:text-emerald-400 block mt-0.5">
+                                Jika GTK sudah ada di database, nama bergelar yang lama <b>tidak akan ditimpa</b> oleh nama dari Excel.
+                            </span>
+                        </div>
+                    </label>
+
+                    <div class="border-t border-emerald-200/70 dark:border-emerald-800/40"></div>
+
+                    <label class="flex items-start sm:items-center gap-2.5 cursor-pointer select-none">
+                        <input type="checkbox" id="chk-preserve-contacts" checked
+                            class="w-4 h-4 mt-0.5 sm:mt-0 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer accent-emerald-600">
+                        <div>
+                            <span class="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-address-book text-emerald-600 dark:text-emerald-400"></i>
+                                Pertahankan Kontak Lama (No. HP & Email) di Database (Rekomendasi)
+                            </span>
+                            <span class="text-[11px] text-emerald-700 dark:text-emerald-400 block mt-0.5">
+                                Jika GTK sudah memiliki No. HP atau Email di database, kontak lama <b>tidak akan ditimpa</b> oleh data baru.
+                            </span>
+                        </div>
+                    </label>
+                </div>
+
+                <button id="btn-preview"
+                    class="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 w-full py-2.5 rounded-xl font-bold hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-table"></i> Pratinjau (Preview Data)
+                </button>
+
+                <div class="border dark:border-slate-700 rounded-xl overflow-hidden hidden" id="preview-container">
+                    <!-- Diff Legend & Summary Bar -->
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-900/60 border-b dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <span class="font-bold text-slate-700 dark:text-slate-200 inline-flex items-center"><i class="fa-solid fa-code-compare text-indigo-500 mr-1.5"></i> Penanda Perubahan:</span>
+                            <span class="inline-flex items-center gap-1 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-700 font-semibold"><i class="fa-solid fa-pen-to-square text-[10px]"></i> Kuning = Nilai Berubah (Data Lama Dicoret)</span>
+                            <span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-700 font-semibold"><i class="fa-solid fa-plus text-[10px]"></i> Hijau = Field Baru Diisi</span>
+                            <span class="inline-flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-400"><i class="fa-solid fa-minus text-[10px]"></i> Abu-abu = Data Lama Dipertahankan</span>
+                        </div>
+                        <div id="preview-diff-summary" class="font-bold text-indigo-600 dark:text-indigo-400 text-xs"></div>
+                    </div>
+                    <div class="overflow-x-auto max-h-72">
+                        <table class="w-full text-xs text-left whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-900 font-bold text-slate-700 dark:text-slate-200 sticky top-0">
+                                <tr>
+                                    <th class="p-2.5">NIK</th>
+                                    <th class="p-2.5">Nama</th>
+                                    <th class="p-2.5">NUPTK</th>
+                                    <th class="p-2.5">JK</th>
+                                    <th class="p-2.5">Tmp / Tgl Lahir</th>
+                                    <th class="p-2.5">NIP</th>
+                                    <th class="p-2.5">Status</th>
+                                    <th class="p-2.5">Jenis PTK</th>
+                                    <th class="p-2.5">Alamat Domisili</th>
+                                    <th class="p-2.5">RT/RW</th>
+                                    <th class="p-2.5">Kontak (HP/Email)</th>
+                                    <th class="p-2.5">Tugas Tambahan</th>
+                                    <th class="p-2.5">Telegram ID</th>
+                                    <th class="p-2.5 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preview-body"
+                                class="dark:text-slate-300 divide-y divide-slate-100 dark:divide-slate-700 font-mono text-[11px]"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 flex justify-between items-center shrink-0">
+                <span id="import-summary-text" class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Siap menerima data.</span>
+                <div class="flex gap-2">
+                    <button type="button" onclick="document.getElementById('modal-import').classList.add('hidden')"
+                        class="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Batal</button>
+                    <button id="btn-save-import"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        disabled>
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Semua Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="modal-confirm"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="confirm-icon"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 animate-bounce-slow">
+                </div>
+
+                <h3 id="confirm-title" class="font-bold text-slate-800 dark:text-white text-lg mb-2">Konfirmasi</h3>
+                <p id="confirm-desc" class="text-sm text-slate-500 dark:text-slate-400 mb-6 px-4">Apakah Anda yakin
+                    ingin melakukan tindakan
+                    ini?</p>
+
+                <div class="flex gap-3 justify-center">
+                    <button type="button" onclick="document.getElementById('modal-confirm').classList.add('hidden')"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors">Batal</button>
+                    <button type="button" id="btn-confirm-action"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-slate-600 dark:bg-blue-600 hover:bg-slate-700 dark:hover:!bg-blue-700 shadow-lg transition-transform active:scale-95">Ya,
+                        Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modern Alert -->
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[110] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div id="alert-icon-bg"
+                    class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                    <i id="alert-icon" class="fa-solid fa-check text-3xl"></i>
+                </div>
+
+                <h3 id="alert-title" class="font-bold text-slate-800 dark:text-white text-lg mb-2">Berhasil!</h3>
+                <div id="alert-msg" class="text-sm text-slate-500 dark:text-slate-400 mb-6">Data telah tersimpan.</div>
+
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:!bg-blue-700 shadow-lg transition-transform active:scale-95">
+                    OK, Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Antrean Pengajuan Data GTK Mandiri (Kurikulum & Staf Approval) -->
+    <div id="modal-gtk-submissions" class="hidden fixed inset-0 z-[80] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-amber-50 dark:bg-amber-950/40 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-user-clock text-amber-600 dark:text-amber-400"></i>
+                        Antrean Pengajuan Data GTK Mandiri
+                    </h3>
+                    <p class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">Daftar pendaftaran calon GTK melalui halaman login. Hanya Kurikulum & Staf yang berhak menyetujui.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('modal-gtk-submissions').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="p-4 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-wrap gap-2 items-center justify-between text-xs shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-600 dark:text-slate-400">Filter Status:</span>
+                    <button type="button" class="btn-sub-filter px-3 py-1 rounded-full font-bold bg-amber-600 text-white shadow-sm" data-status="pending" onclick="window.filterSubmissions && window.filterSubmissions('pending')">Menunggu (Pending)</button>
+                    <button type="button" class="btn-sub-filter px-3 py-1 rounded-full font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition-all" data-status="approved" onclick="window.filterSubmissions && window.filterSubmissions('approved')">Disetujui</button>
+                    <button type="button" class="btn-sub-filter px-3 py-1 rounded-full font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition-all" data-status="rejected" onclick="window.filterSubmissions && window.filterSubmissions('rejected')">Ditolak</button>
+                    <button type="button" class="btn-sub-filter px-3 py-1 rounded-full font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 transition-all" data-status="all" onclick="window.filterSubmissions && window.filterSubmissions('all')">Semua</button>
+                </div>
+                <button type="button" onclick="window.loadSubmissionsList && window.loadSubmissionsList(true)" class="text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-rotate-right"></i> Segarkan Data
+                </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto flex-1 custom-scrollbar">
+                <div id="submissions-loading" class="text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2"></i>
+                    <p>Memuat daftar pengajuan GTK...</p>
+                </div>
+                <div id="submissions-empty" class="hidden text-center py-10 text-slate-400 dark:text-slate-500 text-xs">
+                    <i class="fa-regular fa-folder-open text-3xl mb-2 text-slate-300 dark:text-slate-600"></i>
+                    <p class="font-semibold">Tidak ada pengajuan data GTK dalam filter ini.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="table-submissions" class="hidden w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-100 dark:bg-slate-700/60 font-bold uppercase text-[11px] text-slate-700 dark:text-slate-200">
+                            <tr>
+                                <th class="px-3 py-2.5">Tanggal</th>
+                                <th class="px-3 py-2.5">Nama & Gelar</th>
+                                <th class="px-3 py-2.5">NIP / NIK</th>
+                                <th class="px-3 py-2.5">Jenis PTK / Status</th>
+                                <th class="px-3 py-2.5">Kontak</th>
+                                <th class="px-3 py-2.5 text-center">Status</th>
+                                <th class="px-3 py-2.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissions-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-3 border-t dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end shrink-0">
+                <button type="button" onclick="document.getElementById('modal-gtk-submissions').classList.add('hidden')"
+                    class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-xs">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tinjau Detail Pengajuan Data GTK Mandiri (Review 21 Atribut) -->
+    <div id="modal-detail-submission" class="hidden fixed inset-0 z-[90] bg-slate-900/70 dark:bg-black/80 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-indigo-50 dark:bg-indigo-950/40 shrink-0">
+                <div>
+                    <h3 class="font-bold text-lg text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
+                        <i class="fa-solid fa-address-card text-indigo-600 dark:text-indigo-400"></i>
+                        Tinjau Pengajuan Data GTK
+                    </h3>
+                    <p class="text-xs text-indigo-700 dark:text-indigo-400 mt-0.5">Periksa keabsahan 21 atribut data pendaftar sebelum menyetujui.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('modal-detail-submission').classList.add('hidden')"
+                    class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="sub-detail-body" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs custom-scrollbar">
+                <!-- Diinjeksi dinamis oleh renderSubmissionDetail() -->
+            </div>
+
+            <!-- Footer Aksi Persetujuan / Penolakan -->
+            <div class="p-4 border-t dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <div id="sub-status-info" class="text-xs text-slate-500 dark:text-slate-400">
+                    Status: <span id="sub-current-status" class="font-bold">-</span>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="button" id="btn-reject-sub" onclick="window.handleRejectSubmission && window.handleRejectSubmission()"
+                        class="flex-1 sm:flex-initial px-4 py-2 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-xmark"></i> Tolak Pengajuan
+                    </button>
+                    <button type="button" id="btn-approve-sub" onclick="window.handleApproveSubmission && window.handleApproveSubmission()"
+                        class="flex-1 sm:flex-initial px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl font-bold transition-all shadow-md text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> Setujui & Tambah ke Data GTK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-gtk.js?v=26.11.02.1"></script>
+</body>
+
+</html>

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Preview Visual Masukan & Saran - SIMAS SMAGESA</title>
+    <link rel="icon" type="image/png" href="../../assets/logo-sekolah.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-600 dark:text-slate-300 transition-colors duration-300">
+    <!-- Simulasikan Global Sidebar Desktop -->
+    <div id="desktop-sidebar-mock" class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 text-white flex-col z-30">
+        <div class="p-4 border-b border-slate-800 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-base">S</div>
+            <div>
+                <h2 class="text-sm font-black text-white">SIMAS - SHAKTI</h2>
+                <p class="text-[10px] text-slate-400">SMAN 1 Abang</p>
+            </div>
+        </div>
+        <div class="p-3 space-y-1 text-xs">
+            <div class="px-3 py-2 rounded-xl text-slate-400 flex items-center gap-2"><i class="fa-solid fa-house"></i> Dashboard</div>
+            <div class="px-3 py-2 rounded-xl bg-blue-600 text-white font-bold flex items-center gap-2"><i class="fa-solid fa-comments"></i> Masukan & Aspirasi</div>
+            <div class="px-3 py-2 rounded-xl text-slate-400 flex items-center gap-2"><i class="fa-solid fa-book"></i> Akademik</div>
+            <div class="px-3 py-2 rounded-xl text-slate-400 flex items-center gap-2"><i class="fa-solid fa-wrench"></i> Sarana Prasarana</div>
+        </div>
+    </div>
+
+    <!-- Simulasikan Kontainer <main> dengan padding sidebar desktop -->
+    <main class="md:ml-64 p-3.5 sm:p-5 md:p-6 min-h-screen">
+        <!-- 1. Header Modul Standar SIMAS -->
+        <header class="premium-header bg-slate-900 border border-slate-800 text-white rounded-2xl p-3 sm:p-4 mb-4 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="relative z-10 flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-base shrink-0 shadow-inner">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-lg font-black leading-tight flex items-center gap-2 truncate">
+                        <span>Aspirasi & Masukan Civitas</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">Komunitas</span>
+                    </h1>
+                    <p class="text-slate-300 text-xs mt-0.5 truncate">Pusat aspirasi civitas sekolah, usulan perbaikan fasilitas, dan pantau tindak lanjut secara transparan.</p>
+                </div>
+            </div>
+            <div class="relative z-10 flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <button type="button" onclick="alert('Segarkan data')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer">
+                    <i class="fa-solid fa-rotate text-xs"></i>
+                    <span class="hidden sm:inline">Segarkan</span>
+                </button>
+                <button type="button" onclick="document.getElementById('feedback-modal').classList.remove('hidden'); document.getElementById('feedback-modal').classList.add('flex');" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-md shadow-blue-600/30 transition-all active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                    <span>Tulis Aspirasi</span>
+                </button>
+            </div>
+            <div class="absolute -right-8 -top-8 w-28 h-28 bg-blue-500/10 blur-2xl rounded-full pointer-events-none"></div>
+        </header>
+
+        <!-- 2. KPI Bar Ringkas (Selalu tampak di atas, ramah HP & Desktop) -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 mb-4">
+            <button type="button" class="group p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-blue-400 transition-all text-left flex items-center justify-between cursor-pointer">
+                <div class="min-w-0">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Total Aspirasi</span>
+                    <span class="text-base sm:text-lg font-black text-slate-800 dark:text-white block mt-0.5">24</span>
+                </div>
+                <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+            </button>
+
+            <button type="button" class="group p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-sky-400 transition-all text-left flex items-center justify-between cursor-pointer">
+                <div class="min-w-0">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Aspirasi Baru</span>
+                    <span class="text-base sm:text-lg font-black text-sky-600 dark:text-sky-400 block mt-0.5">3</span>
+                </div>
+                <div class="w-8 h-8 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+            </button>
+
+            <button type="button" class="group p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-amber-400 transition-all text-left flex items-center justify-between cursor-pointer">
+                <div class="min-w-0">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Sedang Diproses</span>
+                    <span class="text-base sm:text-lg font-black text-amber-600 dark:text-amber-400 block mt-0.5">5</span>
+                </div>
+                <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+            </button>
+
+            <button type="button" class="group p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-emerald-400 transition-all text-left flex items-center justify-between cursor-pointer">
+                <div class="min-w-0">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block truncate">Selesai / Solutif</span>
+                    <span class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 block mt-0.5">16</span>
+                </div>
+                <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </button>
+        </div>
+
+        <!-- 3. Layout Grid Komunitas: 8 Kolom Feed Linimasa + 4 Kolom Sidebar Info -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            
+            <!-- Kolom Utama: Linimasa Masukan ala Sosmed (lg:col-span-8) -->
+            <section class="lg:col-span-8 space-y-3.5 min-w-0">
+                
+                <!-- Card Trigger Composer Cepat ala Sosmed -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-sm transition-all flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shadow-inner shrink-0">
+                        IK
+                    </div>
+                    <button type="button" onclick="document.getElementById('feedback-modal').classList.remove('hidden'); document.getElementById('feedback-modal').classList.add('flex');" class="flex-1 text-left px-4 py-2.5 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-full text-xs text-slate-400 dark:text-slate-400 font-medium transition-all cursor-pointer flex items-center justify-between">
+                        <span>Punya ide, keluhan fasilitas, atau saran membangun sekolah?</span>
+                        <i class="fa-solid fa-pen-to-square text-blue-500 text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Feed Stream Tabs Filter ala Sosmed (Paling Baru, Populer, Butuh Respon, Selesai) -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-1.5 shadow-2xs flex items-center gap-1 overflow-x-auto custom-scrollbar">
+                    <button type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 bg-blue-600 text-white shadow-xs">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Terbaru</span>
+                    </button>
+                    <button type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-fire text-amber-500"></i>
+                        <span>Paling Didukung</span>
+                    </button>
+                    <button type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-circle-question text-sky-500"></i>
+                        <span>Menunggu Respon</span>
+                    </button>
+                    <button type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        <span>Selesai Ditindak</span>
+                    </button>
+                </div>
+
+                <!-- Chips Filter Kategori Cepat -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-xs">
+                    <button type="button" class="px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900">
+                        Semua Kategori
+                    </button>
+                    <button type="button" class="px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-blue-400">
+                        #SaranaPrasarana
+                    </button>
+                    <button type="button" class="px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-blue-400">
+                        #Akademik
+                    </button>
+                    <button type="button" class="px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-blue-400">
+                        #Kesiswaan
+                    </button>
+                    <button type="button" class="px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 transition-all cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-blue-400">
+                        #Laboratorium
+                    </button>
+                </div>
+
+                <!-- Feed Stream Container (Kumpulan Kartu Aspirasi Sosmed) -->
+                <div class="space-y-3.5">
+                    
+                    <!-- KARTU 1: Usulan Fasilitas Proyektor Lab (Status: Baru) -->
+                    <article class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all p-4 sm:p-5 relative border-l-4 border-l-sky-500">
+                        <!-- Baris 1: Profil Penulis + Status Badge -->
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-inner">
+                                    LW
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <h3 class="font-extrabold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
+                                            Luh Putu Widya Lestari, S.Pd.
+                                        </h3>
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                                            <i class="fa-solid fa-user-tie text-[9px]"></i>
+                                            Guru / Pegawai
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                                        <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                            <i class="fa-regular fa-clock text-[10px]"></i>
+                                            10 menit lalu
+                                        </span>
+                                        <span class="text-slate-300 dark:text-slate-700 select-none">•</span>
+                                        <span class="inline-flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
+                                            <i class="fa-solid fa-screwdriver-wrench text-blue-500 text-[10px]"></i>
+                                            <span>Kepada: Sarpras</span>
+                                        </span>
+                                        <span class="text-slate-300 dark:text-slate-700 select-none">•</span>
+                                        <span class="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
+                                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i>
+                                            <span>#Sarpras & Lab</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold border shrink-0 bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 ring-2 ring-sky-400/30"></span>
+                                <span>Baru</span>
+                            </span>
+                        </div>
+
+                        <!-- Konten Aspirasi -->
+                        <div class="mb-3.5">
+                            <h2 class="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white leading-snug mb-1.5">
+                                Penambahan Kabel HDMI & Remote Proyektor di Lab Komputer 2
+                            </h2>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                Mohon bantuan dari tim Sarpras untuk menyediakan kabel HDMI tambahan dan remote cadangan pada proyektor Lab Komputer 2. Saat kegiatan KBM presentasi multimedia hari ini, proyektor sempat sulit terhubung karena port kabel lama sudah agak longgar. Terima kasih atas perhatiannya!
+                            </p>
+                        </div>
+
+                        <!-- Baris Aksi Ala Media Sosial (Like, Diskusi, Bagikan, Tanggapi) -->
+                        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-1 sm:gap-2">
+                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                                    <i class="fa-solid fa-heart text-xs"></i>
+                                    <span>5</span>
+                                    <span class="hidden sm:inline">Dukung</span>
+                                </button>
+                                <button type="button" onclick="const disc = document.getElementById('disc-1'); disc.classList.toggle('hidden');" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-slate-600 hover:text-blue-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <i class="fa-regular fa-comment text-xs"></i>
+                                    <span>2 Balasan</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] ml-0.5"></i>
+                                </button>
+                                <button type="button" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer" title="Salin Tautan">
+                                    <i class="fa-solid fa-share-nodes text-xs"></i>
+                                    <span class="hidden sm:inline">Bagikan</span>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 ml-auto">
+                                <button type="button" onclick="document.getElementById('response-modal').classList.remove('hidden'); document.getElementById('response-modal').classList.add('flex');" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 cursor-pointer">
+                                    <i class="fa-solid fa-sliders text-xs"></i>
+                                    <span>Tanggapi</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Thread Diskusi Komentar Inline (Dapat di-expand) -->
+                        <div id="disc-1" class="mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                            <div class="space-y-2">
+                                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px]">
+                                                KP
+                                            </div>
+                                            <span class="font-extrabold text-slate-800 dark:text-white text-xs">I Ketut Putra, S.Pd.</span>
+                                            <span class="text-[10px] text-slate-400">5 menit lalu</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-slate-600 dark:text-slate-300 text-xs pl-8">
+                                        Sepakat Bu Widya, kemarin saat mengajar di Lab 2 juga sempat bergoyang kabel HDMI-nya. Sangat mendukung usulan ini!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Input Komentar Cepat Inline -->
+                            <div class="flex items-center gap-2 pt-1">
+                                <input type="text" placeholder="Tulis balasan atau saran..." class="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none">
+                                <button type="button" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shrink-0 cursor-pointer">
+                                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Akordeon Masukan Selesai / Ditolak (Collapsed by Default) -->
+                    <div class="mt-6 pt-4 border-t border-slate-200/80 dark:border-slate-800">
+                        <button type="button" onclick="const a = document.getElementById('preview-archived-list'); const l = document.getElementById('preview-archived-label'); const i = document.getElementById('preview-archived-icon'); a.classList.toggle('hidden'); const isHidden = a.classList.contains('hidden'); l.textContent = isHidden ? 'Tampilkan' : 'Sembunyikan'; i.classList.toggle('rotate-180', !isHidden);" class="w-full flex items-center justify-between p-3.5 bg-slate-100/80 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-2xl transition-all cursor-pointer">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-7 h-7 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs">
+                                    <i class="fa-solid fa-box-archive"></i>
+                                </span>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                    Aspirasi Selesai & Ditutup (1)
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                                <span id="preview-archived-label" class="text-[11px] font-semibold">Tampilkan</span>
+                                <i id="preview-archived-icon" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"></i>
+                            </div>
+                        </button>
+
+                        <div id="preview-archived-list" class="hidden mt-3.5 space-y-3.5">
+                            <!-- KARTU 2: Aspirasi Selesai Ditindaklanjuti dengan Tanggapan Resmi Pimpinan -->
+                            <article class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all p-4 sm:p-5 relative border-l-4 border-l-emerald-500">
+                                <div class="flex items-center justify-between gap-2 mb-2">
+                                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-inner">
+                                            IK
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <h3 class="font-extrabold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
+                                                    I Komang Purna, S.Pd., Gr.
+                                                </h3>
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                                                    <i class="fa-solid fa-user-shield text-[9px]"></i>
+                                                    Super Admin
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                                                <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                                    <i class="fa-regular fa-clock text-[10px]"></i>
+                                                    2 jam lalu
+                                                </span>
+                                                <span class="text-slate-300 dark:text-slate-700 select-none">•</span>
+                                                <span class="inline-flex items-center gap-1 font-semibold text-slate-600 dark:text-slate-300">
+                                                    <i class="fa-solid fa-user-tie text-blue-500 text-[10px]"></i>
+                                                    <span>Kepada: Kepsek</span>
+                                                </span>
+                                                <span class="text-slate-300 dark:text-slate-700 select-none">•</span>
+                                                <span class="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
+                                                    <i class="fa-solid fa-laptop-code text-[10px]"></i>
+                                                    <span>#SIMAS-SHAKTI</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold border shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-400/30"></span>
+                                        <span>Selesai</span>
+                                    </span>
+                                </div>
+
+                                <div class="mb-3.5">
+                                    <h2 class="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white leading-snug mb-1.5">
+                                        Optimalisasi Tampilan Mode Gelap pada Seluruh Modul Web SIMAS
+                                    </h2>
+                                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                                        Mohon diselaraskan kontras warna pada background form dan dialog popup saat mode malam aktif agar nyaman dibaca pada malam hari tanpa silau.
+                                    </p>
+                                </div>
+
+                                <!-- Kotak Tanggapan Resmi dari Pimpinan / Pengelola -->
+                                <div class="mb-3.5 p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-xs">
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <span class="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center text-[10px]"><i class="fa-solid fa-check"></i></span>
+                                        <span class="font-extrabold text-emerald-900 dark:text-emerald-200">Tanggapan Resmi Pengelola</span>
+                                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 ml-auto">1 jam lalu</span>
+                                    </div>
+                                    <p class="text-emerald-800 dark:text-emerald-300 text-xs leading-relaxed">
+                                        Terima kasih atas masukannya. Seluruh palet warna dark mode telah diperbarui mengikuti standar kontras AA Web Content Accessibility Guidelines. Silakan lakukan refresh cache browser untuk melihat perubahannya.
+                                    </p>
+                                </div>
+
+                                <!-- Baris Aksi -->
+                                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                                    <div class="flex items-center gap-1 sm:gap-2">
+                                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-slate-600 hover:text-rose-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <i class="fa-regular fa-heart text-xs"></i>
+                                            <span>12</span>
+                                            <span class="hidden sm:inline">Dukung</span>
+                                        </button>
+                                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-slate-600 hover:text-blue-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <i class="fa-regular fa-comment text-xs"></i>
+                                            <span>4 Balasan</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 ml-auto">
+                                        <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                            Tuntas
+                                        </span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kolom Samping: Sidebar Widgets (lg:col-span-4 sticky) -->
+            <aside class="lg:col-span-4 space-y-3.5 min-w-0 lg:sticky lg:top-4">
+                <!-- Widget Live Search Bebas Icon Leading -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs">
+                    <label for="feedback-search-input" class="block text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>Cari Aspirasi</span>
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                    </label>
+                    <div class="relative">
+                        <input id="feedback-search-input" type="text" placeholder="Ketik kata kunci aspirasi..." class="w-full px-3.5 pr-8 py-2 text-xs font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all">
+                    </div>
+                </div>
+
+                <!-- Widget Topik Hangat -->
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-slate-800">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-trend-up text-amber-500"></i>
+                            <span>Topik Hangat</span>
+                        </h3>
+                        <span class="text-[10px] font-bold text-slate-400">Paling Aktif</span>
+                    </div>
+                    <div class="space-y-1 text-xs">
+                        <div class="p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-between cursor-pointer">
+                            <div>
+                                <span class="font-extrabold text-slate-800 dark:text-slate-200 text-xs block">#SaranaPrasarana</span>
+                                <span class="text-[10px] text-slate-400">8 aspirasi minggu ini</span>
+                            </div>
+                            <span class="text-xs font-black text-blue-600 dark:text-blue-400">#1</span>
+                        </div>
+                        <div class="p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-between cursor-pointer">
+                            <div>
+                                <span class="font-extrabold text-slate-800 dark:text-slate-200 text-xs block">#Akademik</span>
+                                <span class="text-[10px] text-slate-400">5 aspirasi minggu ini</span>
+                            </div>
+                            <span class="text-xs font-black text-slate-400">#2</span>
+                        </div>
+                        <div class="p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-between cursor-pointer">
+                            <div>
+                                <span class="font-extrabold text-slate-800 dark:text-slate-200 text-xs block">#Laboratorium</span>
+                                <span class="text-[10px] text-slate-400">3 aspirasi minggu ini</span>
+                            </div>
+                            <span class="text-xs font-black text-slate-400">#3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget Narahubung Cepat WhatsApp -->
+                <div class="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl border border-emerald-500/20 p-3.5 sm:p-4 shadow-2xs">
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-xs shrink-0 shadow-sm">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-black text-slate-800 dark:text-white">Aduan Cepat / Darurat</h3>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">Butuh penanganan seketika?</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed mb-3">
+                        Jika fasilitas mendesak mengalami kerusakan saat KBM berlangsung, Anda dapat menghubungi PIC sarana melalui WhatsApp.
+                    </p>
+                    <a href="https://wa.me/6285337053969" target="_blank" rel="noopener noreferrer" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-sm transition-all active:scale-95">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>Hubungi Admin WA</span>
+                    </a>
+                </div>
+
+                <!-- Widget Panduan Aspirasi -->
+                <div class="bg-gradient-to-br from-blue-50/80 to-indigo-50/60 dark:from-slate-900 dark:to-slate-800/80 rounded-2xl border border-blue-100 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs text-xs">
+                    <h3 class="font-black text-slate-800 dark:text-white flex items-center gap-1.5 mb-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        <span>Etika Aspirasi Konstruktif</span>
+                    </h3>
+                    <ul class="space-y-2 text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+                        <li class="flex items-start gap-1.5">
+                            <i class="fa-solid fa-check text-blue-600 dark:text-blue-400 text-[10px] mt-0.5 shrink-0"></i>
+                            <span><strong>Santun & Faktual:</strong> Sampaikan kendala atau ide berbasis fakta untuk solusi nyata.</span>
+                        </li>
+                        <li class="flex items-start gap-1.5">
+                            <i class="fa-solid fa-check text-blue-600 dark:text-blue-400 text-[10px] mt-0.5 shrink-0"></i>
+                            <span><strong>Tepat Sasaran:</strong> Pilih tujuan pimpinan bidang yang tepat agar respon terarah.</span>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Modal Input Masukan (Top Level Siblings di Luar <main>) -->
+    <div id="feedback-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden'); this.parentElement.classList.remove('flex');"></div>
+        <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-scale-in my-auto max-h-[92vh] flex flex-col z-10">
+            <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-4 sm:p-5 text-white flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-lg shadow-inner">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base sm:text-lg font-black tracking-tight">Kirim Masukan Internal</h3>
+                            <p class="text-xs text-white/90 font-medium">I Komang Purna, S.Pd., Gr. (Super Admin)</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="document.getElementById('feedback-modal').classList.add('hidden'); document.getElementById('feedback-modal').classList.remove('flex');" class="w-8 h-8 rounded-full hover:bg-white/20 text-white transition-colors flex items-center justify-center cursor-pointer">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form class="p-4 sm:p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1" onsubmit="event.preventDefault(); alert('Aspirasi terkirim!'); document.getElementById('feedback-modal').classList.add('hidden');">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Kolom 1: Tujuan Laporan (Popover Multi-Select Checkboxes) -->
+                    <div class="relative">
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5 flex items-center justify-between">
+                            <span>Tujuan Laporan</span>
+                            <span id="preview-target-badge" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400">1 dipilih</span>
+                        </label>
+                        <input type="hidden" id="feedback-target" name="feedback-target" value="super_admin">
+                        <button type="button" onclick="document.getElementById('target-popover').classList.toggle('hidden');" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all">
+                            <span id="preview-target-label" class="truncate">Super Admin / Tim IT</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 shrink-0 ml-1.5"></i>
+                        </button>
+
+                        <!-- Popover Dropdown Checkbox Panel -->
+                        <div id="target-popover" class="hidden absolute left-0 right-0 top-full mt-1.5 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 max-h-56 overflow-y-auto custom-scrollbar space-y-0.5">
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="super_admin" checked class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span class="font-bold">Super Admin / Tim IT</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="kepala_sekolah" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Kepala Sekolah</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="wakasek_kurikulum" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Wakasek Kurikulum</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="kesiswaan" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Wakasek Kesiswaan</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="humas" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Wakasek Humas</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="sarpras" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Wakasek Sarpras</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="kepala_lab" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Kepala Laboratorium</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="staff" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Tata Usaha / Staff TU</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
+                                <input type="checkbox" value="guru" class="w-3.5 h-3.5 text-blue-600 rounded border-slate-300 dark:border-slate-700">
+                                <span>Bapak / Ibu Guru</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Kolom 2: Kategori (Web App SIMAS-SHAKTI Terpilih Default) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Kategori</label>
+                        <select class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="Web App SIMAS-SHAKTI" selected>Web App SIMAS-SHAKTI</option>
+                            <option value="Kurikulum & Pembelajaran">Kurikulum & Pembelajaran</option>
+                            <option value="Kesiswaan & Ekstrakurikuler">Kesiswaan & Ekstrakurikuler</option>
+                            <option value="Sarana & Prasarana">Sarana & Prasarana</option>
+                            <option value="Layanan Administrasi / TU">Layanan Administrasi / TU</option>
+                            <option value="Layanan Perpustakaan">Layanan Perpustakaan</option>
+                            <option value="Layanan Laboratorium">Layanan Laboratorium</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Judul Aspirasi / Pokok Masukan</label>
+                    <input type="text" placeholder="Ringkasan inti masukan Anda..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Uraian Detail Aspirasi</label>
+                    <textarea rows="4" placeholder="Jelaskan kendala, lokasi spesifik, atau ide konstruktif Anda..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-200 outline-none resize-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('feedback-modal').classList.add('hidden'); document.getElementById('feedback-modal').classList.remove('flex');" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-bold">
+                        Batal
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 py-2.5 font-extrabold text-xs sm:text-sm shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                        <span>Kirim Aspirasi</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tanggapi Pimpinan (Top Level Siblings di Luar <main>) -->
+    <div id="response-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden'); this.parentElement.classList.remove('flex');"></div>
+        <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-scale-in my-auto max-h-[92vh] flex flex-col z-10">
+            <div class="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 dark:text-white text-base">Tanggapi Status Aspirasi</h3>
+                        <p class="text-xs text-slate-500">Lab Komputer 2 Proyektor</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('response-modal').classList.add('hidden'); document.getElementById('response-modal').classList.remove('flex');" class="w-8 h-8 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 flex items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form class="p-4 sm:p-5 space-y-4" onsubmit="event.preventDefault(); alert('Tanggapan disimpan!'); document.getElementById('response-modal').classList.add('hidden');">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Ubah Status</label>
+                    <select class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 dark:text-slate-200">
+                        <option>Diproses (Sedang Ditindaklanjuti)</option>
+                        <option>Selesai (Sudah Tuntas / Solutif)</option>
+                        <option>Ditolak / Ditutup</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Catatan Resmi Pimpinan</label>
+                    <textarea rows="4" placeholder="Tuliskan respon, solusi, atau waktu penyelesaian..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 dark:text-slate-200"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('response-modal').classList.add('hidden'); document.getElementById('response-modal').classList.remove('flex');" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold">Batal</button>
+                    <button type="submit" class="bg-emerald-600 text-white rounded-xl px-4 py-2 font-bold text-xs">Simpan Tanggapan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

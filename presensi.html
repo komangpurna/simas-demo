@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Presensi Siswa - SIMAS</title>
+    <link rel="icon" type="image/png" href="assets/logo-sekolah.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- SheetJS Library for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script type="module" src="js/school-config.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors">
+
+    <div id="app-layout"></div>
+
+    <main class="hidden fade-in pb-24">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Presensi Kelas</h1>
+
+            <div
+                class="bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex w-full md:w-auto">
+                <button onclick="switchMode('input')" id="btn-mode-input"
+                    class="flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 transition-colors">Input
+                    Harian</button>
+                <button onclick="switchMode('history')" id="btn-mode-history"
+                    class="flex-1 md:flex-none px-6 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Data
+                    Riwayat</button>
+            </div>
+        </div>
+
+        <div id="section-input">
+            <!-- Banner Informatif Hari Libur Sekolah -->
+            <div id="holiday-banner-presensi" class="hidden mb-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-200 text-xs font-semibold shadow-xs"></div>
+
+            <div
+                class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6 grid grid-cols-2 md:grid-cols-3 gap-4 items-end">
+                <div class="col-span-1">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Tanggal Absen</label>
+                    <input type="date" id="input-date"
+                        class="w-full font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="col-span-1">
+                    <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Kelas</label>
+                    <select id="input-class"
+                        class="w-full font-bold border rounded-lg p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/50 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <button onclick="window.loadStudentList()" id="btn-main-input"
+                        class="bg-slate-900 text-white w-full py-2.5 rounded-lg font-bold shadow hover:bg-slate-800 transition-transform active:scale-95">
+                        <i class="fa-solid fa-list-check mr-2"></i> Input / Edit Data
+                    </button>
+                </div>
+            </div>
+
+            <div id="daily-summary-container" class="animate-fade-in">
+                <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-list text-blue-500"></i>
+                    Status Input Tanggal <span id="summary-date-display"
+                        class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm">-</span>
+                </h3>
+
+                <div id="missing-classes-container" class="hidden mb-4"></div>
+
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                            <thead
+                                class="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 font-bold uppercase text-xs border-b dark:border-slate-700/50">
+                                <tr>
+                                    <th class="px-4 py-3 min-w-[90px] cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                        onclick="window.toggleDailySummarySort('class')" title="Klik untuk mengurutkan berdasarkan Kelas">
+                                        <div class="flex items-center gap-1.5">
+                                            <span>Kelas</span>
+                                            <i id="sort-icon-class" class="fa-solid fa-sort text-slate-400 text-[10px]"></i>
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-3 py-3 text-center text-emerald-700 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-900/30 border-l dark:border-slate-700/50 whitespace-nowrap cursor-pointer select-none hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+                                        onclick="window.toggleDailySummarySort('percentage')"
+                                        title="Klik untuk mengurutkan berdasarkan Persentase Kehadiran">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span>% Kehadiran</span>
+                                            <i id="sort-icon-percentage" class="fa-solid fa-sort text-emerald-500 text-[10px]"></i>
+                                        </div>
+                                    </th>
+                                    <th
+                                        class="px-2 py-3 text-center w-12 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-l dark:border-slate-700/50">
+                                        H</th>
+                                    <th
+                                        class="px-2 py-3 text-center w-12 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20">
+                                        S</th>
+                                    <th
+                                        class="px-2 py-3 text-center w-12 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20">
+                                        I</th>
+                                    <th
+                                        class="px-2 py-3 text-center w-12 text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20">
+                                        D</th>
+                                    <th
+                                        class="px-2 py-3 text-center w-12 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
+                                        A</th>
+                                    <th class="px-4 py-3 text-center text-slate-500 dark:text-slate-400">Total</th>
+                                    <th class="px-4 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="daily-summary-body" class="divide-y divide-slate-50 dark:divide-slate-700/50">
+                                <tr>
+                                    <td colspan="9" class="p-6 text-center text-slate-400">Memuat data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="attendance-list-container" class="hidden animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                    <button onclick="window.closeInputMode()"
+                        class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1 font-bold">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali
+                    </button>
+                    <div
+                        class="text-[10px] md:text-xs flex flex-wrap gap-3 font-medium text-slate-600 bg-white p-2 rounded border shadow-sm">
+                        <span class="flex items-center">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-1"></div>Hadir
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-3 h-3 bg-yellow-400 rounded-full mr-1"></div>Sakit
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>Izin
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full mr-1"></div>Dispen
+                        </span>
+                        <span class="flex items-center">
+                            <div class="w-3 h-3 bg-red-500 rounded-full mr-1"></div>Alpha
+                        </span>
+                    </div>
+                </div>
+
+                <div id="presensi-alert-container"></div>
+
+                <div
+                    class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                            <thead
+                                class="bg-slate-50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 font-bold uppercase text-xs border-b border-slate-200 dark:border-slate-700/50">
+                                <tr>
+                                    <!-- NIS hidden on mobile -->
+                                    <th class="px-4 py-3 w-20 font-mono text-center hidden md:table-cell">NIS</th>
+                                    <!-- Nama - fleksibel sesuai sisa ruang -->
+                                    <th class="px-1.5 md:px-4 py-1.5 md:py-3 text-[10px] md:text-sm">Nama</th>
+                                    <!-- Radio columns - compact di mobile -->
+                                    <th
+                                        class="px-0.5 md:px-1 py-2 text-center w-8 md:w-12 border-l dark:border-slate-700/50 bg-green-50/30 dark:bg-green-900/10 text-green-700 dark:text-green-400 text-[10px] md:text-xs">
+                                        H</th>
+                                    <th
+                                        class="px-0.5 md:px-1 py-2 text-center w-8 md:w-12 bg-yellow-50/30 dark:bg-yellow-900/10 text-yellow-700 dark:text-yellow-400 text-[10px] md:text-xs">
+                                        S</th>
+                                    <th
+                                        class="px-0.5 md:px-1 py-2 text-center w-8 md:w-12 bg-blue-50/30 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 text-[10px] md:text-xs">
+                                        I</th>
+                                    <th
+                                        class="px-0.5 md:px-1 py-2 text-center w-8 md:w-12 bg-red-50/30 dark:bg-red-900/10 text-red-700 dark:text-red-400 text-[10px] md:text-xs">
+                                        A</th>
+                                    <th
+                                        class="px-0.5 md:px-1 py-2 text-center w-8 md:w-12 bg-purple-50/30 dark:bg-purple-900/10 text-purple-700 dark:text-purple-400 text-[10px] md:text-xs">
+                                        D</th>
+                                    <!-- Keterangan - hidden di mobile, form muncul di row bawah -->
+                                    <th
+                                        class="px-2 md:px-4 py-2 md:py-3 min-w-[100px] md:min-w-[250px] border-l text-xs md:text-sm hidden md:table-cell">
+                                        Ket</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button id="btn-save-attendance" onclick="window.saveAttendance()"
+                        class="w-full md:w-auto bg-green-600 text-white px-8 py-3 rounded-lg font-bold shadow-xl hover:bg-green-700 flex items-center justify-center gap-3 transition-transform active:scale-95">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Data Presensi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-history" class="hidden">
+            <div
+                class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Tipe
+                            Laporan</label>
+                        <select id="history-type"
+                            class="w-full font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-slate-200 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+                            onchange="toggleHistoryInputs()">
+                            <option value="monthly">Rekap Bulanan</option>
+                            <option value="semester">Rekap Semester</option>
+                            <option value="daily">Detail Harian</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Lingkup
+                            Kelas</label>
+                        <select id="history-scope"
+                            class="w-full font-bold border rounded-lg p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/50 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">-- Memuat... --</option>
+                        </select>
+                    </div>
+
+                    <div id="container-status-input" class="hidden">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Status
+                            Kehadiran</label>
+                        <select id="history-filter-status"
+                            class="w-full font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-white dark:bg-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="ALL" class="dark:text-slate-200">Semua (H/S/I/D/A)</option>
+                            <option value="A" class="text-red-600 dark:text-red-400">Hanya Alpha (A)</option>
+                            <option value="S" class="text-yellow-600 dark:text-yellow-400">Hanya Sakit (S)</option>
+                            <option value="I" class="text-blue-600 dark:text-blue-400">Hanya Izin (I)</option>
+                            <option value="D" class="text-purple-600 dark:text-purple-400">Hanya Dispen (D)</option>
+                        </select>
+                    </div>
+
+                    <div id="container-time-input" class="w-full">
+                        <div id="box-month">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih
+                                Bulan</label>
+                            <input type="month" id="history-month"
+                                class="w-full font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div id="box-semester" class="hidden">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih
+                                Semester</label>
+                            <div class="flex gap-2">
+                                <select id="history-semester-type"
+                                    class="font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="1">Ganjil</option>
+                                    <option value="2">Genap</option>
+                                </select>
+                                <select id="history-semester-year"
+                                    class="font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-slate-200 min-w-[120px] outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            </div>
+                        </div>
+                        <div id="box-date" class="hidden">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 block mb-1">Pilih
+                                Tanggal</label>
+                            <input type="date" id="history-date"
+                                class="w-full font-bold border dark:border-slate-600 rounded-lg p-2.5 bg-slate-50 dark:bg-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <button onclick="window.loadHistoryData()"
+                        class="bg-slate-800 dark:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-slate-900 dark:hover:!bg-blue-700 transition-colors shadow-md">
+                        <i class="fa-solid fa-search mr-2"></i> Cari
+                    </button>
+                </div>
+            </div>
+
+            <div id="history-result-container"
+                class="hidden bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div
+                    class="p-4 border-b dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 flex flex-wrap justify-between items-center gap-3">
+                    <div>
+                        <h3 class="font-bold text-slate-700 dark:text-slate-200" id="history-title">Hasil Riwayat</h3>
+                        <div class="text-xs text-slate-500 dark:text-slate-400" id="history-subtitle">-</div>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <label id="label-toggle-include-sakit-history" class="inline-flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition" title="Peraturan Akademik: Hitung Sakit (S) setara Hadir">
+                            <input type="checkbox" id="toggle-include-sakit-history" onchange="window.onToggleIncludeSakitHistory(this.checked)" class="sr-only peer">
+                            <div class="relative w-7 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:border-slate-500 peer-checked:bg-emerald-600"></div>
+                            <span class="text-xs">Hitung Sakit Hadir</span>
+                            <span id="badge-mode-akademik-history" class="hidden text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Akademik</span>
+                        </label>
+                        <button id="btn-export-excel" onclick="window.exportHistoryToExcel()"
+                            class="hidden px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-transform active:scale-95 flex items-center gap-2 shadow">
+                            <i class="fa-solid fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                        <thead
+                            class="bg-slate-100 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 font-bold uppercase text-xs"
+                            id="history-thead">
+                        </thead>
+                        <tbody id="history-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="history-empty" class="text-center p-12 text-slate-400">
+                <i class="fa-solid fa-magnifying-glass-chart text-4xl mb-3 text-slate-300"></i>
+                <p>Silakan atur filter di atas untuk menampilkan data.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modal-confirm-save"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400">
+                    <i class="fa-solid fa-floppy-disk text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-2">Simpan Presensi?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Pastikan data kehadiran sudah sesuai dengan
+                    kondisi di kelas.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="document.getElementById('modal-confirm-save').classList.add('hidden')"
+                        class="px-5 py-2.5 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-colors">Batal</button>
+                    <button onclick="window.processSave()"
+                        class="px-5 py-2.5 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 shadow-lg transition-transform active:scale-95">Ya,
+                        Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alert"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div class="p-6 text-center">
+                <div
+                    class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center mx-auto mb-4 text-yellow-600 dark:text-yellow-400">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-2">Peringatan</h3>
+                <p id="alert-message" class="text-sm text-slate-500 dark:text-slate-400 mb-6">Pesan peringatan akan
+                    muncul di sini.</p>
+                <button onclick="document.getElementById('modal-alert').classList.add('hidden')"
+                    class="w-full px-5 py-2.5 rounded-lg font-bold text-white bg-slate-800 dark:bg-blue-600 hover:bg-slate-900 dark:hover:!bg-blue-700 shadow-lg transition-transform active:scale-95">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-wa"
+        class="hidden fixed inset-0 z-[100] bg-slate-900/60 dark:bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm fade-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-2xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+            <div
+                class="bg-green-50 dark:bg-green-900/20 p-4 border-b border-green-100 dark:border-green-900/50 flex items-center gap-3">
+                <div
+                    class="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+                    <i class="fa-brands fa-whatsapp text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-green-800 dark:text-green-400">Laporan Presensi</h3>
+                    <p class="text-xs text-green-600 dark:text-green-500">Kirim rekapan ke Wali Kelas</p>
+                </div>
+            </div>
+
+            <div class="p-4">
+                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">Preview Pesan:</label>
+                <textarea id="wa-msg-preview"
+                    class="w-full h-40 text-xs font-mono bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded p-2 outline-none resize-none text-slate-700 dark:text-slate-300"
+                    readonly></textarea>
+                <div id="wa-contact-info" class="mt-2 text-xs text-slate-400 dark:text-slate-500 text-center italic">
+                    Mencari nomor Wali
+                    Kelas...</div>
+            </div>
+
+            <div class="p-4 border-t dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex gap-2">
+                <button onclick="window.closeWaModal()"
+                    class="flex-1 px-4 py-2 rounded-lg font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Tutup</button>
+                <a id="btn-send-wa" href="#" target="_blank"
+                    class="flex-1 px-4 py-2 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 dark:bg-green-700 shadow-lg text-center flex items-center justify-center gap-2 transition-transform active:scale-95"><i
+                        class="fa-regular fa-paper-plane"></i> Kirim WA</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/page-presensi.js"></script>
+    <script>
+        function switchMode(mode) {
+            const btnInput = document.getElementById('btn-mode-input');
+            const btnHist = document.getElementById('btn-mode-history');
+            const secInput = document.getElementById('section-input');
+            const secHist = document.getElementById('section-history');
+
+            if (mode === 'input') {
+                btnInput.className = "flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 transition-colors";
+                btnHist.className = "flex-1 md:flex-none px-6 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors";
+                secInput.classList.remove('hidden');
+                secHist.classList.add('hidden');
+            } else {
+                btnHist.className = "flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 transition-colors";
+                btnInput.className = "flex-1 md:flex-none px-6 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors";
+                secHist.classList.remove('hidden');
+                secInput.classList.add('hidden');
+            }
+        }
+
+        function toggleHistoryInputs() {
+            const type = document.getElementById('history-type').value;
+            const boxMonth = document.getElementById('box-month');
+            const boxDate = document.getElementById('box-date');
+            const boxStatus = document.getElementById('container-status-input');
+            const boxSemester = document.getElementById('box-semester');
+
+            // Hide all first
+            boxMonth.classList.add('hidden');
+            boxDate.classList.add('hidden');
+            boxStatus.classList.add('hidden');
+            boxSemester.classList.add('hidden');
+
+            if (type === 'monthly') {
+                boxMonth.classList.remove('hidden');
+            } else if (type === 'semester') {
+                boxSemester.classList.remove('hidden');
+            } else { // daily
+                boxDate.classList.remove('hidden');
+                boxStatus.classList.remove('hidden');
+            }
+        }
+
+        window.switchMode = switchMode;
+        window.toggleHistoryInputs = toggleHistoryInputs;
+    </script>
+</body>
+
+</html>

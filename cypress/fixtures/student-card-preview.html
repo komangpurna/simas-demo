@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Use the renderer's utilities and the same fonts/styles as the application. -->
+    <link rel="stylesheet" href="scratch/student-card-test.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="css/card-print.css">
+    <script src="js/easy.qrcode.min.js"></script>
+</head>
+<body style="padding:32px">
+    <div id="preview" style="max-width:400px"></div>
+    <div id="result" style="margin-top:32px"></div>
+    <script type="module">
+        import renderer from './js/student-card-renderer.js';
+        window.cardRenderer = renderer;
+        window.testStudent = { nis: '12345', name: 'I Komang Siswa Pengujian', class: 'XI A',
+            nisn: '0012345678', birthPlace: 'Karangasem', birthDate: '2009-08-17',
+            address: 'Banjar Dinas Tista, Abang', photoPublicToken: 'kts_preview_test' };
+        renderer.renderKtsInteractiveCard('preview', window.testStudent);
+    </script>
+</body>
+</html>
