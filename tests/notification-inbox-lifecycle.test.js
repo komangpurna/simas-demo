@@ -112,7 +112,7 @@ test('storage event memperbarui tab lain tanpa fetch tambahan dan hanya untuk ak
 test('URL lonceng mempertahankan origin sesi dari halaman bersubfolder dan menolak URL luar', () => {
     const h = harness();
     expect(h.context.notificationTargetUrl('./e-lab.html')).toBe('https://simas.test/e-lab.html');
-    expect(h.context.notificationTargetUrl('https://smagesa.web.app/e-lab.html?id=1#detail')).toBe('https://simas.test/e-lab.html?id=1#detail');
+    expect(h.context.notificationTargetUrl('https://simas-demo-5ead3.web.app/e-lab.html?id=1#detail')).toBe('https://simas.test/e-lab.html?id=1#detail');
     expect(h.context.notificationTargetUrl('//evil.test/')).toBe('https://simas.test/dashboard.html');
     expect(h.context.notificationTargetUrl('javascript:alert(1)')).toBe('https://simas.test/dashboard.html');
 });

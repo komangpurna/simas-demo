@@ -6065,7 +6065,7 @@ export function buildEmployeeButirInfographicHtml(data, itemId, options = {}) {
     const emp = data?.employee || {};
     const cfg = options.schoolConfig || {};
     const schoolName = cfg.schoolName || "SMA Negeri Nusantara";
-    const schoolCity = cfg.schoolCity || 'Abang';
+    const schoolCity = cfg.schoolCity || 'Denpasar';
     const monthKey = getRecapMonthKey(data);
     const period = resolveRekapReportPeriod(monthKey, options.range || null);
 

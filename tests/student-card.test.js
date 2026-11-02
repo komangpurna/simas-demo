@@ -168,7 +168,7 @@ describe('Modul Kartu Pelajar Digital (E-KTS) & Verifikasi Foto', () => {
         const wranglerContent = fs.readFileSync(wranglerPath, 'utf8');
 
         expect(wranglerContent).toContain('STUDENT_PHOTOS_BUCKET');
-        expect(wranglerContent).toContain('smagesa-student-photos');
+        expect(wranglerContent).toMatch(/(?:simas-demo-student-photos|smagesa-student-photos)/);
     });
 
     // 9. Uji Fungsi Ekstraksi Key R2 dari URL
@@ -334,7 +334,7 @@ describe('Modul Kartu Pelajar Digital (E-KTS) & Verifikasi Foto', () => {
         expect(rendererJs).toContain('Ikrar Pelajar Indonesia');
         expect(rendererJs).toContain('kts-vision-card');
         expect(rendererJs).toContain('kts-ikrar-card');
-        expect(rendererJs).toContain('SMAGESA SHAKTI &bull; VISI & IKRAR PELAJAR');
+        expect(rendererJs).toMatch(/(?:SMANTARA CERDAS|SMAGESA SHAKTI) &bull; VISI & IKRAR PELAJAR/);
 
         // Wali Kelas JS, Admin Students JS, & Portal Siswa JS mengimpor modul SSOT
         const waliJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'page-wali-kelas.js'), 'utf8');
@@ -593,13 +593,13 @@ describe('Modul Kartu Pelajar Digital (E-KTS) & Verifikasi Foto', () => {
                 frontHasWatermark: frontHtml.includes('kts-card-watermark-bg'),
                 backHasPattern: backHtml.includes('kts-card-pattern-overlay'),
                 backHasWatermark: backHtml.includes('kts-card-watermark-bg'),
-                backHasSmagesaShaktiRibbon: backHtml.includes('SMAGESA SHAKTI'),
-                backHasKepalaSekolahTitle: backHtml.includes('Kepala SMA Negeri 1 Abang'),
+                backHasSmagesaShaktiRibbon: backHtml.includes('SMANTARA CERDAS') || backHtml.includes('SMAGESA SHAKTI'),
+                backHasKepalaSekolahTitle: backHtml.includes('Kepala SMA Negeri Nusantara') || backHtml.includes('Kepala SMA Negeri 1 Abang'),
                 backHasLeftAlignedSign: backHtml.includes('text-left') && backHtml.includes('items-start'),
                 backHasIkrarTerbaru: backHtml.includes('Beriman dan bertakwa kepada Tuhan Yang Maha Esa') && backHtml.includes('Mencintai tanah air Indonesia') && backHtml.includes('Kami, Pelajar Indonesia, berikrar untuk:'),
                 backHasKetentuanLengkap: backHtml.includes('Ketentuan Penggunaan Kartu Pelajar') && backHtml.includes('kts-rules-list') && backHtml.includes('Transaksi Pembayaran DPM') && backHtml.includes('Peminjaman Buku, dan lainnya'),
-                backHasShaktiSlogan: backHtml.includes('SMAGESA SHAKTI (Anubawa Anukara Antrah)'),
-                backHasNipWithoutSpaces: backHtml.includes('NIP. 197005211997021001') && !backHtml.includes('19700521 199702 1 001'),
+                backHasShaktiSlogan: backHtml.includes('SMANTARA CERDAS (Anubawa Anukara Antrah)') || backHtml.includes('SMAGESA SHAKTI (Anubawa Anukara Antrah)'),
+                backHasNipWithoutSpaces: (backHtml.includes('NIP. 197501012000031001') || backHtml.includes('NIP. 197005211997021001')) && !backHtml.includes('19700521 199702 1 001'),
                 backNoAkreditasi: !backHtml.includes('Akreditasi A')
             };
             console.log(JSON.stringify(results));

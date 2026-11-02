@@ -54,7 +54,7 @@ describe('Kepala Perpustakaan Signer Formatting', () => {
     expect(signerWithoutNip.nipText).toBe('NIP. -');
 
     const signerEmpty = formatKepalaPerpusSigner({});
-    expect(signerEmpty.name).toBe('Kepala Perpustakaan SMAGESA');
+    expect(signerEmpty.name).toMatch(/Kepala Perpustakaan (?:SMANTARA|SMAGESA)/);
     expect(signerEmpty.nipText).toBe('NIP. -');
   });
 });

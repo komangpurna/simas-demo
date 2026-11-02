@@ -79,7 +79,7 @@ describe('Verifikasi Integritas js/school-config.js & PWA Manifest Generator', (
         expect(SCHOOL_CONFIG.headmasterSignaturePath).toBe('assets/ttd-kepsek.png');
         expect(SCHOOL_CONFIG.schoolStampPath).toBe('assets/cap-sekolah.png');
         expect(SCHOOL_CONFIG.appThemeColor).toBe('#0f172a');
-        expect(SCHOOL_CONFIG.appBrand).toBe('SIMAS - SHAKTI');
+        expect(SCHOOL_CONFIG.appBrand).toBe('SIMAS - CERDAS');
     });
 
     test('2. createSchoolManifest() menghasilkan manifest valid tanpa melempar ReferenceError', () => {
@@ -89,8 +89,8 @@ describe('Verifikasi Integritas js/school-config.js & PWA Manifest Generator', (
         }).not.toThrow();
 
         expect(manifest).toBeDefined();
-        expect(manifest.name).toBe('SIMAS - SHAKTI');
-        expect(manifest.short_name).toBe('SIMAS - SHAKTI');
+        expect(manifest.name).toBe('SIMAS - CERDAS');
+        expect(manifest.short_name).toBe('SIMAS - CERDAS');
         expect(manifest.display).toBe('standalone');
         expect(manifest.theme_color).toBe('#0f172a');
         expect(manifest.background_color).toBe('#0f172a');
@@ -134,35 +134,35 @@ describe('Verifikasi Integritas js/school-config.js & PWA Manifest Generator', (
         expect(url).toBe('https://smagesa.web.app/assets/logo-sekolah.png');
     });
 
-    test('4. Pejabat penandatangan komite dan fallback default Wayan Made Komang Ketut terdaftar di SCHOOL_CONFIG', () => {
-        expect(SCHOOL_CONFIG.headmasterName).toBe('I Putu Suweta, S.Pd., M.Pd.');
-        expect(SCHOOL_CONFIG.headmasterNIP).toBe('197005211997021001');
-        expect(SCHOOL_CONFIG.bendaharaKomiteName).toBe('I Nyoman Mintar, S.Pd');
-        expect(SCHOOL_CONFIG.ketuaKomiteName).toBe('I Gede Sukasari, S.S.T');
-        expect(SCHOOL_CONFIG.wakabidSarprasName).toBe('Wayan Made Komang Ketut');
-        expect(SCHOOL_CONFIG.audit1Name).toBe('Wayan Made Komang Ketut');
-        expect(SCHOOL_CONFIG.audit2Name).toBe('Wayan Made Komang Ketut');
-        expect(SCHOOL_CONFIG.bendaharaSekolahName).toBe('Wayan Made Komang Ketut');
+    test('4. Pejabat penandatangan komite dan pejabat lainnya terdaftar di SCHOOL_CONFIG', () => {
+        expect(SCHOOL_CONFIG.headmasterName).toBe('Dr. I Wayan Sudarsana, M.Pd.');
+        expect(SCHOOL_CONFIG.headmasterNIP).toBe('197501012000031001');
+        expect(SCHOOL_CONFIG.bendaharaKomiteName).toBe('Ni Made Ariani, S.E.');
+        expect(SCHOOL_CONFIG.ketuaKomiteName).toBe('I Ketut Wirawan, S.T.');
+        expect(SCHOOL_CONFIG.wakabidSarprasName).toBe('I Made Sujana, S.Pd.');
+        expect(SCHOOL_CONFIG.audit1Name).toBe('Drs. I Gusti Ngurah Oka');
+        expect(SCHOOL_CONFIG.audit2Name).toBe('Dra. Ni Luh Putu Wardani');
+        expect(SCHOOL_CONFIG.bendaharaSekolahName).toBe('I Komang Sukadana, S.Pd.');
     });
 
     test('5. SCHOOL_CONFIG memiliki konfigurasi alamat sekolah lengkap dan pendek yang valid', () => {
-        expect(SCHOOL_CONFIG.schoolAddress).toBe('Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang, Karangasem, Bali');
-        expect(SCHOOL_CONFIG.schoolAddressFull).toBe('Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang, Karangasem, Bali');
-        expect(SCHOOL_CONFIG.schoolAddressShort).toBe('Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang');
-        expect(SCHOOL_CONFIG.schoolStreetAddress).toBe('Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang');
+        expect(SCHOOL_CONFIG.schoolAddress).toBe('Jl. Nusantara No. 1, Denpasar');
+        expect(SCHOOL_CONFIG.schoolAddressFull).toBe('Jl. Nusantara No. 1, Denpasar');
+        expect(SCHOOL_CONFIG.schoolAddressShort).toBe('Jl. Nusantara No. 1, Denpasar');
+        expect(SCHOOL_CONFIG.schoolStreetAddress).toBe('Jl. Nusantara No. 1, Denpasar');
 
         // Verifikasi replaceSchoolIdentityText dengan token alamat
-        expect(replaceSchoolIdentityText('Alamat: {{schoolAddress}}')).toBe('Alamat: Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang, Karangasem, Bali');
-        expect(replaceSchoolIdentityText('Alamat Pendek: {{schoolAddressShort}}')).toBe('Alamat Pendek: Jl. Ida Ketut Jelantik, Desa Tista, Kecamatan Abang');
+        expect(replaceSchoolIdentityText('Alamat: {{schoolAddress}}')).toBe('Alamat: Jl. Nusantara No. 1, Denpasar');
+        expect(replaceSchoolIdentityText('Alamat Pendek: {{schoolAddressShort}}')).toBe('Alamat Pendek: Jl. Nusantara No. 1, Denpasar');
     });
 
-    test('6. isClonedSchool() dan getSchoolIdentity() berfungsi tepat pada konfigurasi default', () => {
+    test('6. isClonedSchool() dan getSchoolIdentity() berfungsi tepat pada konfigurasi sekolah', () => {
         expect(typeof isClonedSchool).toBe('function');
-        expect(isClonedSchool()).toBe(false); // Default SMA Negeri 1 Abang
+        expect(isClonedSchool()).toBe(true); // SMA Negeri Nusantara (bukan SMA Negeri 1 Abang)
 
         expect(typeof getSchoolIdentity).toBe('function');
-        expect(getSchoolIdentity('schoolShortName')).toBe('SMAGESA');
-        expect(getSchoolIdentity('schoolName')).toBe('SMA Negeri 1 Abang');
+        expect(getSchoolIdentity('schoolShortName')).toBe('SMANTARA');
+        expect(getSchoolIdentity('schoolName')).toBe('SMA Negeri Nusantara');
         expect(getSchoolIdentity('nonExistentKey', 'Fallback')).toBe('Fallback');
     });
 
@@ -172,11 +172,11 @@ describe('Verifikasi Integritas js/school-config.js & PWA Manifest Generator', (
 
         // Simulasikan konfigurasi sekolah baru (cloned school)
         const clonedConfigCode = configCode
-            .replace("schoolName: 'SMA Negeri 1 Abang'", "schoolName: 'SMA Negeri 2 Denpasar'")
-            .replace("schoolShortName: 'SMAGESA'", "schoolShortName: 'SMADEN'")
-            .replace("schoolVisiAcronym: 'SHAKTI'", "schoolVisiAcronym: 'WIDYA'")
-            .replace("telegramBotUser: 'smagesa_bot'", "telegramBotUser: 'smaden_bot'")
-            .replace("primaryDomain: 'smagesa.web.app'", "primaryDomain: 'smaden.web.app'");
+            .replace(/schoolName:\s*["'][^"']+["']/, "schoolName: 'SMA Negeri 2 Denpasar'")
+            .replace(/schoolShortName:\s*["'][^"']+["']/, "schoolShortName: 'SMADEN'")
+            .replace(/schoolVisiAcronym:\s*["'][^"']+["']/, "schoolVisiAcronym: 'WIDYA'")
+            .replace(/telegramBotUser:\s*["'][^"']+["']/, "telegramBotUser: 'smaden_bot'")
+            .replace(/primaryDomain:\s*["'][^"']+["']/, "primaryDomain: 'smaden.web.app'");
 
         const sandbox = {
             window: {},

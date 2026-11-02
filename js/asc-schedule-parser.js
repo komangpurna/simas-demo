@@ -682,7 +682,7 @@ export async function getSubjectsWithLessonsFromXML() {
     return result.sort((a, b) => a.name.localeCompare(b.name, 'id'));
 }
 
-// === CONFIG JAM PELAJARAN (JP) DEFAULT SMA NEGERI 1 ABANG ===
+// === CONFIG JAM PELAJARAN (JP) DEFAULT SEKOLAH ===
 export const DEFAULT_JP_PERIODS = [
     { jp: 1, start: '07:30', end: '08:15', startMin: 450, endMin: 495 },
     { jp: 2, start: '08:15', end: '09:00', startMin: 495, endMin: 540 },

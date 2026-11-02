@@ -4,7 +4,7 @@ import { handleLmsModuleRequest } from './lib/lms-modules.js';
 import { lmsHasMaterial, lmsHasQuiz, groupLmsModules } from '../js/lms-structure.mjs';
 import { handleAiGradingSessionRequest } from './lib/ai-grading.js';
 /**
- * SIMAS SMAGESA - Cloudflare Worker API Gateway
+ * SIMAS - Cloudflare Worker API Gateway
  * Pilot Project: Modul Agenda Sekolah & Arsip Dokumen (Cloudflare D1)
  * 
  * Standar Keamanan:
@@ -7465,7 +7465,7 @@ export default {
                     try {
                         await env.DB.prepare(`
                             INSERT OR IGNORE INTO employee_sk (id, nomor_sk, judul, tanggal_sk, tahun_anggaran, pejabat_penetap, nip_pejabat, status)
-                            VALUES ('sk_2026_tendik', 'B.10.400.3.8./64/SMA NEGERI NUSANTARA/DIKPORA', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'I PUTU SUWETA', '19700521 199702 1 001', 'active')
+                            VALUES ('sk_2026_tendik', 'B.10.400.3.8/001/SMAN-NUSANTARA/2026', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'Dr. I Wayan Sudarsana, M.Pd.', '197501012000031001', 'active')
                         `).run();
                     } catch (_) {}
 
@@ -9291,7 +9291,7 @@ export default {
                     const isPrincipal = (employeeProfile?.jenis_ptk && (
                         employeeProfile.jenis_ptk.toLowerCase().includes('kepala') ||
                         employeeProfile.jenis_ptk.toLowerCase().includes('principal')
-                    )) || (employeeProfile?.name && employeeProfile.name.toLowerCase().includes('suweta'));
+                    )) || (employeeProfile?.name && (employeeProfile.name.toLowerCase().includes('sudarsana') || employeeProfile.name.toLowerCase().includes('suweta')));
 
                     const assignedGroupIdSet = new Set(assignedGroups.map(ag => ag.group_id).filter(Boolean));
                     let targetGroups = [];
@@ -9654,7 +9654,7 @@ export default {
                         try {
                             await env.DB.prepare(`
                                 INSERT OR IGNORE INTO employee_sk (id, nomor_sk, judul, tanggal_sk, tahun_anggaran, pejabat_penetap, nip_pejabat, status)
-                                VALUES ('sk_2026_tendik', 'B.10.400.3.8./64/SMA NEGERI NUSANTARA/DIKPORA', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'I PUTU SUWETA', '19700521 199702 1 001', 'active')
+                                VALUES ('sk_2026_tendik', 'B.10.400.3.8/001/SMAN-NUSANTARA/2026', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'Dr. I Wayan Sudarsana, M.Pd.', '197501012000031001', 'active')
                             `).run();
                         } catch (_) {}
 
@@ -9715,7 +9715,7 @@ export default {
                         try {
                             await env.DB.prepare(`
                                 INSERT OR IGNORE INTO employee_sk (id, nomor_sk, judul, tanggal_sk, tahun_anggaran, pejabat_penetap, nip_pejabat, status)
-                                VALUES ('sk_2026_tendik', 'B.10.400.3.8./64/SMA NEGERI NUSANTARA/DIKPORA', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'I PUTU SUWETA', '19700521 199702 1 001', 'active')
+                                VALUES ('sk_2026_tendik', 'B.10.400.3.8/001/SMAN-NUSANTARA/2026', 'PENUGASAN TENAGA KEPENDIDIKAN', '2026-01-05', 2026, 'Dr. I Wayan Sudarsana, M.Pd.', '197501012000031001', 'active')
                             `).run();
                         } catch (_) {}
 
@@ -11816,7 +11816,7 @@ export default {
                                     id, school_id, policy_name, work_days_count, normal_daily_minutes,
                                     normal_weekly_minutes, work_start_time, work_end_time,
                                     breaks_json, is_active, legal_basis_doc, created_at, updated_at
-                                ) VALUES (?, 'sch_smagesa_01', ?, ?, ?, ?, ?, ?, ?, 1, ?, datetime('now'), datetime('now'))
+                                ) VALUES (?, 'sch_smantara_01', ?, ?, ?, ?, ?, ?, ?, 1, ?, datetime('now'), datetime('now'))
                                 ON CONFLICT(id) DO UPDATE SET
                                     work_days_count = excluded.work_days_count,
                                     normal_daily_minutes = excluded.normal_daily_minutes,
@@ -12384,16 +12384,16 @@ export default {
                     // Ambil policy kerja aktif
                     let activePolicy = await env.DB.prepare("SELECT * FROM school_work_policies WHERE is_active = 1 LIMIT 1").first();
                     if (!activePolicy) {
-                        const defaultPolicyId = "policy_smagesa_default";
+                        const defaultPolicyId = "policy_smantara_default";
                         await env.DB.prepare(`
                             INSERT OR IGNORE INTO school_work_policies (
                                 id, school_id, policy_name, work_days_count, normal_daily_minutes,
                                 normal_weekly_minutes, work_start_time, work_end_time, effective_from, is_active
-                            ) VALUES (?, 'smagesa', 'Kebijakan Standar 5 Hari Sekolah (Permendikbudristek)', 5, 450, 2250, '07:30', '15:30', '2026-07-01', 1)
+                            ) VALUES (?, 'smantara', 'Kebijakan Standar 5 Hari Sekolah (Permendikbudristek)', 5, 450, 2250, '07:30', '15:30', '2026-07-01', 1)
                         `).bind(defaultPolicyId).run();
                         activePolicy = { id: defaultPolicyId };
                     }
-                    const policyId = activePolicy ? activePolicy.id : "policy_smagesa_default";
+                    const policyId = activePolicy ? activePolicy.id : "policy_smantara_default";
                     const workWeekId = crypto.randomUUID();
                     const planVersionId = crypto.randomUUID();
 
@@ -12408,7 +12408,7 @@ export default {
                             id, teacher_id, school_id, week_start_date, week_end_date,
                             academic_year, semester, policy_id, target_minutes, active_plan_version_id,
                             is_locked, created_at, updated_at
-                        ) VALUES (?, ?, 'smagesa', ?, ?, ?, ?, ?, 2250, ?, 0, datetime('now'), datetime('now'))
+                        ) VALUES (?, ?, 'smantara', ?, ?, ?, ?, ?, 2250, ?, 0, datetime('now'), datetime('now'))
                     `).bind(
                         workWeekId, finalTeacherId, week_start_date, weekEndDate,
                         academic_year, semester, policyId, planVersionId
@@ -33068,7 +33068,7 @@ async function pingSupabaseKeepAlive(env) {
             headers: {
                 'apikey': supabaseKey,
                 'Authorization': `Bearer ${supabaseKey}`,
-                'User-Agent': 'Cloudflare-Worker/simas-smagesa-api-keepalive'
+                'User-Agent': 'Cloudflare-Worker/simas-demo-api-keepalive'
             }
         });
 

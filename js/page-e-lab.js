@@ -6604,7 +6604,7 @@ export function buildInventoryExportWorkbook(items = [], meta = {}, ExcelJSLib =
     const colKiri = 2;  // Kolom B
     const colKanan = 10; // Kolom J
 
-    const schoolCity = schoolConfig?.schoolCity || 'Abang';
+    const schoolCity = schoolConfig?.schoolCity || 'Denpasar';
     const headTitle = schoolConfig?.headmasterTitle || `Kepala ${schoolConfig?.schoolName || "SMA Negeri Nusantara"}`;
     const headName = schoolConfig?.headmasterName || "Dr. I Wayan Sudarsana, M.Pd.";
     const headNip = schoolConfig?.headmasterNIP || "197501012000031001";
@@ -7176,7 +7176,7 @@ export function buildLabUsageExportWorkbook(bookings = [], meta = {}, ExcelJSLib
     currentRow += 2; // Jarak 1 baris kosong sebelum tanda tangan
 
     // 7. BLOK TANDA TANGAN BERTINGKAT (3 PIHAK)
-    const schoolCity = schoolConfig?.schoolCity || 'Abang';
+    const schoolCity = schoolConfig?.schoolCity || 'Denpasar';
     const ttdAtasRow = currentRow;
 
     // Sisi Kiri Atas: Kepala Laboratorium

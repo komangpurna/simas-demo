@@ -2,8 +2,8 @@ import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globa
 import { createWorkerGateway } from '../supabase/functions/worker-gateway/handler.mjs';
 
 const endpoint = 'https://project.supabase.co/functions/v1/worker-gateway';
-const primary = 'https://simas-smagesa-api.komangpurna1.workers.dev';
-const origin = 'https://smagesa.web.app';
+const primary = 'https://simas-demo-api.komangpurna1.workers.dev';
+const origin = 'https://simas-demo-5ead3.web.app';
 const request = (path = '/api/health', init = {}) => new Request(`${endpoint}${path}`, { ...init, headers: { Origin: origin, ...init.headers } });
 
 describe('Supabase Worker gateway', () => {

@@ -133,9 +133,9 @@ describe('Push outbox: delivery safety against real SQLite', () => {
         expect(h.queries.some(query => /^\s*DELETE FROM fcm_tokens\b/.test(query.sql))).toBe(false);
         const message = JSON.parse(h.fetchMock.mock.calls[0][1].body).message;
         expect(message.notification).toBeUndefined();
-        expect(message.data).toMatchObject({ recipientUid: 'A', jobId: job.jobId, url: 'https://smagesa.web.app/agenda.html' });
-        expect(h.api.normalizePushUrl('//evil.example/path')).toBe('https://smagesa.web.app/dashboard.html');
-        expect(h.api.normalizePushUrl('javascript:alert(1)')).toBe('https://smagesa.web.app/dashboard.html');
+        expect(message.data).toMatchObject({ recipientUid: 'A', jobId: job.jobId, url: 'https://simas-demo-5ead3.web.app/agenda.html' });
+        expect(h.api.normalizePushUrl('//evil.example/path')).toBe('https://simas-demo-5ead3.web.app/dashboard.html');
+        expect(h.api.normalizePushUrl('javascript:alert(1)')).toBe('https://simas-demo-5ead3.web.app/dashboard.html');
     });
 
     test('persetujuan booking lab membuat lonceng dan mengirim push ke seluruh perangkat pemohon', async () => {
@@ -159,7 +159,7 @@ describe('Push outbox: delivery safety against real SQLite', () => {
         expect(h.fetchMock).toHaveBeenCalledTimes(2);
         for (const [, init] of h.fetchMock.mock.calls) {
             const message = JSON.parse(init.body).message;
-            expect(message.data).toMatchObject({ title: '🧪 Status Booking Lab', recipientUid: 'A', url: 'https://smagesa.web.app/e-lab.html' });
+            expect(message.data).toMatchObject({ title: '🧪 Status Booking Lab', recipientUid: 'A', url: 'https://simas-demo-5ead3.web.app/e-lab.html' });
             expect(message.data.body).toContain('disetujui');
         }
     });

@@ -13150,7 +13150,7 @@ export function buildAestheticCategoryReportHtml(catCode, rekap, signatureDataUr
     const cat = categories.find(c => c.code === catCode) || categories[0] || {};
     const activePeriod = period || resolveRekapReportPeriod(rekap?.month, null);
 
-    const schoolCity = (typeof SCHOOL_CONFIG !== 'undefined' && SCHOOL_CONFIG?.schoolCity) || 'Abang';
+    const schoolCity = (typeof SCHOOL_CONFIG !== 'undefined' && SCHOOL_CONFIG?.schoolCity) || 'Denpasar';
     const schoolName = (typeof SCHOOL_CONFIG !== 'undefined' && SCHOOL_CONFIG?.schoolName) || "SMA Negeri Nusantara";
 
     // Titimangsa menyesuaikan tanggal cetak riil saat ini (WITA)

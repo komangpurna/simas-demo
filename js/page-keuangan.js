@@ -7248,32 +7248,32 @@ window.exportCashflowExcel = async () => {
             saldoBank = finalSaldo;
         }
 
-        // Tentukan identitas sekolah & penandatangan sesuai SMA Negeri 1 Abang
+        // Tentukan identitas sekolah & penandatangan sesuai kondisi sekolah (SSOT dari SCHOOL_CONFIG)
         const schoolName = SCHOOL_CONFIG?.schoolName || "SMA Negeri Nusantara";
-        const villageKecamatan = SCHOOL_CONFIG?.schoolVillageKecamatan || 'Abang / Abang';
-        const kabupatenKota = SCHOOL_CONFIG?.schoolKabupatenKota || 'Karangasem / Amlapura';
+        const villageKecamatan = SCHOOL_CONFIG?.schoolVillageKecamatan || 'Nusantara / Denpasar';
+        const kabupatenKota = SCHOOL_CONFIG?.schoolKabupatenKota || 'Denpasar';
         const province = SCHOOL_CONFIG?.schoolProvince || 'Bali';
 
-        // Pejabat penandatangan sesuai kondisi SMA Negeri 1 Abang (SSOT dari SCHOOL_CONFIG)
+        // Pejabat penandatangan sesuai kondisi sekolah (SSOT dari SCHOOL_CONFIG)
         const headmasterName = SCHOOL_CONFIG?.headmasterName || "Dr. I Wayan Sudarsana, M.Pd.";
         const headmasterNip = SCHOOL_CONFIG?.headmasterNIP ? (`NIP. ${SCHOOL_CONFIG.headmasterNIP.replace(/^NIP\.?\s*/i, '')}`) : "NIP. 197501012000031001";
 
-        const bendaharaName = SCHOOL_CONFIG?.bendaharaKomiteName || currentTellerName || 'I Nyoman Mintar, S.Pd';
+        const bendaharaName = SCHOOL_CONFIG?.bendaharaKomiteName || currentTellerName || 'Ni Made Ariani, S.E.';
         const bendaharaNip = (SCHOOL_CONFIG?.bendaharaKomiteNIP && SCHOOL_CONFIG.bendaharaKomiteNIP !== '-') ? (SCHOOL_CONFIG.bendaharaKomiteNIP.startsWith('NIP') ? SCHOOL_CONFIG.bendaharaKomiteNIP : `NIP. ${SCHOOL_CONFIG.bendaharaKomiteNIP}`) : '';
 
-        const ketuaKomiteName = SCHOOL_CONFIG?.ketuaKomiteName || 'I Gede Sukasari, S.S.T';
+        const ketuaKomiteName = SCHOOL_CONFIG?.ketuaKomiteName || 'I Ketut Wirawan, S.T.';
         const ketuaKomiteNip = (SCHOOL_CONFIG?.ketuaKomiteNIP && SCHOOL_CONFIG.ketuaKomiteNIP !== '-') ? (SCHOOL_CONFIG.ketuaKomiteNIP.startsWith('NIP') ? SCHOOL_CONFIG.ketuaKomiteNIP : `NIP. ${SCHOOL_CONFIG.ketuaKomiteNIP}`) : '';
 
-        const wakabidName = SCHOOL_CONFIG?.wakabidSarprasName || 'Wayan Made Komang Ketut';
+        const wakabidName = SCHOOL_CONFIG?.wakabidSarprasName || 'I Made Sujana, S.Pd.';
         const wakabidNip = (SCHOOL_CONFIG?.wakabidSarprasNIP && SCHOOL_CONFIG.wakabidSarprasNIP !== '-') ? SCHOOL_CONFIG.wakabidSarprasNIP : 'NIP. -';
 
-        const audit1Name = SCHOOL_CONFIG?.audit1Name || 'Wayan Made Komang Ketut';
+        const audit1Name = SCHOOL_CONFIG?.audit1Name || 'Drs. I Gusti Ngurah Oka';
         const audit1Nip = (SCHOOL_CONFIG?.audit1NIP && SCHOOL_CONFIG.audit1NIP !== '-') ? SCHOOL_CONFIG.audit1NIP : 'NIP. -';
 
-        const audit2Name = SCHOOL_CONFIG?.audit2Name || 'Wayan Made Komang Ketut';
+        const audit2Name = SCHOOL_CONFIG?.audit2Name || 'Dra. Ni Luh Putu Wardani';
         const audit2Nip = (SCHOOL_CONFIG?.audit2NIP && SCHOOL_CONFIG.audit2NIP !== '-') ? SCHOOL_CONFIG.audit2NIP : 'NIP. -';
 
-        const cityName = SCHOOL_CONFIG?.schoolCity || 'Abang';
+        const cityName = SCHOOL_CONFIG?.schoolCity || 'Denpasar';
 
         // Tanggal tanda tangan: tanggal transaksi terakhir atau akhir bulan terpilih
         let signDateStr = "";

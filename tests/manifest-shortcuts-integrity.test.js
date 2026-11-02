@@ -49,14 +49,16 @@ describe('Verifikasi Integritas App Shortcuts PWA & Android TWA', () => {
         const ekinerja = twaManifest.shortcuts.find(s => s.name === 'E-Kinerja Guru');
         expect(ekinerja).toBeDefined();
         expect(ekinerja.shortName).toBe('E-Kinerja Guru');
-        expect(ekinerja.url).toBe('https://smagesa.web.app/e-kinerja.html');
+        expect(ekinerja.url).toMatch(/https:\/\/[^/]+\/e-kinerja\.html/);
+        expect(ekinerja.url).toContain(twaManifest.host);
         expect(ekinerja.icon).toBeDefined();
 
         // Shortcut 2: E-Kinerja Tendik
         const tendikShortcut = twaManifest.shortcuts.find(s => s.name === 'E-Kinerja Tendik');
         expect(tendikShortcut).toBeDefined();
         expect(tendikShortcut.shortName).toBe('E-Kinerja Tendik');
-        expect(tendikShortcut.url).toBe('https://smagesa.web.app/e-kinerja-tendik.html');
+        expect(tendikShortcut.url).toMatch(/https:\/\/[^/]+\/e-kinerja-tendik\.html/);
+        expect(tendikShortcut.url).toContain(twaManifest.host);
         expect(tendikShortcut.icon).toBeDefined();
 
         // Pastikan shortcut eksisting tetap ada & Lapor!mas berada di posisi ke-3

@@ -1,7 +1,7 @@
 {
-  "packageId": "id.sch.sman1abang.simas",
-  "host": "smagesa.web.app",
-  "name": "SIMAS SMAGESA",
+  "packageId": "id.sch.smanusantara.simas",
+  "host": "simas-demo-5ead3.web.app",
+  "name": "SIMAS SMANTARA",
   "launcherName": "SIMAS",
   "display": "standalone",
   "themeColor": "#0F172A",
@@ -13,8 +13,8 @@
   "backgroundColor": "#0F172A",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://smagesa.web.app/assets/logo-sekolah-padded.png",
-  "maskableIconUrl": "https://smagesa.web.app/assets/logo-sekolah-padded.png",
+  "iconUrl": "https://simas-demo-5ead3.web.app/assets/logo-sekolah-padded.png",
+  "maskableIconUrl": "https://simas-demo-5ead3.web.app/assets/logo-sekolah-padded.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./android.keystore",
@@ -26,36 +26,36 @@
     {
       "name": "E-Kinerja Guru",
       "shortName": "E-Kinerja Guru",
-      "url": "https://smagesa.web.app/e-kinerja.html",
-      "icon": "https://smagesa.web.app/assets/logo-sekolah.png"
+      "url": "https://simas-demo-5ead3.web.app/e-kinerja.html",
+      "icon": "https://simas-demo-5ead3.web.app/assets/logo-sekolah.png"
     },
     {
       "name": "E-Kinerja Tendik",
       "shortName": "E-Kinerja Tendik",
-      "url": "https://smagesa.web.app/e-kinerja-tendik.html",
-      "icon": "https://smagesa.web.app/assets/logo-sekolah.png"
+      "url": "https://simas-demo-5ead3.web.app/e-kinerja-tendik.html",
+      "icon": "https://simas-demo-5ead3.web.app/assets/logo-sekolah.png"
     },
     {
       "name": "Lapor!mas",
       "shortName": "Lapor!mas",
-      "url": "https://smagesa.web.app/index.html?action=lapor",
-      "icon": "https://smagesa.web.app/assets/logo-sekolah.png"
+      "url": "https://simas-demo-5ead3.web.app/index.html?action=lapor",
+      "icon": "https://simas-demo-5ead3.web.app/assets/logo-sekolah.png"
     },
     {
       "name": "Monitoring KBM",
       "shortName": "Monitoring KBM",
-      "url": "https://smagesa.web.app/monitoring-kbm.html",
-      "icon": "https://smagesa.web.app/assets/logo-sekolah.png"
+      "url": "https://simas-demo-5ead3.web.app/monitoring-kbm.html",
+      "icon": "https://simas-demo-5ead3.web.app/assets/logo-sekolah.png"
     },
     {
       "name": "Lihat Agenda",
       "shortName": "Lihat Agenda",
-      "url": "https://smagesa.web.app/agenda.html",
-      "icon": "https://smagesa.web.app/assets/logo-sekolah.png"
+      "url": "https://simas-demo-5ead3.web.app/agenda.html",
+      "icon": "https://simas-demo-5ead3.web.app/assets/logo-sekolah.png"
     }
   ],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://smagesa.web.app/manifest.json",
+  "webManifestUrl": "https://simas-demo-5ead3.web.app/manifest.json",
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {
@@ -71,5 +71,5 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://smagesa.web.app/"
+  "fullScopeUrl": "https://simas-demo-5ead3.web.app/"
 }

@@ -873,7 +873,7 @@ if (typeof window !== 'undefined') {
   window.calculateStudentTunggakan = calculateStudentTunggakan;
 }
 
-export const APP_VERSION = "26.11.02.4";
+export const APP_VERSION = "26.11.02.5";
 
 // --- GOOGLE ANALYTICS (GA4) INJECTION ---
 (function () {

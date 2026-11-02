@@ -8,6 +8,24 @@ Format berdasarkan versi aplikasi global (`YY.MM.DD.REV`):
 - **DD**: Hari/Tanggal (misal: 08)
 - **REV**: Nomor revisi pada hari tersebut (di-reset mulai dari 1 setiap berganti tanggal baru)
 
+## [1.2.631] / [26.11.02.5] - 2026-11-02
+
+- **🏫 Penyelarasan Total School Config Demo & Eliminasi Sisa Identitas Sekolah Asli (`js/school-config.js`, `school.demo.json`, `android-twa/twa-manifest.json`, `cloudflare/worker.js`, `js/page-keuangan.js`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
+  - **Pejabat & Kontak Dummy Lengkap di SSOT Konfigurasi Sekolah:** Mengisi seluruh properti pejabat dan kontak sekolah yang sebelumnya bernilai `"-"` di `js/school-config.js` dan `school.demo.json` dengan data dummy realistis:
+    - `schoolPhone`: `"(0361) 987654"` (kode area Denpasar)
+    - `headmasterRank`: `"Pembina Utama Muda, IV/c"`
+    - `bendaharaKomiteName`: `"Ni Made Ariani, S.E."`
+    - `ketuaKomiteName`: `"I Ketut Wirawan, S.T."`
+    - `wakabidSarprasName`: `"I Made Sujana, S.Pd."` (`198002022005011002`)
+    - `audit1Name`: `"Drs. I Gusti Ngurah Oka"` (`197803032003121003`)
+    - `audit2Name`: `"Dra. Ni Luh Putu Wardani"` (`198204042006042004`)
+    - `bendaharaSekolahName`: `"I Komang Sukadana, S.Pd."` (`198505052009021005`)
+  - **Sanitasi Fallback Kota & Pejabat pada Seluruh Modul Frontend:** Memperbarui fallback hardcoded `Abang` dan nama pejabat lama di `js/page-keuangan.js`, `js/exportLaporanDocx.js`, `js/page-beban-kerja.js`, `js/page-guru-mapel.js`, `js/page-e-lab.js`, `js/page-e-kinerja-tendik.js`, dan `js/wali-kelas-jurnal.js` agar menggunakan `SCHOOL_CONFIG.schoolCity || 'Denpasar'` dan pejabat dummy sekolah.
+  - **Sinkronisasi Android TWA & Seeding Backend Worker:**
+    - `android-twa/twa-manifest.json`: Memperbarui `packageId` ke `id.sch.smanusantara.simas`, `host` ke `simas-demo-5ead3.web.app`, `name` ke `SIMAS SMANTARA`, dan URL shortcut ke domain demo.
+    - `cloudflare/worker.js`: Memperbarui seeding SQL `employee_sk` ke Kepala Sekolah Dr. I Wayan Sudarsana, M.Pd., nomor SK `B.10.400.3.8/001/SMAN-NUSANTARA/2026`, deteksi kepsek `sudarsana`, dan User-Agent keepalive `simas-demo-api-keepalive`.
+  - **Penyelarasan Suite Pengujian Unit Jest:** Menyelaraskan seluruh ekspektasi uji di `tests/school-config.test.js`, `tests/student-card.test.js`, `tests/finance-cashflow-export.test.js`, `tests/worker-gateway.test.mjs`, `tests/worker-fallback.test.mjs`, `tests/hosting-deployment.test.js`, `tests/push-delivery-safety.test.js`, `tests/notification-inbox-lifecycle.test.js`, `tests/manifest-shortcuts-integrity.test.js`, dan `library/clearance-utils.test.mjs` agar konsisten dengan identitas demo SMA Negeri Nusantara.
+
 ## [1.2.630] / [26.11.02.4] - 2026-11-02
 
 - **🎨 Standardisasi & Pemasangan Otomatis Aset Visual Dummy Sekolah (`assets-demo/`, `scripts/generate-demo-assets.mjs`, `scripts/sync-demo-repo.mjs`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**

@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
 const ROOT_URL = new URL('../', import.meta.url).href;
 
 // --- CANONICAL DOMAIN REDIRECTION (PWA SCOPE & DOMAIN CONSOLIDATION) ---
-// Pengalihan otomatis dari domain alias/mirror ke domain utama (smagesa.web.app)
+// Pengalihan otomatis dari domain alias/mirror ke domain utama (SCHOOL_CONFIG.primaryDomain)
 // Mencegah permintaan instalasi PWA ganda dan menjaga konsistensi sesi/cache.
 (function () {
     const currentHost = window.location.hostname;
@@ -738,7 +738,7 @@ window.getLocalISODate = function (d = new Date()) {
 };
 
 // --- HELPER: Get WITA (Asia/Makassar) ISO Date String (YYYY-MM-DD) ---
-// Standar SSOT waktu operasional SMA Negeri 1 Abang (WITA / UTC+8)
+// Standar SSOT waktu operasional sekolah (WITA / UTC+8)
 window.getWitaISODate = function (d = new Date()) {
     try {
         const dateObj = window.parseUniversalDate(d) || new Date();

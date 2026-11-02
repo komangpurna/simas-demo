@@ -22,7 +22,7 @@ export const SCHOOL_CONFIG = Object.freeze({
     schoolCity: "Denpasar",
     schoolProvince: "Bali",
     schoolPostalCode: "80234",
-    schoolPhone: "-",
+    schoolPhone: "(0361) 987654",
     schoolWebsite: "https://simas-demo-5ead3.web.app",
     schoolAccreditation: "A (Unggul)",
 
@@ -54,25 +54,25 @@ export const SCHOOL_CONFIG = Object.freeze({
 
     // Pejabat dan dokumen resmi
     headmasterName: "Dr. I Wayan Sudarsana, M.Pd.",
-    headmasterRank: "-",
+    headmasterRank: "Pembina Utama Muda, IV/c",
     headmasterNIP: "197501012000031001",
     defaultSuratKeteranganNo: "B.10.400.7.22.1/001/SMAN-NUSANTARA/2026",
 
     // Pengurus Komite & Pejabat Keuangan Sekolah (SSOT)
-    bendaharaKomiteName: "-",
+    bendaharaKomiteName: "Ni Made Ariani, S.E.",
     bendaharaKomiteNIP: "-",
-    ketuaKomiteName: "-",
+    ketuaKomiteName: "I Ketut Wirawan, S.T.",
     ketuaKomiteNIP: "-",
 
     // Pejabat Lainnya (Default Sesuai Konfigurasi Sekolah)
-    wakabidSarprasName: "-",
-    wakabidSarprasNIP: "-",
-    audit1Name: "-",
-    audit1NIP: "-",
-    audit2Name: "-",
-    audit2NIP: "-",
-    bendaharaSekolahName: "-",
-    bendaharaSekolahNIP: "-",
+    wakabidSarprasName: "I Made Sujana, S.Pd.",
+    wakabidSarprasNIP: "198002022005011002",
+    audit1Name: "Drs. I Gusti Ngurah Oka",
+    audit1NIP: "197803032003121003",
+    audit2Name: "Dra. Ni Luh Putu Wardani",
+    audit2NIP: "198204042006042004",
+    bendaharaSekolahName: "I Komang Sukadana, S.Pd.",
+    bendaharaSekolahNIP: "198505052009021005",
 
     // Nilai turunan otomatis agar nama yang sama tidak ditulis dua kali (SSOT).
     get appBrand() { return `${this.appName} - ${this.schoolVisiAcronym}`; },

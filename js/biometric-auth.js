@@ -1,4 +1,4 @@
-/* js/biometric-auth.js - SIMAS SHAKTI True WebAuthn / Passkey FIDO2 Module */
+/* js/biometric-auth.js - SIMAS True WebAuthn / Passkey FIDO2 Module */
 /**
  * Standar Keamanan & Kepatuhan:
  * - OWASP ASVS Level 2 & FIDO2/W3C WebAuthn Standard

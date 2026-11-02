@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import runtimeSource from './helpers/ui-runtime-source.cjs';
 
-const primary = 'https://simas-smagesa-api.komangpurna1.workers.dev';
+const primary = 'https://simas-demo-api.komangpurna1.workers.dev';
 const gateway = 'https://project.supabase.co/functions/v1/worker-gateway';
 const response = (status = 200, extra = {}) => new Response(JSON.stringify({ success: status === 200 }), {
     status, headers: { 'Content-Type': 'application/json', ...extra }
@@ -347,15 +347,16 @@ describe('Worker-first connection fallback', () => {
             return response(401);
         });
         const handler = createWorkerGateway({ nativeFetch: worker });
+        const trustedOrigin = 'https://simas-demo-5ead3.web.app';
         nativeFetch.mockImplementation(async (url, init) => {
             if (url.startsWith(primary)) throw new TypeError('Failed to fetch');
-            return handler(new Request(url, { ...init, headers: { ...init.headers, Origin: 'https://smagesa.web.app' } }));
+            return handler(new Request(url, { ...init, headers: { ...init.headers, Origin: trustedOrigin } }));
         });
         const result = await transport.fetch(`${primary}/api/students/verify-credentials`, {
             method: 'POST', body: '{"nis":"test"}', headers: { Authorization: 'Bearer firebase-id-token' }
         });
         expect(result.status).toBe(401);
-        expect(result.headers.get('Access-Control-Allow-Origin')).toBe('https://smagesa.web.app');
+        expect(result.headers.get('Access-Control-Allow-Origin')).toBe(trustedOrigin);
         expect(worker).toHaveBeenCalledTimes(1);
     });
 });

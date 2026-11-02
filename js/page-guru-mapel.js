@@ -4993,7 +4993,7 @@ function parsePasteExcelRow(line, target) {
 }
 window.parsePasteExcelRow = parsePasteExcelRow;
 
-// Helper pencocokan siswa berdasarkan NIS (mendukung full NIS atau 4-digit NIS SMAGESA)
+// Helper pencocokan siswa berdasarkan NIS (mendukung full NIS atau 4-digit NIS sekolah)
 function findStudentByNis(rawNisInput) {
     const cleanNis = String(rawNisInput || '').replace(/[^\d]/g, '');
     if (!cleanNis || !Array.isArray(loadedStudents)) return null;
@@ -5315,7 +5315,7 @@ window.applyPasteExcelData = function () {
         const parts = parsePasteExcelRow(line, target);
         if (!parts || parts.length < 2) return;
 
-        // Extract NIS digits only (bisa 4 digit untuk NIS SMAGESA)
+        // Extract NIS digits only (bisa 4 digit untuk NIS sekolah)
         const rawNis = parts[0].replace(/[^\d]/g, '');
         if (!rawNis) return;
 
@@ -6204,7 +6204,7 @@ window.exportToExcel = async function () {
     rowsPenilaianData.push([]);
     rowsPenilaianData.push([]);
     const tglCetakText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Abang';
+    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Denpasar';
     const totalColsPenilaian = thRow1.length;
     const signLeftCol = 1;
     const signRightCol = Math.max(totalColsPenilaian - 3, 4);
@@ -6888,7 +6888,7 @@ export async function buildRekapAbsenWorkbook(params = {}, ExcelJSLib = null) {
         semester = '1',
         tahunAjaran = '2026/2027',
         faseDisplay = 'F',
-        schoolCity = 'Abang',
+        schoolCity = 'Denpasar',
         headmasterName = "Dr. I Wayan Sudarsana, M.Pd.",
         headmasterTitle = "Kepala SMA Negeri Nusantara",
         headmasterNIP = "197501012000031001",
@@ -7469,7 +7469,7 @@ export async function exportRekapAbsenA4() {
 
     const tahunAjaran = raporConfig.tahun_ajaran_aktif || getCurrentAcademicYearString();
     const faseDisplay = typeof getFaseFromClass === 'function' ? getFaseFromClass(kelas) : 'F';
-    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Abang';
+    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Denpasar';
     const headmasterName = SCHOOL_CONFIG.headmasterName || "Dr. I Wayan Sudarsana, M.Pd.";
     const headmasterTitle = SCHOOL_CONFIG.headmasterTitle || "Kepala SMA Negeri Nusantara";
     const headmasterNIP = SCHOOL_CONFIG.headmasterNIP || "197501012000031001";
@@ -8000,7 +8000,7 @@ window.printGradebookAnalytics = async function () {
 
     const kopUrl = new URL(SCHOOL_CONFIG?.kopPath || 'assets/kop.png', window.location.href).href;
     const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Abang';
+    const schoolCity = SCHOOL_CONFIG.schoolCity || 'Denpasar';
 
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -8593,7 +8593,7 @@ window.printGradebookAnalytics = async function () {
 window.printLegerAndAnalytics = window.printGradebookAnalytics;
 
 // =========================================================================
-// 13. INTEGRATED KEHADIRAN SISWA DATA (JURNAL SMAGESA)
+// 13. INTEGRATED KEHADIRAN SISWA DATA (JURNAL MENGAJAR)
 // =========================================================================
 const STATUS_COLORS_GURU = {
     H: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -9057,7 +9057,7 @@ window.loadKehadiranSiswaData = async function (force = false) {
 };
 
 // =========================================================================
-// 12. TAB 3: DAFTAR JURNAL MENGAJAR (INTEGRASI JURNAL SMAGESA & FILTER BULAN)
+// 12. TAB 3: DAFTAR JURNAL MENGAJAR (INTEGRASI JURNAL MENGAJAR & FILTER BULAN)
 // =========================================================================
 let currentJurnalAllList = [];
 let selectedJurnalMonth = null;

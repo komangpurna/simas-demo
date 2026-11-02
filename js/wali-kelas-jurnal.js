@@ -1,4 +1,4 @@
-/* js/wali-kelas-jurnal.js - Modul Rekap Jurnal Mingguan Kelas Portal Wali Kelas SIMAS SMAGESA */
+/* js/wali-kelas-jurnal.js - Modul Rekap Jurnal Mingguan Kelas Portal Wali Kelas SIMAS */
 import { SCHOOL_CONFIG, supabase } from './config.js';
 import { cfClient } from './cloudflare-client.js';
 import { escapeHTML, formatDateIndo, formatDateIndoFormal, getLocalISODate } from './global.js';
@@ -345,7 +345,7 @@ export function normalizeGuruPresensiStatus(status) {
     return status;
 }
 
-// === KONFIGURASI JAM PELAJARAN (SSOT WAKTU JP SMAGESA) ===
+// === KONFIGURASI JAM PELAJARAN (SSOT WAKTU JP SEKOLAH) ===
 export const JP_TIME_CONFIG = [
     { jp: 1, start: '07:30', end: '08:15' },
     { jp: 2, start: '08:15', end: '09:00' },
@@ -507,7 +507,7 @@ export function detectTidakBelajarEfektif({ dateStr = '', jpList = [], mapel = '
         'try out', 'tryout', 'to snbt', 'to us',
         'ujian sekolah', 'asesmen sumatif', 'anbk', 'asram',
         'porsenijar', 'porseni', 'class meeting', 'classmeeting',
-        'hut smagesa', 'hut sekolah', 'bulan bahasa',
+        'hut smantara', 'hut smagesa', 'hut sekolah', 'bulan bahasa',
         'rapat dinas', 'rapat guru', 'workshop guru',
         'workshop penguatan ekosistem digital', 'workshop',
         'jeda semester', 'jeda tengah semester',

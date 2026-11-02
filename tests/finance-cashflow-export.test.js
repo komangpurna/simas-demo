@@ -61,7 +61,7 @@ describe('Modul Keuangan: Ekspor Excel (.xlsx) Buku Kas Umum (Arus Kas)', () => 
         expect(jsContent).toContain('finalSaldo');
     });
 
-    test('6. Seksi ringkasan saldo kas (Saldo Tunai & Saldo Bank), identitas SMA Negeri 1 Abang dan tanda tangan terpasang', () => {
+    test('6. Seksi ringkasan saldo kas (Saldo Tunai & Saldo Bank), identitas sekolah dan tanda tangan terpasang', () => {
         expect(jsContent).toContain('Saldo BKU');
         expect(jsContent).toContain('Terdiri Dari');
         expect(jsContent).toContain('Saldo Tunai');
@@ -69,8 +69,8 @@ describe('Modul Keuangan: Ekspor Excel (.xlsx) Buku Kas Umum (Arus Kas)', () => 
         expect(jsContent).toContain('Bendahara Komite');
         expect(jsContent).toContain('Menyetujui,');
         expect(jsContent).toContain('Ketua Komite');
-        expect(jsContent).toContain('SMA Negeri 1 Abang');
-        expect(jsContent).toContain('I Putu Suweta, S.Pd., M.Pd.');
+        expect(jsContent).toMatch(/(?:SMA Negeri Nusantara|SMA Negeri 1 Abang)/);
+        expect(jsContent).toMatch(/(?:Dr\. I Wayan Sudarsana, M\.Pd\.|I Putu Suweta, S\.Pd\., M\.Pd\.)/);
     });
 
     test('7. Ketepatan matematis zero-drift (round2) untuk menjamin tidak ada salah 1 rupiahpun', () => {
@@ -78,12 +78,12 @@ describe('Modul Keuangan: Ekspor Excel (.xlsx) Buku Kas Umum (Arus Kas)', () => 
         expect(jsContent).toContain('saldoTunai = round2(finalSaldo - saldoBank)');
     });
 
-    test('8. Pejabat resmi komite SMA Negeri 1 Abang dan fallback default terhubung ke SCHOOL_CONFIG', () => {
+    test('8. Pejabat resmi komite dan fallback default terhubung ke SCHOOL_CONFIG', () => {
         expect(jsContent).toContain('SCHOOL_CONFIG?.bendaharaKomiteName');
         expect(jsContent).toContain('SCHOOL_CONFIG?.ketuaKomiteName');
-        expect(jsContent).toContain('I Nyoman Mintar, S.Pd');
-        expect(jsContent).toContain('I Gede Sukasari, S.S.T');
-        expect(jsContent).toContain('Wayan Made Komang Ketut');
+        expect(jsContent).toMatch(/(?:Ni Made Ariani, S\.E\.|I Nyoman Mintar, S\.Pd)/);
+        expect(jsContent).toMatch(/(?:I Ketut Wirawan, S\.T\.|I Gede Sukasari, S\.S\.T)/);
+        expect(jsContent).toMatch(/(?:I Made Sujana, S\.Pd\.|Wayan Made Komang Ketut)/);
     });
 
     test('9. Penyelarasan SSOT versi di package.json, config.js, PRD, dan CHANGELOG', () => {

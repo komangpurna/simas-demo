@@ -401,7 +401,7 @@ export function mapWeekDataToDocx(weekStartDate, weekData = {}, teacherInfo = {}
   const completionPct = Math.round((actualMinutes / (targetMinutes || 2250)) * 100);
 
   const periode = formatWeekDateRangeLocal(weekStartDate);
-  const city = SCHOOL_CONFIG?.schoolCity || 'Abang';
+  const city = SCHOOL_CONFIG?.schoolCity || 'Denpasar';
   const friDate = getLocalCalendarDate(weekStartDate, 5) || weekStartDate;
   const signDateStr = formatIndonesianDateLocal(friDate, false);
 

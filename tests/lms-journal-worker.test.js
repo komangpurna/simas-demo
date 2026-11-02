@@ -326,8 +326,9 @@ describe('LMS journal: actual Worker, SQLite, signature snapshot and e-Kinerja',
     });
     test('aggregate evidence supports trusted cross-origin image/export loading', async () => {
         const saved=await h.request('/api/lms/journal/save',await h.signingBody());
-        const response=await h.context.worker.fetch(new Request(saved.evidence_url,{headers:{Origin:'https://smagesa.web.app'}}),h.env,{});
-        expect(response.status).toBe(200); expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://smagesa.web.app');
+        const trustedOrigin = 'https://simas-demo-5ead3.web.app';
+        const response=await h.context.worker.fetch(new Request(saved.evidence_url,{headers:{Origin:trustedOrigin}}),h.env,{});
+        expect(response.status).toBe(200); expect(response.headers.get('Access-Control-Allow-Origin')).toBe(trustedOrigin);
         expect(response.headers.get('Content-Type')).toContain('image/svg+xml');
     });
     test('ambiguous legacy JP descriptions never prefill a partial range or realize the wrong JP count', async () => {

@@ -10,7 +10,7 @@ describe('cloudflare/lib/http.js', () => {
     const req = origin => new Request('https://api.test/x', { headers: origin ? { Origin: origin } : {} });
 
     test('origin produksi & localhost dipantulkan, origin asing diganti origin utama', () => {
-        expect(getCorsHeaders(req('https://simas-shakti.web.app'))['Access-Control-Allow-Origin']).toBe('https://simas-shakti.web.app');
+        expect(getCorsHeaders(req(ALLOWED_ORIGINS[0]))['Access-Control-Allow-Origin']).toBe(ALLOWED_ORIGINS[0]);
         expect(getCorsHeaders(req('http://localhost:5173'))['Access-Control-Allow-Origin']).toBe('http://localhost:5173');
         expect(getCorsHeaders(req('https://evil.example'))['Access-Control-Allow-Origin']).toBe(ALLOWED_ORIGINS[0]);
         expect(getCorsHeaders(req(null))['Access-Control-Allow-Origin']).toBe('*');

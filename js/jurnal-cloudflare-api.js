@@ -1,6 +1,6 @@
 /**
  * =========================================================================
- * SIMAS SMAGESA - Jurnal Mengajar Cloudflare D1 & Worker Client API
+ * SIMAS - Jurnal Mengajar Cloudflare D1 & Worker Client API
  * Module: Edge Database RW Integration for Jurnal Mengajar
  * =========================================================================
  */
