@@ -3,8 +3,8 @@
 | Metadata | Detail |
 |---|---|
 | **Nama Produk** | **SIMAS - SHAKTI** (Sistem Manajemen Informasi SMAGESA SHAKTI - SMA Negeri 1 Abang) |
-| **Versi Aplikasi** | `v1.2.631` / `[26.11.02.5]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
-| **Status Dokumen** | **v1.2.631** - **Penyelarasan Total School Config Demo & Eliminasi Sisa Identitas Sekolah Asli (`js/school-config.js`, `school.demo.json`, `android-twa/twa-manifest.json`, `cloudflare/worker.js`, `js/page-keuangan.js`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Mengisi dan melengkapi seluruh konfigurasi sekolah dummy SMA Negeri Nusantara (SMANTARA - CERDAS) dengan nama pejabat dan kontak dummy yang realistis (menggantikan tanda minus `"-"` dan fallback lama SMAGESA), mencakup `schoolPhone` ("(0361) 987654"), `headmasterRank` ("Pembina Utama Muda, IV/c"), `bendaharaKomiteName` ("Ni Made Ariani, S.E."), `ketuaKomiteName` ("I Ketut Wirawan, S.T."), `wakabidSarprasName` ("I Made Sujana, S.Pd."), tim audit, dan bendahara sekolah. Menyelaraskan seluruh fallback kota dan identitas pada dokumen cetak (`js/exportLaporanDocx.js`, `js/page-beban-kerja.js`, `js/page-guru-mapel.js`, `js/page-e-lab.js`, `js/page-e-kinerja-tendik.js`, `js/page-keuangan.js`), serta membersihkan konstanta seeding D1 di `cloudflare/worker.js` dan konfigurasi Android TWA (`android-twa/twa-manifest.json`) agar 100% independen dan steril dari identitas SMAGESA. |
+| **Versi Aplikasi** | `v1.2.632` / `[26.11.02.6]` - 2026-11-02 (Menyesuaikan `package.json` & `CHANGELOG.md`) |
+| **Status Dokumen** | **v1.2.632** - **Remediasi GitHub Secret Scanning & Sanitasi Kredensial Backend (`supabase/functions/secure-proxy/index.ts`, `scripts/fix-jurnal-teacher-names.js`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):** Mengeliminasi hardcoded fallback token `AIzaSyARvu...` pada fungsi `getFirebaseAuthToken` di `supabase/functions/secure-proxy/index.ts` agar strictly membaca environment variable `FIREBASE_API_KEY`, menghapus permanen skrip usang `scripts/fix-jurnal-teacher-names.js` yang memuat Google API Key lama dari project pensiun `jurnal-smagesa`, serta menyelaraskan versi aplikasi ke 26.11.02.6. |
 
 
 

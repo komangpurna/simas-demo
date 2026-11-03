@@ -8,6 +8,13 @@ Format berdasarkan versi aplikasi global (`YY.MM.DD.REV`):
 - **DD**: Hari/Tanggal (misal: 08)
 - **REV**: Nomor revisi pada hari tersebut (di-reset mulai dari 1 setiap berganti tanggal baru)
 
+## [1.2.632] / [26.11.02.6] - 2026-11-02
+
+- **🛡️ Remediasi GitHub Secret Scanning & Sanitasi Kredensial Backend (`supabase/functions/secure-proxy/index.ts`, `scripts/fix-jurnal-teacher-names.js`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**
+  - **Eliminasi Hardcoded API Key Fallback di Edge Function:** Menghapus hardcoded string fallback `AIzaSyARvu...` pada fungsi `getFirebaseAuthToken` di `supabase/functions/secure-proxy/index.ts`. Mengubahnya agar strictly mewajibkan environment variable `FIREBASE_API_KEY` dan melempar error deskriptif jika env tidak terpasang, mencegah kebocoran kredensial backend ke repositori publik sesuai standar OWASP Top 10 & ASVS Level 2.
+  - **Pembersihan Berkas Skrip Usang (`fix-jurnal-teacher-names.js`):** Menghapus permanen skrip `scripts/fix-jurnal-teacher-names.js` yang memuat Google API Key lama dari project Firestore `jurnal-smagesa` yang telah dipensiunkan 100%.
+  - **Dokumentasi & Klasifikasi Alert:** Mengklasifikasikan `school.demo.json` sebagai public Firebase Web client configuration (False Positive / Public by Design) dengan rekomendasi application HTTP referrer & API scope restrictions di Google Cloud Console.
+
 ## [1.2.631] / [26.11.02.5] - 2026-11-02
 
 - **🏫 Penyelarasan Total School Config Demo & Eliminasi Sisa Identitas Sekolah Asli (`js/school-config.js`, `school.demo.json`, `android-twa/twa-manifest.json`, `cloudflare/worker.js`, `js/page-keuangan.js`, `package.json`, `PRD_SIMAS.md`, `CHANGELOG.md`):**

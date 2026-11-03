@@ -324,10 +324,10 @@ async function relaySupabaseRestRequest(payload: any, authorizedPath: string, ac
 async function getFirebaseAuthToken(): Promise<string> {
   const email = Deno.env.get("JURNAL_SYNC_EMAIL") ?? "";
   const password = Deno.env.get("JURNAL_SYNC_PASSWORD") ?? "";
-  const apiKey = Deno.env.get("FIREBASE_API_KEY") ?? "AIzaSyARvuPYUSx-RHDzL5vqTayg5nDhATr0gXY";
+  const apiKey = Deno.env.get("FIREBASE_API_KEY") ?? "";
 
-  if (!email || !password) {
-    throw new Error("Missing JURNAL_SYNC_EMAIL or JURNAL_SYNC_PASSWORD environment variables");
+  if (!email || !password || !apiKey) {
+    throw new Error("Missing JURNAL_SYNC_EMAIL, JURNAL_SYNC_PASSWORD, or FIREBASE_API_KEY environment variables");
   }
 
   const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;
